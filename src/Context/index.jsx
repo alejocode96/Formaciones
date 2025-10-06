@@ -77,7 +77,7 @@ function TrainingLogiTransProvider({ children }) {
                 ]
             }
         }
-        
+
     ];
 
     // Estado para el progreso de usuarios
@@ -100,9 +100,58 @@ function TrainingLogiTransProvider({ children }) {
         }));
     };
 
+    // Función para obtener curso por ID
+    const getCourseById = (courseId) => {
+        return defaultTrainings.find(training => training.id === parseInt(courseId));
+    };
+
+    // Función para verificar si un usuario ya tiene progreso en un curso
+    const hasUserProgress = (courseId) => {
+        return userProgress[courseId] && userProgress[courseId].nombre && userProgress[courseId].cedula;
+    };
+
+    // Función para obtener progreso de usuario para un curso específico
+    const getUserProgressForCourse = (courseId) => {
+        return userProgress[courseId] || null;
+    };
+
+    // Función para crear nuevo progreso de curso
+    const createCourseProgress = (courseId, userData) => {
+        const course = getCourseById(courseId);
+        if (!course) return false;
+
+        const newCourseProgress = {
+            id: courseId,
+            title: course.title,
+            nombre: userData.nombre,
+            cedula: userData.cedula,
+            cumplimiento: 0,
+            startedAt: new Date().toISOString(),
+            lastAccessAt: new Date().toISOString(),
+            currentModule: 1,
+            completedModules: []
+        };
+
+        const newProgress = {
+            ...userProgress,
+            [courseId]: newCourseProgress
+        };
+
+        setUserProgress(newProgress);
+        localStorage.setItem("userProgress", JSON.stringify(newProgress));
+        return true;
+    };
+
+
+    // Función para resetear progreso de curso (cuando el usuario decide cambiar datos)
+    const resetCourseProgress = (courseId, userData) => {
+        return createCourseProgress(courseId, userData);
+    };
+
     return (
         <TrainingLogiTransContext.Provider value={{
-            getTrainingsWithProgress
+            getTrainingsWithProgress,
+            getCourseById, hasUserProgress,getUserProgressForCourse,createCourseProgress,resetCourseProgress
         }}>
             {children}
         </TrainingLogiTransContext.Provider>

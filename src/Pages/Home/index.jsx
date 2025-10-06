@@ -52,21 +52,7 @@ function Home() {
 
   return (
     <>
-      <header className='relative overflow-hidden'>
-        <div className='relative mx-2 my-2 px-4 py-2 backdrop-blur-sm rounded-xl shadow-2xl'>
-          <div className='w-full flex items-center justify-between '>
-            <div className='flex items-center space-x-3'>
-              <div className='relative bg-gradient-to-r bg-white backdrop-blur-md h-12 w-12 rounded-xl flex items-center justify-center p-1.5 shadow-xl border border-white/20'>
-                <img src={logo} alt="Logo" className='w-full h-full object-contain'></img>
-              </div>
-              <div className='flex flex-col'>
-                <span className='text-xl md:text-2xl font-black tracking-tight bg-gradient-to-r from-white via-blue-100 to-emerald-100 bg-clip-text text-transparent select-none'>LOGITRANS</span>
-                <span className='text-xs text-slate-400 font-medium tracking-wider'>Transformamos el presente, construimos el futuro.</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </header>
+  
 
       <div>
         <div className='absolute top-20 left-10 w-72 h-72 bg-blue-500/10 rounded-full blur-3xl animate-pulse'></div>

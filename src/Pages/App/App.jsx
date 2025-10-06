@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { BrowserRouter, useRoutes } from 'react-router-dom';
 import React from 'react'
 
+
 //Animaciones
 import AOS from "aos";
 import "aos/dist/aos.css";
@@ -9,8 +10,7 @@ import "aos/dist/aos.css";
 //contexto
 import { TrainingLogiTransProvider } from '../../Context';
 
-//pages
-import Home from '../Home';
+
 
 // Inicializar AOS una sola vez fuera del componente
 AOS.init({
@@ -22,9 +22,23 @@ AOS.init({
   anchorPlacement: 'top-bottom', // Animar cuando el top del elemento toca el bottom del viewport
 });
 
+//pages
+import Home from '../Home';
+import Training from "../Training";
+import LayoutWithHeader from "../../Components/Home/header";
 const AppRoutes = () => {
   let routes = useRoutes([
-    { path: '/', element: <Home /> }
+    {
+      element: <LayoutWithHeader />, // Layout con header
+      children: [
+        { path: '/', element: <Home /> },
+        { path: '/training/:courseId', element: <Training /> },
+      ]
+    },
+    // Rutas sin header
+    // { path: '/modules', element: <Modules /> },
+    // { path: '/training/:courseId/module/:moduleId', element: <Modules /> },
+
   ]);
   return routes
 }
