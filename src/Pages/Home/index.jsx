@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-
+import AOS from "aos";
 //contexto
 import { TrainingLogiTransContext } from '../../Context';
 
@@ -45,6 +45,11 @@ function Home() {
     navigate(`/training/${training.id}`);
   };
 
+  // Refrescar AOS cuando el componente se monte
+  React.useEffect(() => {
+    AOS.refresh();
+  }, []);
+
   return (
     <>
       <header className='relative overflow-hidden'>
@@ -67,7 +72,7 @@ function Home() {
         <div className='absolute top-20 left-10 w-72 h-72 bg-blue-500/10 rounded-full blur-3xl animate-pulse'></div>
         <div className='absolute top-1/2 left-1/2 w-64 h-64 bg-blue-500/10 rounded-full blur-3xl animate-pulse delay-500 '></div>
 
-        <div className='w-[90%] mx-auto pt-16'>
+        <div className='w-[90%] mx-auto pt-16 pb-8'>
           <div className='text-start mb-4'>
             <div className='m-0 p-0 leading-0' data-aos="fade-up">
               <p className='text-zinc-400 text-3xl md:text-5xl font-extralight leading-none mb-0 '>FORMACIONES</p>
@@ -80,8 +85,8 @@ function Home() {
               const StatusIcon = getStatusIcon(training.cumplimiento);
               const isHovered = hoveredCard === training.id;
               return (
-                <div data-aos="fade-up">
-                  <div key={training.id} onClick={() => handleCardClick(training)} onMouseEnter={() => setHoveredCard(training.id)} onMouseLeave={() => setHoveredCard(null)} className={`group relative overflow-hidden rounded-3xl cursor-pointer transition-all duration-500 ease-out transform ${isHovered ? 'scale-[1.02] -translate-y-2' : 'hover:scale-[1.01]'}`} style={{ animationDelay: `${index * 100}ms` }}>
+                <div data-aos="fade-up" data-aos-delay={index * 100} data-aos-duration="600"  key={training.id}>
+                  <div onClick={() => handleCardClick(training)} onMouseEnter={() => setHoveredCard(training.id)} onMouseLeave={() => setHoveredCard(null)} className={`group relative overflow-hidden rounded-3xl cursor-pointer transition-all duration-500 ease-out transform ${isHovered ? 'scale-[1.02] -translate-y-2' : 'hover:scale-[1.01]'}`} style={{ animationDelay: `${index * 100}ms` }}>
                     {/* Card background with glassmorphism */}
                     <div className={`absolute inset-0 ${training.cumplimiento <= 0 ? 'bg-gradient-to-br from-zinc-800-80 via-zinc-900/60 to-zinc-950/80' : training.cumplimiento === 100 ? 'bg-gradient-to-br from-emerald-900/40 via-zinc-900/60 to-zinc-950/80' : 'bg-gradient-to-br from-orange-900/40 via-zinc-900/60 to-zinc-950/80'} backdrop-blur-sm`}></div>
 

@@ -77,6 +77,7 @@ function TrainingLogiTransProvider({ children }) {
                 ]
             }
         }
+        
     ];
 
     // Estado para el progreso de usuarios
