@@ -1,6 +1,10 @@
-import { useState } from 'react'
+import { useEffect } from "react";
 import { BrowserRouter, useRoutes } from 'react-router-dom';
 import React from 'react'
+
+//Animaciones
+import AOS from "aos";
+import "aos/dist/aos.css";
 
 //contexto
 import { TrainingLogiTransProvider } from '../../Context';
@@ -14,7 +18,9 @@ const AppRoutes = () => {
   return routes
 }
 function App() {
-
+  useEffect(() => {
+    AOS.init({ duration: 1000 });
+  }, []);
 
   return (
     <>
