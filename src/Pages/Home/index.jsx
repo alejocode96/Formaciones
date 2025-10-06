@@ -71,7 +71,7 @@ function Home() {
           <div className='text-start mb-4'>
             <div className='m-0 p-0 leading-0'>
               <p className='text-zinc-400 text-3xl md:text-5xl font-extralight leading-none mb-0 '>FORMACIONES</p>
-              <p className='bg-gradient-to-br from-zinc-200 to-zinc-500 bg-clip-text text-7xl/[1.07] font-bold tracking-tight text-transparent md:text-[7rem]/[1.07] lg:text-[10rem]/[1.07] leading-none'>LOGITRANS</p>
+              <p className='bg-gradient-to-br from-zinc-200 to-zinc-500 bg-clip-text text-6xl/[1.07] font-bold tracking-tight text-transparent md:text-[7rem]/[1.07] lg:text-[10rem]/[1.07] leading-none'>LOGITRANS</p>
             </div>
           </div>
           <div className="space-y-4">
@@ -101,7 +101,7 @@ function Home() {
                       <div className='flex-1'>
                         <div className='flex items-start justify-between '>
                           <div>
-                            <h3 className={`text-lg md:text-xl lg:text-2xl font-bold mb-0 leading-tight ${training.cumplimiento <= 0 ? 'text-zinc-200' : training.cumplimiento === 100 ? 'text-emerald-100' : 'text-orange-100'}`}>{training.title}</h3>
+                            <h3 className={`text-md md:text-xl lg:text-2xl font-bold mb-0 leading-tight ${training.cumplimiento <= 0 ? 'text-zinc-200' : training.cumplimiento === 100 ? 'text-emerald-100' : 'text-orange-100'}`}>{training.title}</h3>
                             <p className={`text-sm md:text-base font-light leading-tight ${training.cumplimiento <= 0 ? 'text-zinc-400' : training.cumplimiento === 100 ? 'text-emerald-200/80' : 'text-orange-200/80'}`}>{training.subtitle}</p>
                           </div>
                         </div>
