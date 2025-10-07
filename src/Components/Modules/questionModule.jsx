@@ -66,7 +66,7 @@ function QuestionModule({ question, answer, onContentIsEnded, onAttempt, onCorre
     const isCorrect = selectedAnswer === correctAnswerIndex;
 
     return (
-        <div className='relative max-w-5xl mx-auto px-4 mb-18'  data-aos="fade-up" data-aos-delay={300} data-aos-duration="600">
+        <div className='relative max-w-5xl mx-auto px-4 lg:mb-0 mb-18'  data-aos="fade-up" data-aos-delay={300} data-aos-duration="600">
             {/* Pregunta */}
             <div className='mb-8'>
                 <p className='text-xl md:text-2xl text-zinc-100 leading-relaxed font-medium text-center'>
@@ -186,7 +186,7 @@ function QuestionModule({ question, answer, onContentIsEnded, onAttempt, onCorre
 
             {/* Indicador de progreso */}
             {!isSubmitted && !isCompleted && (
-                <p className='text-center text-sm text-zinc-500 mt-4'>
+                <p className='text-center text-sm text-zinc-500 mt-4 '>
                     {selectedAnswer !== null
                         ? 'Revisa tu respuesta y haz clic en "Enviar Respuesta"'
                         : 'Selecciona una opción para continuar'}

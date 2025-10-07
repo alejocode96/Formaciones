@@ -125,7 +125,7 @@ function VideoModule({ src, resumen, onContentIsEnded }) {
                 <div className='w-full lg:w-7/10  mb-4'>
                     <video
                         ref={videoRef}
-                        className='w-full h-[50vh] md:h-[65vh] lg:h-[75vh] rounded-lg shadow-lg'
+                        className='w-full h-[45vh] md:h-[65vh] lg:h-[75vh] rounded-lg shadow-lg'
                         controls
                         preload="metadata"
                         onTimeUpdate={handleTimeUpdate}
