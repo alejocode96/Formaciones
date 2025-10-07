@@ -14,13 +14,13 @@ function MobileBottomBar({
     onNextModule
 }) {
     return (
-        <div className="lg:hidden flex-shrink-0 bottom-0 left-0 w-full bg-zinc-900/50 rounded-t-xl py-4 flex items-center z-40">
-            <button  onClick={onShowResumen}  className="flex flex-1 justify-center items-center gap-2 text-sm font-medium hover:text-blue-400 transition border-r border-gray-700">
+        <div className="lg:hidden fixed bottom-0 left-0 w-full bg-zinc-900/80 backdrop-blur-sm rounded-t-xl py-3 flex items-center z-50">
+            <button onClick={onShowResumen} className="flex flex-1 justify-center items-center gap-2 text-sm font-medium hover:text-blue-400 transition border-r border-gray-700">
                 <TextInitial strokeWidth={1.5} size={20} />
                 <span>Resumen</span>
             </button>
 
-            <button onClick={onShowContent} 
+            <button onClick={onShowContent}
                 className="flex flex-1 justify-center items-center gap-2 text-sm font-medium hover:text-blue-400 transition border-r border-gray-700">
                 <TableOfContents strokeWidth={1.5} size={20} />
                 <span>Contenido</span>
