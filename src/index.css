@@ -6,12 +6,13 @@
 }
 
 /* El body y html deben ocupar todo el viewport */
-html, body {
+html,
+body {
   width: 100%;
   height: 100%;
-  overflow-x: hidden;
+  overflow: hidden;
   background-color: #09090b;
-  color: #fff; 
+  color: #fff;
   font-family: sans-serif;
 }
 
@@ -24,7 +25,8 @@ html, body {
 /* Para navegadores WebKit */
 *::-webkit-scrollbar {
   width: 6px;
-  height: 6px; /* opcional para scroll horizontal */
+  height: 6px;
+  /* opcional para scroll horizontal */
 }
 
 *::-webkit-scrollbar-track {
