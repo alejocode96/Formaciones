@@ -1,7 +1,6 @@
 import React, { useEffect, useState, useContext } from 'react';
 import { TrainingLogiTransContext } from '../../Context';
 
-
 // Hooks personalizados
 import { useModuleProgress } from '../../Hooks/useModuleProgress';
 import { useModuleNavigation } from '../../Hooks/useModuleNavigation';
@@ -11,11 +10,11 @@ import MobileBottomBar from '../../Components/Modules/MobileBottomBar';
 import MobileModal, { ResumenContent, ContenidoContent } from '../../Components/Modules/MobileModal';
 import VideoModule from '../../Components/Modules/videoModule';
 import QuestionModule from '../../Components/Modules/questionModule';
+
 /**
  * ModulePage - Componente principal simplificado
  * Ya no maneja lógica compleja, solo orquesta los componentes
  */
-
 function ModulePage() {
     const {
         getCourseById,
@@ -46,7 +45,6 @@ function ModulePage() {
             navigation.resetContentFinished();
         }
     }, [currentModuleId, isModuleCompleted]);
-
 
     // 🔹 Cerrar modal automáticamente cuando el ancho de pantalla es de escritorio
     useEffect(() => {
@@ -101,10 +99,13 @@ function ModulePage() {
     };
 
     if (!currentCourse || !currentModule) {
-        return <div className="h-screen w-full bg-[#09090b] text-white flex items-center justify-center">
-            Cargando...
-        </div>;
+        return (
+            <div className="h-screen w-full bg-[#09090b] text-white flex items-center justify-center">
+                Cargando...
+            </div>
+        );
     }
+
     return (
         <div className="h-screen w-full bg-[#09090b] text-white flex flex-col">
             {/* Navbar con sidebar integrado - altura fija */}
@@ -121,7 +122,7 @@ function ModulePage() {
             </div>
 
             {/* Contenido principal - ocupará el espacio restante con scroll */}
-            <main className="flex-1 min-h-0 overflow-y-auto px-4 md:px-8 pt-8 pb-4">
+            <main className="flex-1 min-h-0 overflow-y-auto px-4 md:px-8 pt-8 pb-4 lg:pb-8">
                 {/* Renderizar módulo según tipo */}
                 {currentModule.type === 'Video' && (
                     <VideoModule
@@ -129,7 +130,6 @@ function ModulePage() {
                         src={currentModule.path}
                         resumen={currentModule.resumen}
                         onContentIsEnded={handleContentFinished}
-
                     />
                 )}
 
@@ -146,14 +146,15 @@ function ModulePage() {
             </main>
 
             {/* Barra inferior móvil - siempre fija en la parte inferior */}
-            <MobileBottomBar
-                contentFinished={contentFinished}
-                hasNextModule={!!nextModule}
-                onShowResumen={() => handleShowModal('resumen')}
-                onShowContent={() => handleShowModal('contenido')}
-                onNextModule={handleNextModule}
-            />
-
+            <div className="flex-shrink-0">
+                <MobileBottomBar
+                    contentFinished={contentFinished}
+                    hasNextModule={!!nextModule}
+                    onShowResumen={() => handleShowModal('resumen')}
+                    onShowContent={() => handleShowModal('contenido')}
+                    onNextModule={handleNextModule}
+                />
+            </div>
 
             {/* Modal móvil - renderizar contenido según tipo */}
             <MobileModal
@@ -179,9 +180,8 @@ function ModulePage() {
                     />
                 )}
             </MobileModal>
-
         </div>
-    )
+    );
 }
 
 export default ModulePage;
