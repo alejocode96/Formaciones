@@ -2,6 +2,10 @@ import React, { useState, useEffect } from 'react';
 
 const TrainingLogiTransContext = React.createContext();
 
+//conetneidos
+import introSARLAFT from '../assets/introduccionSARLAFT.mp4';
+import queesSARLAFT from '../assets/queesSARLAFT.mp4';
+
 function TrainingLogiTransProvider({ children }) {
 
     // Configuración de cursos base (información estática que no cambia)
@@ -17,7 +21,7 @@ function TrainingLogiTransProvider({ children }) {
                     "A lo largo de la formación, los participantes adquirirán **herramientas prácticas** para identificar, reportar y controlar operaciones sospechosas, contribuyendo a la **protección de la organización, sus empleados y la sociedad** frente a riesgos **legales, financieros y reputacionales.**"
                 ],
                 modules: [
-                    { id: 1, lessons: "Fundamentos", name: "Introducción al SARLAFT", completed: false, type: "Video", path: "/introduccionSARLAFT.mp4", resumen: ["¿Por qué no debemos ignorarlo? ", "Por que somos una pieza clave para proteger la organización y el sistema financiero  no es solo cumplir la norma es  asumir compromiso con seguridad, transparencia y sostenibilidad"], duration: "00:23", },
+                    { id: 1, lessons: "Fundamentos", name: "Introducción al SARLAFT", completed: false, type: "Video", path: introSARLAFT, resumen: ["¿Por qué no debemos ignorarlo? ", "Por que somos una pieza clave para proteger la organización y el sistema financiero  no es solo cumplir la norma es  asumir compromiso con seguridad, transparencia y sostenibilidad"], duration: "00:23", },
                     {
                         id: 2, lessons: "Fundamentos", name: "¿Crees que una empresa de transporte puede ser usada para actividades ilegales?",
                         respuestas: [
@@ -27,7 +31,7 @@ function TrainingLogiTransProvider({ children }) {
                             { opcion: "No, ya que las regulaciones y controles hacen imposible que sean usadas con otros propósitos.", rsp: false }
                         ], completed: false, type: "Pregunta", duration: "01:00",
                     },
-                    { id: 3, lessons: "Fundamentos", name: "¿Qué es SARLAFT?", completed: false, type: "Video", path: "/queesSARLAFT.mp4", resumen: ["¿Qué es SARLAFT?", "es un sistema para prevenir y gestionar el riesgo de lavado de activos y financiación del terrorismo. Funciona como un filtro de seguridad: analiza clientes, operaciones y recursos para asegurar que todo sea legal y transparente. Va más allá de solo revisar listas sospechosas; es un mecanismo de prevención que protege a la empresa, sus empleados y su reputación.",], duration: "00:48", },
+                    { id: 3, lessons: "Fundamentos", name: "¿Qué es SARLAFT?", completed: false, type: "Video", path: queesSARLAFT, resumen: ["¿Qué es SARLAFT?", "es un sistema para prevenir y gestionar el riesgo de lavado de activos y financiación del terrorismo. Funciona como un filtro de seguridad: analiza clientes, operaciones y recursos para asegurar que todo sea legal y transparente. Va más allá de solo revisar listas sospechosas; es un mecanismo de prevención que protege a la empresa, sus empleados y su reputación.",], duration: "00:48", },
                     { id: 4, lessons: "Fundamentos", name: "Etapas del SARLAFT", completed: false, type: "Video", duration: "01:26", },
                     { id: 5, lessons: "Fundamentos", name: "Factores de Riesgo en el Transporte de Carga", completed: false, type: "Video", duration: "01:26", },
                     { id: 6, lessons: "Fundamentos", name: "Señales de Alerta", completed: false, type: "Video", duration: "01:26", },
@@ -83,6 +87,8 @@ function TrainingLogiTransProvider({ children }) {
     // Estado para el progreso de usuarios
     const [userProgress, setUserProgress] = useState({});
 
+    //estado para sidebar
+    const [showContentSidebar, setShowContentSidebar] = useState(false);
     //Ayuda a no perder avance de los cursos
     useEffect(() => {
         // Cargar solo el progreso de usuarios desde localStorage
@@ -148,10 +154,85 @@ function TrainingLogiTransProvider({ children }) {
         return createCourseProgress(courseId, userData);
     };
 
+    //funcion para completar modulo
+    const completeModule = (courseId, moduleId, attempts = 1) => {
+        const courseIdNum = parseInt(courseId);
+        const moduleIdNum = parseInt(moduleId);
+
+        const currentProgress = userProgress[courseIdNum];
+        if (!currentProgress) return false;
+
+        const course = getCourseById(courseIdNum);
+        if (!course) return false;
+
+        // Verificar si el módulo ya está completado
+        const existingModule = currentProgress.completedModules.find(m => m.id === moduleIdNum);
+
+        let updatedCompletedModules;
+        if (existingModule) {
+            // Si ya existe, NO actualizar (ya está completado)
+            updatedCompletedModules = currentProgress.completedModules;
+        } else {
+            // Si no existe, agregarlo
+            updatedCompletedModules = [
+                ...currentProgress.completedModules,
+                { id: moduleIdNum, attempts }
+            ];
+        }
+
+        // Calcular el siguiente módulo
+        const allModules = course.content.modules;
+        const currentIndex = allModules.findIndex(m => m.id === moduleIdNum);
+        const nextModule = currentIndex < allModules.length - 1 ? allModules[currentIndex + 1].id : moduleIdNum;
+
+        // Calcular el porcentaje de cumplimiento
+        const totalModules = allModules.length;
+        const completedCount = updatedCompletedModules.length;
+        const cumplimiento = Math.round((completedCount / totalModules) * 100);
+
+        // Actualizar el progreso
+        const updatedProgress = {
+            ...currentProgress,
+            currentModule: nextModule,
+            completedModules: updatedCompletedModules,
+            cumplimiento,
+            lastAccessAt: new Date().toISOString()
+        };
+
+        const newProgress = {
+            ...userProgress,
+            [courseIdNum]: updatedProgress
+        };
+
+        setUserProgress(newProgress);
+        localStorage.setItem("userProgress", JSON.stringify(newProgress));
+
+        return true;
+    };
+
+    // 🔹 Cerrar sidebar automáticamente en pantallas medianas o pequeñas
+    useEffect(() => {
+        const handleResize = () => {
+            if (window.innerWidth < 1024) { // < 1024px → pantallas "lg" o menores
+                setShowContentSidebar(false);
+            }
+        };
+
+        // Ejecutar una vez al montar (por si el usuario abre desde móvil)
+        handleResize();
+
+        // Escuchar cambios de tamaño
+        window.addEventListener('resize', handleResize);
+
+        // Limpieza del listener
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
+
     return (
         <TrainingLogiTransContext.Provider value={{
             getTrainingsWithProgress,
-            getCourseById, hasUserProgress,getUserProgressForCourse,createCourseProgress,resetCourseProgress
+            getCourseById, hasUserProgress, getUserProgressForCourse, createCourseProgress, resetCourseProgress, completeModule,
+            showContentSidebar, setShowContentSidebar
         }}>
             {children}
         </TrainingLogiTransContext.Provider>

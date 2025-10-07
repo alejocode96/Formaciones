@@ -125,10 +125,12 @@ function Training() {
         setErrors({});
     };
 
+    
+
     //por si l curso no existe
     if (!currentCourse) {
         return (
-            <div className="w-full bg-[#09090b] text-white min-h-screen flex items-center justify-center">
+            <div data-aos="fade-up" data-aos-delay={300} data-aos-duration="600" className="w-full bg-[#09090b] text-white min-h-screen flex items-center justify-center">
                 <div className="text-center">
                     <AlertCircle className="h-16 w-16 text-red-400 mx-auto mb-4" />
                     <h1 className="text-2xl font-bold text-white mb-2">Curso no encontrado</h1>
@@ -147,8 +149,8 @@ function Training() {
     //retornar si hay progreso
     if (showContinueDialog && existingUserData) {
         return (
-            <div className='w-full bg-[#09090b] text-white flex pt-10 items-center justify-center'>
-                <div className='w-[90%] md:w-[85%]  mx-auto bg-zinc-800/50 backdrop-blur-sm border border-zinc-700 rounded-2xl p-8 mb-6'>
+            <div  className='w-full bg-[#09090b] text-white flex pt-10 items-center justify-center'>
+                <div data-aos="fade-up" data-aos-delay={300} data-aos-duration="600" data-aos-once="false" className='w-[90%] md:w-[85%]  mx-auto bg-zinc-800/50 backdrop-blur-sm border border-zinc-700 rounded-2xl p-8 mb-6'>
                     <div className="text-center mb-6">
                         <CheckCircle className="h-16 w-16 text-green-400 mx-auto mb-4" />
                         <h2 className="text-2xl font-bold text-white mb-2">Progreso del {existingUserData.cumplimiento}% Encontrado</h2>
@@ -200,8 +202,8 @@ function Training() {
 
     if (showChangeDataDialog) {
         return (
-            <div className='w-full bg-[#09090b] text-white flex pt-10 items-center justify-center'>
-                <div className='w-[90%] md:w-[85%]  mx-auto bg-zinc-800/50 backdrop-blur-sm border border-zinc-700 rounded-2xl p-8 mb-6'>
+            <div  className='w-full bg-[#09090b] text-white flex pt-10 items-center justify-center'>
+                <div data-aos="fade-up" data-aos-delay={300} data-aos-duration="600" data-aos-once="false" className='w-[90%] md:w-[85%]  mx-auto bg-zinc-800/50 backdrop-blur-sm border border-zinc-700 rounded-2xl p-8 mb-6'>
                     <div className="text-center mb-6">
                         <AlertCircle className="h-16 w-16 text-orange-400 mx-auto mb-4"></AlertCircle>
                         <h2 className="text-2xl font-bold text-white mb-2">Confirmar Cambio</h2>
@@ -245,8 +247,8 @@ function Training() {
     }
 
     return (
-        <div className="w-full bg-[#09090b] text-white my-4 mt-12">
-            <main className="w-[90%] mx-auto flex items-center justify-center">
+        <div  className="w-full bg-[#09090b] text-white my-4 mt-12">
+            <main data-aos="fade-up" data-aos-delay={300} data-aos-duration="600" data-aos-once="false" className="w-[90%] mx-auto flex items-center justify-center">
                 <div className='"max-w-5xl mx-auto text-center'>
                     <h1 className="bg-gradient-to-br from-zinc-200 to-zinc-500 bg-clip-text text-5xl/[1.07] font-bold tracking-tight text-transparent leading-none mb-4">{currentCourse.title}</h1>
                     <div className="max-w-4xl mx-auto mb-10">

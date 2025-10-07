@@ -22,10 +22,15 @@ AOS.init({
   anchorPlacement: 'top-bottom', // Animar cuando el top del elemento toca el bottom del viewport
 });
 
+
+
+
 //pages
 import Home from '../Home';
 import Training from "../Training";
 import LayoutWithHeader from "../../Components/Home/header";
+import ModulePage from "../Module";
+
 const AppRoutes = () => {
   let routes = useRoutes([
     {
@@ -36,6 +41,7 @@ const AppRoutes = () => {
       ]
     },
     // Rutas sin header
+    { path: '/training/:courseId/module/:moduleId', element: <ModulePage /> }
     // { path: '/modules', element: <Modules /> },
     // { path: '/training/:courseId/module/:moduleId', element: <Modules /> },
 
