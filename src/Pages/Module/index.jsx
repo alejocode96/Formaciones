@@ -107,7 +107,7 @@ function ModulePage() {
     }
 
     return (
-        <div className="h-screen w-full bg-[#09090b] text-white flex flex-col">
+        <div className="h-screen w-full bg-[#09090b] text-white flex flex-col overflow-y-hidden">
             {/* Navbar con sidebar integrado - altura fija */}
             <div className="flex-shrink-0">
                 <NavbarCurso
