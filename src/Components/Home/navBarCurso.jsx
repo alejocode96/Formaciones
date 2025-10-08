@@ -44,16 +44,16 @@ function NavbarCurso({
 
     return (
         <>
-            <header className="px-2 md:px-6 py-1.5 ">
-                <div className="relative mx-2 my-2 px-3 py-1.5 backdrop-blur-sm rounded-xl shadow-2xl bg-white/5 ring-1 ring-zinc-700">
+            <header className=" top-0 z-40   px-2 md:px-6 ">
+                <div className="relative mx-2 my-2 px-4 py-2 backdrop-blur-sm rounded-xl shadow-2xl bg-white/5 ring-1 ring-zinc-700">
                     <div className='w-full flex items-center justify-between'>
                         {/* Logo y texto */}
                         <div className='flex items-center space-x-3'>
-                            <div className='relative bg-gradient-to-br bg-white backdrop-blur-md h-9 w-9 md:h-12 md:w-12 rounded-xl flex items-center justify-center p-1.5 shadow-xl border border-white/20'>
+                            <div className='relative bg-gradient-to-br bg-white backdrop-blur-md h-12 w-12 rounded-xl flex items-center justify-center p-1.5 shadow-xl border border-white/20'>
                                 <img src={logo} alt="Logo" className='w-full h-full object-contain' />
                             </div>
                             <div className='flex flex-col'>
-                                <span className='text-sm md:text-xl lg:text-2xl font-black tracking-tight bg-gradient-to-r from-white via-blue-100 to-emerald-100 bg-clip-text text-transparent select-none'>
+                                <span className='text-md md:text-2xl font-black tracking-tight bg-gradient-to-r from-white via-blue-100 to-emerald-100 bg-clip-text text-transparent select-none'>
                                     {course.title}
                                 </span>
                                 <span className='text-xs text-slate-400 font-medium tracking-wider'>
@@ -65,7 +65,7 @@ function NavbarCurso({
                         {/* Botones - solo en desktop */}
 
                         <div className='hidden lg:flex items-center space-x-3'>
-                            <button onClick={handleShowContent} className='p-2 px-4 bg-gradient-to-r from-zinc-800 to-zinc-800 rounded-lg flex items-center space-x-3 border border-zinc-700/50 transition-all duration-300 ease-out hover:scale-[1.02] hover:shadow-lg hover:shadow-zinc-900/25 hover:bg-gradient-to-r hover:from-zinc-700 hover:to-zinc-600'>
+                            <button onClick={handleShowContent} className='p-2 px-6 bg-gradient-to-r from-zinc-800 to-zinc-800 rounded-lg flex items-center space-x-3 border border-zinc-700/50 transition-all duration-300 ease-out hover:scale-[1.02] hover:shadow-lg hover:shadow-zinc-900/25 hover:bg-gradient-to-r hover:from-zinc-700 hover:to-zinc-600'>
                                 <TableOfContents strokeWidth={1.5} size={18} className='text-white' />
                                 <span className='text-white font-medium'>Ver Contenido</span>
                             </button>

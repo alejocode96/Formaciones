@@ -66,8 +66,6 @@ function QuestionModule({ question, answer, onContentIsEnded, onAttempt, onCorre
     const isCorrect = selectedAnswer === correctAnswerIndex;
 
     return (
-        // NOTA: NO hay cambios estructurales aquí, el componente se mantiene igual
-        // El scroll ahora se maneja en el contenedor padre (main en ModulePage)
         <div className='max-w-5xl mx-auto pt-8 lg:mb-4' data-aos="fade-up" data-aos-delay={300} data-aos-duration="600">
             {/* Pregunta */}
             <div className='mb-8'>
