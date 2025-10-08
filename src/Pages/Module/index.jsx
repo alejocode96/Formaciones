@@ -10,6 +10,8 @@ import VideoModule from '../../Components/Modules/videoModule';
 import QuestionModule from '../../Components/Modules/questionModule';
 
 function ModulePage() {
+
+    
     const { getCourseById, getUserProgressForCourse } = useContext(TrainingLogiTransContext);
 
     // Hook de navegación

@@ -9,7 +9,7 @@ import "aos/dist/aos.css";
 
 //contexto
 import { TrainingLogiTransProvider } from '../../Context';
-
+import ScrollToTop from "../../Components/Home/ScrollToTop";
 
 
 // Inicializar AOS una sola vez fuera del componente
@@ -53,11 +53,14 @@ function App() {
 
   return (
     <>
-      <TrainingLogiTransProvider>
-        <BrowserRouter basename="/Formaciones">
+     
+
+      <BrowserRouter basename="/Formaciones">
+        <TrainingLogiTransProvider>
+          <ScrollToTop />
           <AppRoutes ></AppRoutes>
-        </BrowserRouter>
-      </TrainingLogiTransProvider>
+        </TrainingLogiTransProvider>
+      </BrowserRouter>
     </>
   )
 }
