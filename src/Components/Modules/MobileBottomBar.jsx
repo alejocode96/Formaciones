@@ -14,7 +14,7 @@ function MobileBottomBar({
     onNextModule
 }) {
     return (
-        <div className="lg:hidden fixed bottom-0 left-0 w-full bg-zinc-900/80 backdrop-blur-sm rounded-t-xl py-3 flex items-center z-50">
+        <div className="lg:hidden  w-full bg-zinc-900/80 backdrop-blur-sm rounded-t-xl py-3 flex items-center z-50">
             <button onClick={onShowResumen} className="flex flex-1 justify-center items-center gap-2 text-sm font-medium hover:text-blue-400 transition border-r border-gray-700">
                 <TextInitial strokeWidth={1.5} size={20} />
                 <span>Resumen</span>
