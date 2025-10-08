@@ -53,14 +53,14 @@ function App() {
 
   return (
     <>
-     
-
-      <BrowserRouter basename="/Formaciones">
-        <TrainingLogiTransProvider>
+      <TrainingLogiTransProvider>
+        <BrowserRouter basename="/Formaciones">
           <ScrollToTop />
           <AppRoutes ></AppRoutes>
-        </TrainingLogiTransProvider>
-      </BrowserRouter>
+        </BrowserRouter>
+      </TrainingLogiTransProvider>
+
+
     </>
   )
 }
