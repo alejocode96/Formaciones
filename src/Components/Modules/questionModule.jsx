@@ -66,7 +66,7 @@ function QuestionModule({ question, answer, onContentIsEnded, onAttempt, onCorre
     const isCorrect = selectedAnswer === correctAnswerIndex;
 
     return (
-        <div className='relative max-w-5xl mx-auto px-4 py-6'  data-aos="fade-up" data-aos-delay={300} data-aos-duration="600">
+        <div className='max-w-5xl mx-auto' data-aos="fade-up" data-aos-delay={300} data-aos-duration="600">
             {/* Pregunta */}
             <div className='mb-8'>
                 <p className='text-xl md:text-2xl text-zinc-100 leading-relaxed font-medium text-center'>
@@ -86,7 +86,7 @@ function QuestionModule({ question, answer, onContentIsEnded, onAttempt, onCorre
                             key={index} 
                             onClick={() => handleSelectAnswer(index)} 
                             disabled={isSubmitted}
-                            className={`w-full text-left p-3 rounded-xl transition-all duration-300 border-2
+                            className={`w-full text-left p-4 md:p-5 rounded-xl transition-all duration-300 border-2
                                 ${!isSubmitted && !isSelected ? 'bg-zinc-800/40 border-zinc-700/50 hover:border-blue-500/50 hover:bg-zinc-800/60' : ''}
                                 ${!isSubmitted && isSelected ? 'bg-blue-900/30 border-blue-500 shadow-lg shadow-blue-500/20' : ''}
                                 ${showCorrect ? 'bg-green-900/30 border-green-500 shadow-lg shadow-green-500/20' : ''}
@@ -96,7 +96,7 @@ function QuestionModule({ question, answer, onContentIsEnded, onAttempt, onCorre
                             <div className='flex items-center justify-between'>
                                 <div className='flex items-center gap-4 flex-1'>
                                     {/* Letra de opción */}
-                                    <span className={`w-8 h-8 rounded-lg flex items-center justify-center font-bold text-sm flex-shrink-0 
+                                    <span className={`w-9 h-9 md:w-10 md:h-10 rounded-lg flex items-center justify-center font-bold text-sm md:text-base flex-shrink-0 
                                         ${showCorrect ? 'bg-green-500 text-white' : ''}   
                                         ${showIncorrect ? 'bg-red-500 text-white' : ''}  
                                         ${isSelected && !isSubmitted ? 'bg-blue-500 text-white' : ''}  
@@ -124,7 +124,7 @@ function QuestionModule({ question, answer, onContentIsEnded, onAttempt, onCorre
 
             {/* Feedback de respuesta */}
             {showFeedback && (
-                <div className={`mb-8 p-6 rounded-xl border-2 animate-fadeIn 
+                <div className={`mb-8 p-5 md:p-6 rounded-xl border-2 animate-fadeIn 
                     ${isCorrect ? 'bg-green-900/20 border-green-500/50' : 'bg-red-900/20 border-red-500/50'}`}
                 >
                     <div className='flex items-start gap-4'>
@@ -186,7 +186,7 @@ function QuestionModule({ question, answer, onContentIsEnded, onAttempt, onCorre
 
             {/* Indicador de progreso */}
             {!isSubmitted && !isCompleted && (
-                <p className='text-center text-sm text-zinc-500 mt-4 '>
+                <p className='text-center text-sm text-zinc-500 mt-4'>
                     {selectedAnswer !== null
                         ? 'Revisa tu respuesta y haz clic en "Enviar Respuesta"'
                         : 'Selecciona una opción para continuar'}

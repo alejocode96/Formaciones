@@ -1,9 +1,5 @@
-
 import React, { useRef, useEffect } from 'react';
-
-import { useNavigate, useParams } from 'react-router-dom';
 import { useLocation } from 'react-router-dom';
-import { User, IdCard, AlertCircle, CheckCircle, RefreshCw } from 'lucide-react';
 import { TrainingLogiTransContext } from '../../Context';
 
 function VideoModule({ src, resumen, onContentIsEnded }) {
@@ -120,39 +116,41 @@ function VideoModule({ src, resumen, onContentIsEnded }) {
     }
 
     return (
-        <div className='relative '  data-aos="fade-up" data-aos-delay={300} data-aos-duration="600">
-            <div className="flex flex-col lg:flex-row gap-2">
-                <div className='w-full lg:w-7/10  mb-4'>
+        <div className='w-full max-w-7xl mx-auto' data-aos="fade-up" data-aos-delay={300} data-aos-duration="600">
+            <div className="flex flex-col lg:flex-row gap-4">
+                {/* Video container */}
+                <div className='w-full lg:w-7/10'>
                     <video
                         ref={videoRef}
-                        className='w-full h-[40vh] md:h-[65vh] lg:h-[75vh] rounded-lg shadow-lg'
+                        className='w-full aspect-video rounded-lg shadow-lg'
                         controls
                         preload="metadata"
                         onTimeUpdate={handleTimeUpdate}
                         onSeeking={handleSeeking}
-                        onSeeked={handleSeeked}  // Agregar este evento
+                        onSeeked={handleSeeked}
                         onEnded={handleEnded}
                     >
                         <source src={src} type="video/mp4" />
                     </video>
-
                 </div>
-                <div className="w-full lg:w-3/10 h-auto md:h-[40vh] lg:h-[75vh] hidden lg:flex flex-col">
 
+                {/* Resumen panel - solo visible en desktop */}
+                <div className="w-full lg:w-3/10 hidden lg:flex flex-col max-h-[70vh]">
                     <div className='bg-gradient-to-r from-zinc-800/80 to-zinc-700/80 backdrop-blur-sm rounded-t-xl border border-zinc-600/30'>
                         <div className='flex overflow-x-auto scrollbar-hide'>
-                            <button className='flex items-center gap-2 px-4 py-3 rounded-t-xl text-sm font-medium transition-all whitespace-nowrap border-b-2 text-blue-400  border-blue-500  bg-zinc-700/50'>
+                            <button className='flex items-center gap-2 px-4 py-3 rounded-t-xl text-sm font-medium transition-all whitespace-nowrap border-b-2 text-blue-400 border-blue-500 bg-zinc-700/50'>
                                 Resumen
                             </button>
                         </div>
                     </div>
-                    <div className='bg-zinc-800/40 backdrop-blur-sm  rounded-b-xl border-x border-b border-zinc-600/30 flex-1 flex flex-col transition-all duration-300'>
-                        <div className='flex-1 overflow-y-auto p-4 custom-scrollbar'>
+                    
+                    <div className='bg-zinc-800/40 backdrop-blur-sm rounded-b-xl border-x border-b border-zinc-600/30 flex-1 overflow-hidden'>
+                        <div className='h-full overflow-y-auto p-4'>
                             <div className='space-y-4'>
                                 <div className='flex items-start gap-3'>
                                     <div>
                                         <h3 className='font-semibold text-zinc-100 mb-2'>Resumen del Módulo</h3>
-                                        <div className='text-zinc-300 text-sm leading-relaxed whitespace-pre-line'>
+                                        <div className='text-zinc-300 text-sm leading-relaxed space-y-2'>
                                             {resumen.map((text, index) => (
                                                 <p key={index}>{text}</p>
                                             ))}
@@ -162,14 +160,10 @@ function VideoModule({ src, resumen, onContentIsEnded }) {
                             </div>
                         </div>
                     </div>
-
                 </div>
-
-
             </div>
         </div>
     );
-
-
 }
+
 export default VideoModule;

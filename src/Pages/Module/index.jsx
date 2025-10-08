@@ -107,7 +107,7 @@ function ModulePage() {
     }
 
     return (
-        <div className="h-screen w-full bg-[#09090b] text-white flex flex-col overflow-y-hidden">
+        <div className="h-screen w-full bg-[#09090b] text-white flex flex-col overflow-hidden">
             {/* Navbar con sidebar integrado - altura fija */}
             <div className="flex-shrink-0">
                 <NavbarCurso
@@ -122,27 +122,29 @@ function ModulePage() {
             </div>
 
             {/* Contenido principal - ocupará el espacio restante con scroll */}
-            <main className="flex-1 min-h-0 overflow-y-auto px-4 md:px-8 py-12 md:py-4 pt-8 pb-8 ">
-                {/* Renderizar módulo según tipo */}
-                {currentModule.type === 'Video' && (
-                    <VideoModule
-                        key={currentModuleId}
-                        src={currentModule.path}
-                        resumen={currentModule.resumen}
-                        onContentIsEnded={handleContentFinished}
-                    />
-                )}
+            <main className="flex-1 min-h-0 overflow-y-auto">
+                <div className="px-4 md:px-8 py-6 md:py-8">
+                    {/* Renderizar módulo según tipo */}
+                    {currentModule.type === 'Video' && (
+                        <VideoModule
+                            key={currentModuleId}
+                            src={currentModule.path}
+                            resumen={currentModule.resumen}
+                            onContentIsEnded={handleContentFinished}
+                        />
+                    )}
 
-                {currentModule.type === 'Pregunta' && (
-                    <QuestionModule
-                        key={currentModuleId}
-                        question={currentModule.name}
-                        answer={currentModule.respuestas}
-                        onContentIsEnded={navigation.markContentFinished}
-                        onCorrectAnswer={handleCorrectAnswer}
-                        isCompleted={isModuleCompleted(currentModuleId)}
-                    />
-                )}
+                    {currentModule.type === 'Pregunta' && (
+                        <QuestionModule
+                            key={currentModuleId}
+                            question={currentModule.name}
+                            answer={currentModule.respuestas}
+                            onContentIsEnded={navigation.markContentFinished}
+                            onCorrectAnswer={handleCorrectAnswer}
+                            isCompleted={isModuleCompleted(currentModuleId)}
+                        />
+                    )}
+                </div>
             </main>
 
             {/* Barra inferior móvil - siempre fija en la parte inferior */}
