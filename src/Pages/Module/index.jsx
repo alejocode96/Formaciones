@@ -109,7 +109,7 @@ function ModulePage() {
     return (
         <div className="h-screen w-full bg-[#09090b] text-white flex flex-col">
             {/* Navbar con sidebar integrado - altura fija */}
-            <div className="flex-shrink-0">
+            <div className="">
                 <NavbarCurso
                     course={currentCourse}
                     currentModule={currentModule}
@@ -122,7 +122,7 @@ function ModulePage() {
             </div>
 
             {/* Contenido principal - ocupará el espacio restante con scroll */}
-            <main className="flex-1 min-h-0 overflow-y-auto pb-20 lg:pb-0">
+            <main className="flex-1 min-h-0 overflow-y-auto pt-8  pb-20 lg:pb-0">
                 <div className={`px-4 md:px-8 `}>                    
                     {currentModule.type === 'Video' && (
                         <VideoModule
