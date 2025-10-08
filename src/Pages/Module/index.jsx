@@ -78,7 +78,7 @@ function ModulePage() {
     }
 
     return (
-        <div className="h-screen w-full flex flex-col bg-[#09090b] text-white overflow-hidden">
+        <div className="h-screen w-full flex flex-col bg-[#09090b] text-white overflow-hidden min-h-0">
             {/* Navbar fijo arriba - flex-none mantiene su tamaño */}
             <div className="flex-shrink-0  z-50">
                 <NavbarCurso
@@ -94,9 +94,9 @@ function ModulePage() {
 
             {/* Main con scroll interno - flex-1 ocupa todo el espacio disponible */}
             {/* min-h-0 es CRÍTICO para que flexbox permita el scroll */}
-            <main className="flex-1 min-h-0 overflow-y-auto">
+            <main className="flex-1 min-h-0 overflow-y-auto ">
                 {/* Contenedor con centrado vertical y padding */}
-                <div className="flex flex-col justify-center  px-4 md:px-8">
+                <div className="flex flex-col justify-center items-center px-4 md:px-8">
                     <div className="w-full">
                         {currentModule.type === 'Video' && (
                             <VideoModule
