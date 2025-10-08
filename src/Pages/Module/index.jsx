@@ -147,7 +147,7 @@ function ModulePage() {
             </main>
 
             {/* Barra inferior móvil - siempre fija en la parte inferior */}
-            <div className="flex-shrink-0">
+            <div className="flex-shrink-0 sticky">
                 <MobileBottomBar
                     contentFinished={contentFinished}
                     hasNextModule={!!nextModule}

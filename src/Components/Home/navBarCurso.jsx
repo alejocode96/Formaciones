@@ -44,7 +44,7 @@ function NavbarCurso({
 
     return (
         <>
-            <header className="relative overflow-hidden px-2 md:px-6 pt-2 z-30">
+            <header className="sticky top-0 z-40   px-2 md:px-6 pt-2 pb-2">
                 <div className="relative mx-2 my-2 px-4 py-2 backdrop-blur-sm rounded-xl shadow-2xl bg-white/5 ring-1 ring-zinc-700">
                     <div className='w-full flex items-center justify-between'>
                         {/* Logo y texto */}
