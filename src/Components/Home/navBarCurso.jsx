@@ -44,16 +44,16 @@ function NavbarCurso({
 
     return (
         <>
-            <header className="px-2 md:px-6 py-1.5 ">
+            <header className="px-2 md:px-6 py-2 ">
                 <div className="relative mx-2 my-2 px-4 py-2 backdrop-blur-sm rounded-xl shadow-2xl bg-white/5 ring-1 ring-zinc-700">
                     <div className='w-full flex items-center justify-between'>
                         {/* Logo y texto */}
                         <div className='flex items-center space-x-3'>
-                            <div className='relative bg-gradient-to-br bg-white backdrop-blur-md h-9 w-9 md:h-12 md:w-12 rounded-xl flex items-center justify-center p-1.5 shadow-xl border border-white/20'>
+                            <div className='relative bg-gradient-to-br bg-white backdrop-blur-md h-10 w-10 md:h-12 md:w-12 rounded-xl flex items-center justify-center p-1.5 shadow-xl border border-white/20'>
                                 <img src={logo} alt="Logo" className='w-full h-full object-contain' />
                             </div>
-                            <div className='flex flex-col '>
-                                <span className='text-sm md:text-2xl font-black tracking-tight bg-gradient-to-r from-white via-blue-100 to-emerald-100 bg-clip-text text-transparent select-none'>
+                            <div className='flex flex-col'>
+                                <span className='text-md md:text-2xl font-black tracking-tight bg-gradient-to-r from-white via-blue-100 to-emerald-100 bg-clip-text text-transparent select-none'>
                                     {course.title}
                                 </span>
                                 <span className='text-xs text-slate-400 font-medium tracking-wider'>
