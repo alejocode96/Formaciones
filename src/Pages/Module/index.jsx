@@ -123,7 +123,7 @@ function ModulePage() {
 
             {/* Contenido principal - ocupará el espacio restante con scroll */}
             <main className="flex-1 min-h-0 overflow-y-auto">
-                <div className={`px-4 md:px-8 `}>                    {/* Renderizar módulo según tipo */}
+                <div className={`px-4 md:px-8 `}>                    
                     {currentModule.type === 'Video' && (
                         <VideoModule
                             key={currentModuleId}
