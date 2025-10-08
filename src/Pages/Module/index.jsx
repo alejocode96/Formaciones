@@ -1,7 +1,5 @@
 import React, { useEffect, useState, useContext } from 'react';
 import { TrainingLogiTransContext } from '../../Context';
-
-// Hooks personalizados
 import { useModuleProgress } from '../../Hooks/useModuleProgress';
 import { useModuleNavigation } from '../../Hooks/useModuleNavigation';
 
@@ -11,33 +9,26 @@ import MobileModal, { ResumenContent, ContenidoContent } from '../../Components/
 import VideoModule from '../../Components/Modules/videoModule';
 import QuestionModule from '../../Components/Modules/questionModule';
 
-/**
- * ModulePage - Componente principal simplificado
- * Ya no maneja lógica compleja, solo orquesta los componentes
- */
 function ModulePage() {
-    const {
-        getCourseById,
-        getUserProgressForCourse
-    } = useContext(TrainingLogiTransContext);
+    const { getCourseById, getUserProgressForCourse } = useContext(TrainingLogiTransContext);
 
-    // Hook de navegación - maneja toda la lógica de navegación
+    // Hook de navegación
     const navigation = useModuleNavigation();
     const { courseId, currentModuleId, contentFinished, goToNextModule, navigateToModule, completeCurrentModule } = navigation;
 
-    // Obtener curso y progreso
+    // Curso y progreso
     const currentCourse = getCourseById(courseId);
     const userProgress = getUserProgressForCourse(courseId);
 
-    // Hook de progreso - maneja toda la lógica de progreso
+    // Progreso del módulo
     const moduleProgress = useModuleProgress(currentCourse, userProgress, currentModuleId);
     const { currentModule, nextModule, isModuleCompleted } = moduleProgress;
 
-    // Estados para el modal móvil
+    // Modal móvil
     const [showModal, setShowModal] = useState(false);
     const [modalContent, setModalContent] = useState('');
 
-    // Detectar si el módulo actual ya está completado
+    // Detectar módulo completado
     useEffect(() => {
         if (isModuleCompleted(currentModuleId)) {
             navigation.markContentFinished();
@@ -46,54 +37,32 @@ function ModulePage() {
         }
     }, [currentModuleId, isModuleCompleted]);
 
-    // 🔹 Cerrar modal automáticamente cuando el ancho de pantalla es de escritorio
+    // Cerrar modal automáticamente en desktop
     useEffect(() => {
         const handleResize = () => {
-            if (window.innerWidth >= 1024) { // >= 1024px → pantallas grandes
-                setShowModal(false);
-            }
+            if (window.innerWidth >= 1024) setShowModal(false);
         };
-
-        // Ejecutar una vez al montar
         handleResize();
-
-        // Escuchar redimensionamientos
         window.addEventListener("resize", handleResize);
-
-        // Limpieza del listener
         return () => window.removeEventListener("resize", handleResize);
     }, []);
 
-    // Handlers para el modal móvil
     const handleShowModal = (type) => {
         setModalContent(type);
         setShowModal(true);
     };
-
-    const handleCloseModal = () => {
-        setShowModal(false);
-    };
-
-    // Handler para navegación entre módulos
+    const handleCloseModal = () => setShowModal(false);
     const handleModuleClick = (moduleId) => {
         navigateToModule(moduleId);
         handleCloseModal();
     };
-
-    // Handler para siguiente módulo
     const handleNextModule = () => {
-        if (nextModule) {
-            goToNextModule(nextModule.id);
-        }
+        if (nextModule) goToNextModule(nextModule.id);
     };
-
-    // Handler cuando el contenido termina
     const handleContentFinished = () => {
         navigation.markContentFinished();
         completeCurrentModule(1);
     };
-
-    // Handler para respuestas correctas en quiz
     const handleCorrectAnswer = (attempts) => {
         completeCurrentModule(attempts);
     };
@@ -107,9 +76,9 @@ function ModulePage() {
     }
 
     return (
-        <div className="h-screen w-full bg-[#09090b] text-white flex flex-col">
-            {/* Navbar con sidebar integrado - altura fija */}
-            <div className="">
+        <div className="h-screen w-full flex flex-col bg-[#09090b] text-white overflow-hidden">
+            {/* Navbar fijo arriba */}
+            <div className="flex-none z-50">
                 <NavbarCurso
                     course={currentCourse}
                     currentModule={currentModule}
@@ -121,9 +90,9 @@ function ModulePage() {
                 />
             </div>
 
-            {/* Contenido principal - ocupará el espacio restante con scroll */}
-            <main className="flex-1 min-h-0 overflow-y-auto pt-8  pb-20 lg:pb-0">
-                <div className={`px-4 md:px-8 `}>                    
+            {/* Main con scroll */}
+            <main className="flex-1 overflow-y-auto min-h-0 pt-8 pb-28 lg:pb-0">
+                <div className="px-4 md:px-8">
                     {currentModule.type === 'Video' && (
                         <VideoModule
                             key={currentModuleId}
@@ -132,7 +101,6 @@ function ModulePage() {
                             onContentIsEnded={handleContentFinished}
                         />
                     )}
-
                     {currentModule.type === 'Pregunta' && (
                         <QuestionModule
                             key={currentModuleId}
@@ -146,8 +114,8 @@ function ModulePage() {
                 </div>
             </main>
 
-            {/* Barra inferior móvil - siempre fija en la parte inferior */}
-            
+            {/* MobileBottomBar fijo abajo */}
+            <div className="flex-none lg:hidden">
                 <MobileBottomBar
                     contentFinished={contentFinished}
                     hasNextModule={!!nextModule}
@@ -155,9 +123,9 @@ function ModulePage() {
                     onShowContent={() => handleShowModal('contenido')}
                     onNextModule={handleNextModule}
                 />
-            
+            </div>
 
-            {/* Modal móvil - renderizar contenido según tipo */}
+            {/* Modal móvil */}
             <MobileModal
                 isOpen={showModal}
                 onClose={handleCloseModal}
@@ -166,7 +134,6 @@ function ModulePage() {
                 {modalContent === 'resumen' && currentModule.resumen && (
                     <ResumenContent resumen={currentModule.resumen} />
                 )}
-
                 {modalContent === 'contenido' && (
                     <ContenidoContent
                         course={currentCourse}
