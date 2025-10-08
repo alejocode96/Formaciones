@@ -92,7 +92,7 @@ function ModulePage() {
 
             {/* Main con scroll interno - flex-1 ocupa todo el espacio disponible */}
             {/* min-h-0 es CRÍTICO para que flexbox permita el scroll */}
-            <main className="flex-1 min-h-0 overflow-y-auto max-h-[77vh]">
+            <main className="flex-1 min-h-0 overflow-y-auto max-h-[70vh]">
                 {/* Contenedor con centrado vertical y padding */}
                 <div className="flex flex-col justify-center  px-4 md:px-8">
                     <div className="w-full">
