@@ -66,7 +66,7 @@ function QuestionModule({ question, answer, onContentIsEnded, onAttempt, onCorre
     const isCorrect = selectedAnswer === correctAnswerIndex;
 
     return (
-        <div className='max-w-5xl mx-auto pt-8' data-aos="fade-up" data-aos-delay={300} data-aos-duration="600">
+        <div className='max-w-5xl mx-auto pt-8 mb-16 lg:mb-4' data-aos="fade-up" data-aos-delay={300} data-aos-duration="600">
             {/* Pregunta */}
             <div className='mb-8'>
                 <p className='text-xl md:text-2xl text-zinc-100 leading-relaxed font-medium text-center'>
