@@ -117,9 +117,9 @@ function VideoModule({ src, resumen, onContentIsEnded }) {
 
     return (
         <div className='w-full  mx-auto' data-aos="fade-up" data-aos-delay={300} data-aos-duration="600">
-            <div className="flex flex-col lg:flex-row gap-4 lg:h-[70vh]">
+            <div className="flex flex-col lg:flex-row lg:gap-4 lg:h-[70vh] mb-14 lg:mb-0">
                 {/* Video container */}
-                <div className='w-full lg:w-7/10 lg:h-full'>
+                <div className='w-full lg:w-7/10 lg:h-full '>
                     <video
                         ref={videoRef}
                         className='w-full h-full rounded-lg shadow-lg object-cover'

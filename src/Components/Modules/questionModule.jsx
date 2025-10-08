@@ -66,7 +66,7 @@ function QuestionModule({ question, answer, onContentIsEnded, onAttempt, onCorre
     const isCorrect = selectedAnswer === correctAnswerIndex;
 
     return (
-        <div className='max-w-5xl mx-auto' data-aos="fade-up" data-aos-delay={300} data-aos-duration="600">
+        <div className='max-w-5xl mx-auto pt-8' data-aos="fade-up" data-aos-delay={300} data-aos-duration="600">
             {/* Pregunta */}
             <div className='mb-8'>
                 <p className='text-xl md:text-2xl text-zinc-100 leading-relaxed font-medium text-center'>
@@ -75,7 +75,7 @@ function QuestionModule({ question, answer, onContentIsEnded, onAttempt, onCorre
             </div>
 
             {/* Opciones de respuesta */}
-            <div className='space-y-4 mb-8'>
+            <div className='space-y-4 mb-6'>
                 {answer.map((option, index) => {
                     const isSelected = selectedAnswer === index;
                     const showCorrect = isSubmitted && isSelected && isCorrect;
@@ -124,7 +124,7 @@ function QuestionModule({ question, answer, onContentIsEnded, onAttempt, onCorre
 
             {/* Feedback de respuesta */}
             {showFeedback && (
-                <div className={`mb-8 p-5 md:p-6 rounded-xl border-2 animate-fadeIn 
+                <div className={`mb-6 p-5 md:p-6 rounded-xl border-2 animate-fadeIn 
                     ${isCorrect ? 'bg-green-900/20 border-green-500/50' : 'bg-red-900/20 border-red-500/50'}`}
                 >
                     <div className='flex items-start gap-4'>
