@@ -92,9 +92,9 @@ function ModulePage() {
 
             {/* Main con scroll interno - flex-1 ocupa todo el espacio disponible */}
             {/* min-h-0 es CRÍTICO para que flexbox permita el scroll */}
-            <main className="flex-1 min-h-0 overflow-y-auto">
+            <main className="flex-1  overflow-y-auto max-h-[550px]">
                 {/* Contenedor con centrado vertical y padding */}
-                <div className="px-4 md:px-8 py-4">
+                <div className="flex flex-col justify-center  px-4 md:px-8 py-6">
                     <div className="w-full">
                         {currentModule.type === 'Video' && (
                             <VideoModule
