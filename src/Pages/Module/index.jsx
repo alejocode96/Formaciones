@@ -78,7 +78,7 @@ function ModulePage() {
     }
 
     return (
-        <div className="h-screen w-full flex flex-col bg-[#09090b] text-white overflow-hidden min-h-0">
+        <div className=" fixed inset-0 w-full flex flex-col bg-[#09090b] text-white overflow-hidden min-h-0">
             {/* Navbar fijo arriba - flex-none mantiene su tamaño */}
             <div className="flex-shrink-0  z-50">
                 <NavbarCurso

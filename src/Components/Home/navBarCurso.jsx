@@ -56,7 +56,7 @@ function NavbarCurso({
                                 <span className='text-sm md:text-2xl font-black tracking-tight bg-gradient-to-r from-white via-blue-100 to-emerald-100 bg-clip-text text-transparent select-none'>
                                     {course.title}
                                 </span>
-                                <span className='text-xs text-slate-400 font-medium tracking-wider truncate  w-[75%] lg:w-[100%] '>
+                                <span className='text-xs text-slate-400 font-medium tracking-wider'>
                                     {currentModule.name}
                                 </span>
                             </div>
