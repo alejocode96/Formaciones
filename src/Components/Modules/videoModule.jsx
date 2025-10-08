@@ -117,12 +117,12 @@ function VideoModule({ src, resumen, onContentIsEnded }) {
 
     return (
         <div className='w-full max-w-7xl mx-auto' data-aos="fade-up" data-aos-delay={300} data-aos-duration="600">
-            <div className="flex flex-col lg:flex-row gap-4">
+            <div className="flex flex-col lg:flex-row gap-4 lg:h-[70vh]">
                 {/* Video container */}
-                <div className='w-full lg:w-7/10'>
+                <div className='w-full lg:w-7/10 lg:h-full'>
                     <video
                         ref={videoRef}
-                        className='w-full aspect-video rounded-lg shadow-lg'
+                        className='w-full h-full rounded-lg shadow-lg object-cover'
                         controls
                         preload="metadata"
                         onTimeUpdate={handleTimeUpdate}
@@ -135,7 +135,7 @@ function VideoModule({ src, resumen, onContentIsEnded }) {
                 </div>
 
                 {/* Resumen panel - solo visible en desktop */}
-                <div className="w-full lg:w-3/10 hidden lg:flex flex-col max-h-[70vh]">
+                <div className="w-full lg:w-3/10 hidden lg:flex flex-col lg:h-full">
                     <div className='bg-gradient-to-r from-zinc-800/80 to-zinc-700/80 backdrop-blur-sm rounded-t-xl border border-zinc-600/30'>
                         <div className='flex overflow-x-auto scrollbar-hide'>
                             <button className='flex items-center gap-2 px-4 py-3 rounded-t-xl text-sm font-medium transition-all whitespace-nowrap border-b-2 text-blue-400 border-blue-500 bg-zinc-700/50'>
