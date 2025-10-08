@@ -32,7 +32,7 @@ function TrainingLogiTransProvider({ children }) {
                         ], completed: false, type: "Pregunta", duration: "01:00",
                     },
                     { id: 3, lessons: "Fundamentos", name: "¿Qué es SARLAFT?", completed: false, type: "Video", path: queesSARLAFT, resumen: ["¿Qué es SARLAFT?", "es un sistema para prevenir y gestionar el riesgo de lavado de activos y financiación del terrorismo. Funciona como un filtro de seguridad: analiza clientes, operaciones y recursos para asegurar que todo sea legal y transparente. Va más allá de solo revisar listas sospechosas; es un mecanismo de prevención que protege a la empresa, sus empleados y su reputación.",], duration: "00:48", },
-                    { id: 4, lessons: "Fundamentos", name: "Etapas del SARLAFT", completed: false, type: "Video", duration: "01:26", },
+                    { id: 4, lessons: "Fundamentos", name: "Etapas del SARLAFT", completed: false, type: "flipCard", cards:[{id:1,name:'Identificación:',text:'Buscar dónde pueden estar los riesgos (clientes, proveedores, transacciones).'},], duration: "01:26", },
                     { id: 5, lessons: "Fundamentos", name: "Factores de Riesgo en el Transporte de Carga", completed: false, type: "Video", duration: "01:26", },
                     { id: 6, lessons: "Fundamentos", name: "Señales de Alerta", completed: false, type: "Video", duration: "01:26", },
                     { id: 7, lessons: "Fundamentos", name: "Casos Reales en Colombia", completed: false, type: "Video", duration: "01:26", },

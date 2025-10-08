@@ -107,7 +107,7 @@ function ModulePage() {
     }
 
     return (
-        <div className="h-screen w-full bg-[#09090b] text-white flex flex-col overflow-hidden">
+        <div className="h-screen w-full bg-[#09090b] text-white flex flex-col">
             {/* Navbar con sidebar integrado - altura fija */}
             <div className="flex-shrink-0">
                 <NavbarCurso
@@ -147,7 +147,7 @@ function ModulePage() {
             </main>
 
             {/* Barra inferior móvil - siempre fija en la parte inferior */}
-            <div className="flex-shrink-0 sticky">
+            
                 <MobileBottomBar
                     contentFinished={contentFinished}
                     hasNextModule={!!nextModule}
@@ -155,7 +155,7 @@ function ModulePage() {
                     onShowContent={() => handleShowModal('contenido')}
                     onNextModule={handleNextModule}
                 />
-            </div>
+            
 
             {/* Modal móvil - renderizar contenido según tipo */}
             <MobileModal
