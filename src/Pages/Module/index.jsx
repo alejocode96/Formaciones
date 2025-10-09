@@ -8,6 +8,7 @@ import MobileBottomBar from '../../Components/Modules/MobileBottomBar';
 import MobileModal, { ResumenContent, ContenidoContent } from '../../Components/Modules/MobileModal';
 import VideoModule from '../../Components/Modules/videoModule';
 import QuestionModule from '../../Components/Modules/questionModule';
+import FlipCard from '../../Components/Modules/FlipCard';
 
 function ModulePage() {
 
@@ -113,6 +114,13 @@ function ModulePage() {
                                 answer={currentModule.respuestas}
                                 onContentIsEnded={navigation.markContentFinished}
                                 onCorrectAnswer={handleCorrectAnswer}
+                                isCompleted={isModuleCompleted(currentModuleId)}
+                            />
+                        )}
+                        {currentModule.type === 'FlipCard' && (
+                            <FlipCard
+                                key={currentModuleId}
+                                cards={currentModule.cards}
                                 isCompleted={isModuleCompleted(currentModuleId)}
                             />
                         )}

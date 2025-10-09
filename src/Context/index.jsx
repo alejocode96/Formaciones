@@ -32,7 +32,188 @@ function TrainingLogiTransProvider({ children }) {
                         ], completed: false, type: "Pregunta", duration: "01:00",
                     },
                     { id: 3, lessons: "Fundamentos", name: "¿Qué es SARLAFT?", completed: false, type: "Video", path: queesSARLAFT, resumen: ["¿Qué es SARLAFT?", "es un sistema para prevenir y gestionar el riesgo de lavado de activos y financiación del terrorismo. Funciona como un filtro de seguridad: analiza clientes, operaciones y recursos para asegurar que todo sea legal y transparente. Va más allá de solo revisar listas sospechosas; es un mecanismo de prevención que protege a la empresa, sus empleados y su reputación.",], duration: "00:48", },
-                    { id: 4, lessons: "Fundamentos", name: "Etapas del SARLAFT", completed: false, type: "flipCard", cards:[{id:1,name:'Identificación:',text:'Buscar dónde pueden estar los riesgos (clientes, proveedores, transacciones).'},], duration: "01:26", },
+                    {
+                        id: 4, lessons: "Fundamentos", name: "Etapas del SARLAFT", completed: false, type: "FlipCard",
+                        cards: [
+                            {
+                                id: 1, titulo: "Identificación del Riesgo", icono: "🔍", color: "from-blue-500 to-blue-600",
+                                objetivo: "Reconocer y documentar las posibles fuentes de riesgo de lavado de activos, financiación del terrorismo y proliferación de armas de destrucción masiva en las operaciones del sector transporte.",
+                                audioObjetivo: "Objetivo: Reconocer y documentar las posibles fuentes de riesgo de lavado de activos, financiación del terrorismo y proliferación de armas de destrucción masiva en las operaciones del sector transporte.",
+                                secciones: [
+                                    {
+                                        id: 'quehace', titulo: '¿Qué se hace?',
+                                        icono: '',
+                                        contenido: [
+                                            {
+                                                subtitulo: 'Análisis de Actividades Vulnerables',
+                                                texto: 'Identificación de procesos susceptibles a riesgos, como la recepción de pagos en efectivo, transporte de mercancías sin documentación adecuada, o relaciones con clientes de alto riesgo.'
+                                            },
+                                            {
+                                                subtitulo: 'Clasificación de Factores de Riesgo',
+                                                texto: 'Segmentación de riesgos según tipo de cliente (por ejemplo, empresas de transporte internacional), ubicación geográfica (zonas de alto riesgo), y tipo de operación (transporte de productos sensibles).'
+                                            }
+                                        ],
+                                        audio: '¿Qué se hace? Análisis de Actividades Vulnerables: Identificación de procesos susceptibles a riesgos, como la recepción de pagos en efectivo, transporte de mercancías sin documentación adecuada, o relaciones con clientes de alto riesgo. Clasificación de Factores de Riesgo: Segmentación de riesgos según tipo de cliente, por ejemplo, empresas de transporte internacional, ubicación geográfica, zonas de alto riesgo, y tipo de operación, transporte de productos sensibles.'
+                                    },
+                                    {
+                                        id: 'como', titulo: '¿Cómo se hace?', icono: '',
+                                        contenido: [
+                                            {
+                                                subtitulo: 'Metodología de Identificación',
+                                                texto: 'Aplicación de cuestionarios de riesgo, entrevistas con personal clave, y revisión de documentos y registros operativos.'
+                                            },
+                                            {
+                                                subtitulo: 'Herramientas Utilizadas',
+                                                texto: 'Matrices de riesgo, listas de verificación, y software de gestión de riesgos.'
+                                            }
+                                        ],
+                                        audio: '¿Cómo se hace? Metodología de Identificación: Aplicación de cuestionarios de riesgo, entrevistas con personal clave, y revisión de documentos y registros operativos. Herramientas Utilizadas: Matrices de riesgo, listas de verificación, y software de gestión de riesgos.'
+                                    },
+                                    {
+                                        id: 'ejemplo', titulo: 'Ejemplo Práctico', icono: '',
+                                        contenido: [
+                                            {
+                                                texto: 'Una empresa de transporte terrestre que realiza envíos internacionales identifica que ciertos clientes en zonas de conflicto presentan un mayor riesgo de ser utilizados para actividades ilícitas. Se segmentan estos clientes como de alto riesgo y se implementan medidas de debida diligencia reforzada.'
+                                            }
+                                        ],
+                                        audio: 'Ejemplo Práctico: Una empresa de transporte terrestre que realiza envíos internacionales identifica que ciertos clientes en zonas de conflicto presentan un mayor riesgo de ser utilizados para actividades ilícitas. Se segmentan estos clientes como de alto riesgo y se implementan medidas de debida diligencia reforzada.'
+                                    }
+                                ]
+                            },
+                            {
+                                id: 2, titulo: "Medición o Evaluación", icono: "📊", color: "from-green-500 to-green-600",
+                                objetivo: "Determinar la probabilidad de ocurrencia y el impacto potencial de los riesgos identificados en las operaciones del sector transporte.",
+                                audioObjetivo: "Objetivo: Determinar la probabilidad de ocurrencia y el impacto potencial de los riesgos identificados en las operaciones del sector transporte.",
+                                secciones: [
+                                    {
+                                        id: 'quehace', titulo: '¿Qué se hace?', icono: '',
+                                        contenido: [
+                                            {
+                                                subtitulo: 'Evaluación de Riesgos',
+                                                texto: 'Asignación de puntuaciones a cada factor de riesgo según su probabilidad e impacto. Cálculo del riesgo inherente y residual.'
+                                            },
+                                            {
+                                                subtitulo: 'Revisión de Nuevas Operaciones',
+                                                texto: 'Evaluación de riesgos al ingresar a nuevos mercados o al ofrecer nuevos servicios de transporte.'
+                                            }
+                                        ],
+                                        audio: '¿Qué se hace? Evaluación de Riesgos: Asignación de puntuaciones a cada factor de riesgo según su probabilidad e impacto. Cálculo del riesgo inherente y residual. Revisión de Nuevas Operaciones: Evaluación de riesgos al ingresar a nuevos mercados o al ofrecer nuevos servicios de transporte.'
+                                    },
+                                    {
+                                        id: 'como', titulo: '¿Cómo se hace?', icono: '',
+                                        contenido: [
+                                            {
+                                                subtitulo: 'Metodología de Evaluación',
+                                                texto: 'Uso de escalas cualitativas y cuantitativas. Análisis de escenarios y simulaciones.'
+                                            },
+                                            {
+                                                subtitulo: 'Herramientas Utilizadas',
+                                                texto: 'Software de análisis de riesgos y modelos de puntuación de riesgos.'
+                                            }
+                                        ],
+                                        audio: '¿Cómo se hace? Metodología de Evaluación: Uso de escalas cualitativas y cuantitativas. Análisis de escenarios y simulaciones. Herramientas Utilizadas: Software de análisis de riesgos y modelos de puntuación de riesgos.'
+                                    },
+                                    {
+                                        id: 'ejemplo', titulo: 'Ejemplo Práctico', icono: '',
+                                        contenido: [
+                                            {
+                                                texto: 'Al evaluar una nueva ruta de transporte que atraviesa regiones con presencia de grupos armados ilegales, la empresa asigna un alto riesgo a esta operación y decide implementar medidas adicionales de seguridad y monitoreo.'
+                                            }
+                                        ],
+                                        audio: 'Ejemplo Práctico: Al evaluar una nueva ruta de transporte que atraviesa regiones con presencia de grupos armados ilegales, la empresa asigna un alto riesgo a esta operación y decide implementar medidas adicionales de seguridad y monitoreo.'
+                                    }
+                                ]
+                            },
+                            {
+                                id: 3, titulo: "Control del Riesgo", icono: "🛡️", color: "from-orange-500 to-orange-600",
+                                objetivo: "Implementar medidas razonables para mitigar los riesgos inherentes identificados en las operaciones del sector transporte.",
+                                audioObjetivo: "Objetivo: Implementar medidas razonables para mitigar los riesgos inherentes identificados en las operaciones del sector transporte.",
+                                secciones: [
+                                    {
+                                        id: 'quehace', titulo: '¿Qué se hace?', icono: '',
+                                        contenido: [
+                                            {
+                                                subtitulo: 'Diseño de Controles',
+                                                texto: 'Establecimiento de procedimientos para la validación de clientes y proveedores. Implementación de sistemas de monitoreo de transacciones.'
+                                            },
+                                            {
+                                                subtitulo: 'Aplicación de Controles',
+                                                texto: 'Capacitación del personal en la identificación de señales de alerta. Realización de auditorías internas periódicas.'
+                                            }
+                                        ],
+                                        audio: '¿Qué se hace? Diseño de Controles: Establecimiento de procedimientos para la validación de clientes y proveedores. Implementación de sistemas de monitoreo de transacciones. Aplicación de Controles: Capacitación del personal en la identificación de señales de alerta. Realización de auditorías internas periódicas.'
+                                    },
+                                    {
+                                        id: 'como', titulo: '¿Cómo se hace?', icono: '',
+                                        contenido: [
+                                            {
+                                                subtitulo: 'Metodología de Control',
+                                                texto: 'Desarrollo de políticas internas de cumplimiento. Integración de controles en los sistemas operativos.'
+                                            },
+                                            {
+                                                subtitulo: 'Herramientas Utilizadas',
+                                                texto: 'Sistemas de gestión de cumplimiento y plataformas de monitoreo de transacciones.'
+                                            }
+                                        ],
+                                        audio: '¿Cómo se hace? Metodología de Control: Desarrollo de políticas internas de cumplimiento. Integración de controles en los sistemas operativos. Herramientas Utilizadas: Sistemas de gestión de cumplimiento y plataformas de monitoreo de transacciones.'
+                                    },
+                                    {
+                                        id: 'ejemplo', titulo: 'Ejemplo Práctico', icono: '',
+                                        contenido: [
+                                            {
+                                                texto: 'Una empresa de transporte aéreo implementa un sistema de verificación de antecedentes de clientes y proveedores, y establece procedimientos para la revisión de documentos de carga, con el fin de detectar posibles operaciones sospechosas.'
+                                            }
+                                        ],
+                                        audio: 'Ejemplo Práctico: Una empresa de transporte aéreo implementa un sistema de verificación de antecedentes de clientes y proveedores, y establece procedimientos para la revisión de documentos de carga, con el fin de detectar posibles operaciones sospechosas.'
+                                    }
+                                ]
+                            },
+                            {
+                                id: 4,  titulo: "Monitoreo del Riesgo", icono: "👁️", color: "from-purple-500 to-purple-600",
+                                objetivo: "Vigilar y evaluar la efectividad de las medidas de control implementadas, asegurando la detección temprana de operaciones inusuales o sospechosas.",
+                                audioObjetivo: "Objetivo: Vigilar y evaluar la efectividad de las medidas de control implementadas, asegurando la detección temprana de operaciones inusuales o sospechosas.",
+                                secciones: [
+                                    {
+                                        id: 'quehace', titulo: '¿Qué se hace?', icono: '',
+                                        contenido: [
+                                            {
+                                                subtitulo: 'Seguimiento Continuo',
+                                                texto: 'Revisión periódica de transacciones y operaciones. Análisis de alertas generadas por sistemas de monitoreo.'
+                                            },
+                                            {
+                                                subtitulo: 'Evaluación de Eficacia',
+                                                texto: 'Auditorías internas y externas. Retroalimentación y mejora continua del sistema.'
+                                            }
+                                        ],
+                                        audio: '¿Qué se hace? Seguimiento Continuo: Revisión periódica de transacciones y operaciones. Análisis de alertas generadas por sistemas de monitoreo. Evaluación de Eficacia: Auditorías internas y externas. Retroalimentación y mejora continua del sistema.'
+                                    },
+                                    {
+                                        id: 'como', titulo: '¿Cómo se hace?', icono: '',
+                                        contenido: [
+                                            {
+                                                subtitulo: 'Metodología de Monitoreo',
+                                                texto: 'Establecimiento de indicadores clave de rendimiento (KPI). Implementación de auditorías programadas y no programadas.'
+                                            },
+                                            {
+                                                subtitulo: 'Herramientas Utilizadas',
+                                                texto: 'Software de monitoreo de cumplimiento y herramientas de análisis de datos.'
+                                            }
+                                        ],
+                                        audio: '¿Cómo se hace? Metodología de Monitoreo: Establecimiento de indicadores clave de rendimiento, KPI. Implementación de auditorías programadas y no programadas. Herramientas Utilizadas: Software de monitoreo de cumplimiento y herramientas de análisis de datos.'
+                                    },
+                                    {
+                                        id: 'ejemplo', titulo: 'Ejemplo Práctico', icono: '',
+                                        contenido: [
+                                            {
+                                                texto: 'Una empresa de transporte marítimo recibe una alerta por una transacción inusual relacionada con un cliente en una zona de alto riesgo. Se activa una investigación interna que confirma la existencia de una operación sospechosa, la cual es reportada a la Unidad de Información y Análisis Financiero (UIAF).'
+                                            }
+                                        ],
+                                        audio: 'Ejemplo Práctico: Una empresa de transporte marítimo recibe una alerta por una transacción inusual relacionada con un cliente en una zona de alto riesgo. Se activa una investigación interna que confirma la existencia de una operación sospechosa, la cual es reportada a la Unidad de Información y Análisis Financiero, UIAF.'
+                                    }
+                                ]
+                            }
+                        ], duration: "01:26",
+                    },
                     { id: 5, lessons: "Fundamentos", name: "Factores de Riesgo en el Transporte de Carga", completed: false, type: "Video", duration: "01:26", },
                     { id: 6, lessons: "Fundamentos", name: "Señales de Alerta", completed: false, type: "Video", duration: "01:26", },
                     { id: 7, lessons: "Fundamentos", name: "Casos Reales en Colombia", completed: false, type: "Video", duration: "01:26", },
