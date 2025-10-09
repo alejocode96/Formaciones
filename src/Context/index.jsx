@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 
 const TrainingLogiTransContext = React.createContext();
-
+import {  BookOpen, Lightbulb, Wrench } from 'lucide-react';
 //conetneidos
 import introSARLAFT from '../assets/introduccionSARLAFT.mp4';
 import queesSARLAFT from '../assets/queesSARLAFT.mp4';
@@ -36,13 +36,13 @@ function TrainingLogiTransProvider({ children }) {
                         id: 4, lessons: "Fundamentos", name: "Etapas del SARLAFT", completed: false, type: "FlipCard",
                         cards: [
                             {
-                                id: 1, titulo: "Identificación del Riesgo", icono: "🔍", color: "from-blue-500 to-blue-600",
+                                id: 1, numero: "Etapa 1", titulo: "Identificación del Riesgo", icono: "🔍", color: "from-blue-500 to-blue-600", colorSolido: "bg-blue-500",
                                 objetivo: "Reconocer y documentar las posibles fuentes de riesgo de lavado de activos, financiación del terrorismo y proliferación de armas de destrucción masiva en las operaciones del sector transporte.",
                                 audioObjetivo: "Objetivo: Reconocer y documentar las posibles fuentes de riesgo de lavado de activos, financiación del terrorismo y proliferación de armas de destrucción masiva en las operaciones del sector transporte.",
                                 secciones: [
                                     {
                                         id: 'quehace', titulo: '¿Qué se hace?',
-                                        icono: '',
+                                        icono: <BookOpen size={20} />,
                                         contenido: [
                                             {
                                                 subtitulo: 'Análisis de Actividades Vulnerables',
@@ -56,7 +56,7 @@ function TrainingLogiTransProvider({ children }) {
                                         audio: '¿Qué se hace? Análisis de Actividades Vulnerables: Identificación de procesos susceptibles a riesgos, como la recepción de pagos en efectivo, transporte de mercancías sin documentación adecuada, o relaciones con clientes de alto riesgo. Clasificación de Factores de Riesgo: Segmentación de riesgos según tipo de cliente, por ejemplo, empresas de transporte internacional, ubicación geográfica, zonas de alto riesgo, y tipo de operación, transporte de productos sensibles.'
                                     },
                                     {
-                                        id: 'como', titulo: '¿Cómo se hace?', icono: '',
+                                        id: 'como', titulo: '¿Cómo se hace?', icono: <Wrench size={20} />,
                                         contenido: [
                                             {
                                                 subtitulo: 'Metodología de Identificación',
@@ -70,7 +70,7 @@ function TrainingLogiTransProvider({ children }) {
                                         audio: '¿Cómo se hace? Metodología de Identificación: Aplicación de cuestionarios de riesgo, entrevistas con personal clave, y revisión de documentos y registros operativos. Herramientas Utilizadas: Matrices de riesgo, listas de verificación, y software de gestión de riesgos.'
                                     },
                                     {
-                                        id: 'ejemplo', titulo: 'Ejemplo Práctico', icono: '',
+                                        id: 'ejemplo', titulo: 'Ejemplo Práctico', icono: <Lightbulb size={20} />,
                                         contenido: [
                                             {
                                                 texto: 'Una empresa de transporte terrestre que realiza envíos internacionales identifica que ciertos clientes en zonas de conflicto presentan un mayor riesgo de ser utilizados para actividades ilícitas. Se segmentan estos clientes como de alto riesgo y se implementan medidas de debida diligencia reforzada.'
@@ -81,12 +81,12 @@ function TrainingLogiTransProvider({ children }) {
                                 ]
                             },
                             {
-                                id: 2, titulo: "Medición o Evaluación", icono: "📊", color: "from-green-500 to-green-600",
+                                id: 2, numero: "Etapa 2", titulo: "Medición o Evaluación", icono: "📊", color: "from-green-500 to-green-600",   colorSolido: "bg-green-500",
                                 objetivo: "Determinar la probabilidad de ocurrencia y el impacto potencial de los riesgos identificados en las operaciones del sector transporte.",
                                 audioObjetivo: "Objetivo: Determinar la probabilidad de ocurrencia y el impacto potencial de los riesgos identificados en las operaciones del sector transporte.",
                                 secciones: [
                                     {
-                                        id: 'quehace', titulo: '¿Qué se hace?', icono: '',
+                                        id: 'quehace', titulo: '¿Qué se hace?', icono: <BookOpen size={20} />,
                                         contenido: [
                                             {
                                                 subtitulo: 'Evaluación de Riesgos',
@@ -100,7 +100,7 @@ function TrainingLogiTransProvider({ children }) {
                                         audio: '¿Qué se hace? Evaluación de Riesgos: Asignación de puntuaciones a cada factor de riesgo según su probabilidad e impacto. Cálculo del riesgo inherente y residual. Revisión de Nuevas Operaciones: Evaluación de riesgos al ingresar a nuevos mercados o al ofrecer nuevos servicios de transporte.'
                                     },
                                     {
-                                        id: 'como', titulo: '¿Cómo se hace?', icono: '',
+                                        id: 'como', titulo: '¿Cómo se hace?', icono: <Wrench size={20} />,
                                         contenido: [
                                             {
                                                 subtitulo: 'Metodología de Evaluación',
@@ -114,7 +114,7 @@ function TrainingLogiTransProvider({ children }) {
                                         audio: '¿Cómo se hace? Metodología de Evaluación: Uso de escalas cualitativas y cuantitativas. Análisis de escenarios y simulaciones. Herramientas Utilizadas: Software de análisis de riesgos y modelos de puntuación de riesgos.'
                                     },
                                     {
-                                        id: 'ejemplo', titulo: 'Ejemplo Práctico', icono: '',
+                                        id: 'ejemplo', titulo: 'Ejemplo Práctico', icono: <Lightbulb size={20} />,
                                         contenido: [
                                             {
                                                 texto: 'Al evaluar una nueva ruta de transporte que atraviesa regiones con presencia de grupos armados ilegales, la empresa asigna un alto riesgo a esta operación y decide implementar medidas adicionales de seguridad y monitoreo.'
@@ -125,12 +125,12 @@ function TrainingLogiTransProvider({ children }) {
                                 ]
                             },
                             {
-                                id: 3, titulo: "Control del Riesgo", icono: "🛡️", color: "from-orange-500 to-orange-600",
+                                id: 3,numero: "Etapa 3", titulo: "Control del Riesgo", icono: "🛡️", color: "from-orange-500 to-orange-600",   colorSolido: "bg-orange-500",
                                 objetivo: "Implementar medidas razonables para mitigar los riesgos inherentes identificados en las operaciones del sector transporte.",
                                 audioObjetivo: "Objetivo: Implementar medidas razonables para mitigar los riesgos inherentes identificados en las operaciones del sector transporte.",
                                 secciones: [
                                     {
-                                        id: 'quehace', titulo: '¿Qué se hace?', icono: '',
+                                        id: 'quehace', titulo: '¿Qué se hace?', icono: <BookOpen size={20} />,
                                         contenido: [
                                             {
                                                 subtitulo: 'Diseño de Controles',
@@ -144,7 +144,7 @@ function TrainingLogiTransProvider({ children }) {
                                         audio: '¿Qué se hace? Diseño de Controles: Establecimiento de procedimientos para la validación de clientes y proveedores. Implementación de sistemas de monitoreo de transacciones. Aplicación de Controles: Capacitación del personal en la identificación de señales de alerta. Realización de auditorías internas periódicas.'
                                     },
                                     {
-                                        id: 'como', titulo: '¿Cómo se hace?', icono: '',
+                                        id: 'como', titulo: '¿Cómo se hace?', icono: <Wrench size={20} />,
                                         contenido: [
                                             {
                                                 subtitulo: 'Metodología de Control',
@@ -158,7 +158,7 @@ function TrainingLogiTransProvider({ children }) {
                                         audio: '¿Cómo se hace? Metodología de Control: Desarrollo de políticas internas de cumplimiento. Integración de controles en los sistemas operativos. Herramientas Utilizadas: Sistemas de gestión de cumplimiento y plataformas de monitoreo de transacciones.'
                                     },
                                     {
-                                        id: 'ejemplo', titulo: 'Ejemplo Práctico', icono: '',
+                                        id: 'ejemplo', titulo: 'Ejemplo Práctico', icono: <Lightbulb size={20} />,
                                         contenido: [
                                             {
                                                 texto: 'Una empresa de transporte aéreo implementa un sistema de verificación de antecedentes de clientes y proveedores, y establece procedimientos para la revisión de documentos de carga, con el fin de detectar posibles operaciones sospechosas.'
@@ -169,12 +169,12 @@ function TrainingLogiTransProvider({ children }) {
                                 ]
                             },
                             {
-                                id: 4,  titulo: "Monitoreo del Riesgo", icono: "👁️", color: "from-purple-500 to-purple-600",
+                                id: 4,  numero: "Etapa 4", titulo: "Monitoreo del Riesgo", icono: "👁️", color: "from-purple-500 to-purple-600",  colorSolido: "bg-purple-500",
                                 objetivo: "Vigilar y evaluar la efectividad de las medidas de control implementadas, asegurando la detección temprana de operaciones inusuales o sospechosas.",
                                 audioObjetivo: "Objetivo: Vigilar y evaluar la efectividad de las medidas de control implementadas, asegurando la detección temprana de operaciones inusuales o sospechosas.",
                                 secciones: [
                                     {
-                                        id: 'quehace', titulo: '¿Qué se hace?', icono: '',
+                                        id: 'quehace', titulo: '¿Qué se hace?', icono: <BookOpen size={20} />,
                                         contenido: [
                                             {
                                                 subtitulo: 'Seguimiento Continuo',
@@ -188,7 +188,7 @@ function TrainingLogiTransProvider({ children }) {
                                         audio: '¿Qué se hace? Seguimiento Continuo: Revisión periódica de transacciones y operaciones. Análisis de alertas generadas por sistemas de monitoreo. Evaluación de Eficacia: Auditorías internas y externas. Retroalimentación y mejora continua del sistema.'
                                     },
                                     {
-                                        id: 'como', titulo: '¿Cómo se hace?', icono: '',
+                                        id: 'como', titulo: '¿Cómo se hace?', icono: <Wrench size={20} />,
                                         contenido: [
                                             {
                                                 subtitulo: 'Metodología de Monitoreo',
@@ -202,7 +202,7 @@ function TrainingLogiTransProvider({ children }) {
                                         audio: '¿Cómo se hace? Metodología de Monitoreo: Establecimiento de indicadores clave de rendimiento, KPI. Implementación de auditorías programadas y no programadas. Herramientas Utilizadas: Software de monitoreo de cumplimiento y herramientas de análisis de datos.'
                                     },
                                     {
-                                        id: 'ejemplo', titulo: 'Ejemplo Práctico', icono: '',
+                                        id: 'ejemplo', titulo: 'Ejemplo Práctico', icono: <Lightbulb size={20} />,
                                         contenido: [
                                             {
                                                 texto: 'Una empresa de transporte marítimo recibe una alerta por una transacción inusual relacionada con un cliente en una zona de alto riesgo. Se activa una investigación interna que confirma la existencia de una operación sospechosa, la cual es reportada a la Unidad de Información y Análisis Financiero (UIAF).'

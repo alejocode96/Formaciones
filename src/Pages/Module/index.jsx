@@ -13,7 +13,7 @@ import FlipCard from '../../Components/Modules/FlipCard';
 function ModulePage() {
 
     
-    const { getCourseById, getUserProgressForCourse } = useContext(TrainingLogiTransContext);
+    const { getCourseById, getUserProgressForCourse,setShowContentSidebar } = useContext(TrainingLogiTransContext);
 
     // Hook de navegación
     const navigation = useModuleNavigation();
@@ -57,7 +57,9 @@ function ModulePage() {
     const handleCloseModal = () => setShowModal(false);
     const handleModuleClick = (moduleId) => {
         navigateToModule(moduleId);
+        setShowContentSidebar(false);
         handleCloseModal();
+        
     };
     const handleNextModule = () => {
         if (nextModule) goToNextModule(nextModule.id);
@@ -121,7 +123,7 @@ function ModulePage() {
                             <FlipCard
                                 key={currentModuleId}
                                 cards={currentModule.cards}
-                                isCompleted={isModuleCompleted(currentModuleId)}
+                                 onContentIsEnded={handleContentFinished}
                             />
                         )}
                     </div>
