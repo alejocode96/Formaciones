@@ -7,7 +7,7 @@ import { Volume2, VolumeX, ChevronRight, ChevronLeft, BookOpen, Target, Lightbul
 
 function FlipCard({ cards, onContentIsEnded }) {
 
-    const { } = React.useContext(TrainingLogiTransContext);
+    const { completeFlipCardSection,isFlipCardSectionCompleted } = React.useContext(TrainingLogiTransContext);
     // Control de progreso
     const [etapaActiva, setEtapaActiva] = useState(1);
     const [etapasCompletadas, setEtapasCompletadas] = useState([]);
@@ -324,7 +324,7 @@ function FlipCard({ cards, onContentIsEnded }) {
             {etapaAbierta && etapaActualData && (
                 <ModalFlipCard etapaActualData={etapaActualData} onClose={cerrarModal}>
                     {/* Contenido del Modal */}
-                    <div className="p-8 space-y-2">
+                    <div className="p-2 md:p-4 space-y-2">
                         {seccionActiva === 'objetivo' && (
                             <div className="space-y-2 animate-fadeIn">
                                 <div className="flex items-center gap-2 text-zinc-200 mb-1">

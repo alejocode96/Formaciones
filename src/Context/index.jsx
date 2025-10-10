@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 
 const TrainingLogiTransContext = React.createContext();
-import {  BookOpen, Lightbulb, Wrench } from 'lucide-react';
+import { BookOpen, Lightbulb, Wrench } from 'lucide-react';
 //conetneidos
 import introSARLAFT from '../assets/introduccionSARLAFT.mp4';
 import queesSARLAFT from '../assets/queesSARLAFT.mp4';
@@ -81,7 +81,7 @@ function TrainingLogiTransProvider({ children }) {
                                 ]
                             },
                             {
-                                id: 2, numero: "Etapa 2", titulo: "Medición o Evaluación", icono: "📊", color: "from-green-500 to-green-600",   colorSolido: "bg-green-500",
+                                id: 2, numero: "Etapa 2", titulo: "Medición o Evaluación", icono: "📊", color: "from-green-500 to-green-600", colorSolido: "bg-green-500",
                                 objetivo: "Determinar la probabilidad de ocurrencia y el impacto potencial de los riesgos identificados, con el fin de establecer prioridades y enfocar los esfuerzos en aquellos que puedan generar mayores consecuencias en las operaciones del sector transporte.",
                                 audioObjetivo: "Medición o evaluación   En esta etapa se determina qué tan probable es que ocurra cada riesgo y cuál sería su impacto en las operaciones del sector transporte. Este análisis permite establecer prioridades y enfocar los esfuerzos en los riesgos que puedan generar mayores consecuencias para la organización.",
                                 secciones: [
@@ -125,7 +125,7 @@ function TrainingLogiTransProvider({ children }) {
                                 ]
                             },
                             {
-                                id: 3,numero: "Etapa 3", titulo: "Control del Riesgo", icono: "🛡️", color: "from-orange-500 to-orange-600",   colorSolido: "bg-orange-500",
+                                id: 3, numero: "Etapa 3", titulo: "Control del Riesgo", icono: "🛡️", color: "from-orange-500 to-orange-600", colorSolido: "bg-orange-500",
                                 objetivo: "Implementar medidas razonables y proporcionales que permitan mitigar los riesgos inherentes identificados en las operaciones del sector transporte, con el fin de reducir su probabilidad e impacto y garantizar el desarrollo seguro y controlado de las actividades empresariales.",
                                 audioObjetivo: "Control del riesgo: En esta etapa se implementan medidas razonables y proporcionales para mitigar los riesgos inherentes que han sido identificados en las operaciones del sector transporte. Estas acciones buscan reducir la probabilidad de ocurrencia y minimizar el impacto de los riesgos, garantizando que las actividades de la empresa se desarrollen de manera segura, controlada y conforme a la normativa vigente.",
                                 secciones: [
@@ -169,7 +169,7 @@ function TrainingLogiTransProvider({ children }) {
                                 ]
                             },
                             {
-                                id: 4,  numero: "Etapa 4", titulo: "Monitoreo del Riesgo", icono: "👁️", color: "from-purple-500 to-purple-600",  colorSolido: "bg-purple-500",
+                                id: 4, numero: "Etapa 4", titulo: "Monitoreo del Riesgo", icono: "👁️", color: "from-purple-500 to-purple-600", colorSolido: "bg-purple-500",
                                 objetivo: "Monitorear y evaluar de manera continua la efectividad de las medidas de control implementadas, garantizando la detección temprana de operaciones inusuales o sospechosas y la adopción oportuna de acciones correctivas que fortalezcan la gestión del riesgo en el sector transporte.",
                                 audioObjetivo: "Monitoreo del riesgo: En esta etapa se realiza una vigilancia constante de las medidas de control implementadas, con el fin de evaluar su efectividad y detectar a tiempo operaciones inusuales o sospechosas. Este seguimiento permite ajustar los controles cuando sea necesario, mejorar los procesos y fortalecer la gestión del riesgo dentro de las operaciones del transporte.",
                                 secciones: [
@@ -409,11 +409,57 @@ function TrainingLogiTransProvider({ children }) {
         return () => window.removeEventListener('resize', handleResize);
     }, []);
 
+
+    // Dentro de TrainingLogiTransProvider
+
+    // Función para marcar una sección de FlipCard como completada
+    const completeFlipCardSection = (courseId, moduleId, etapaId, seccionId) => {
+        const courseIdNum = parseInt(courseId);
+        const moduleIdNum = parseInt(moduleId);
+        const etapaIdNum = parseInt(etapaId);
+
+        const currentProgress = userProgress[courseIdNum] || {
+            completedModules: [],
+            flipCardProgress: {},
+        };
+
+        const flipCardProgress = currentProgress.flipCardProgress || {};
+
+        // Guardamos el progreso por etapa y sección
+        const etapaProgress = flipCardProgress[etapaIdNum] || {};
+        etapaProgress[seccionId] = true; // true = completado
+
+        flipCardProgress[etapaIdNum] = etapaProgress;
+
+        const updatedProgress = {
+            ...currentProgress,
+            flipCardProgress
+        };
+
+        const newProgress = {
+            ...userProgress,
+            [courseIdNum]: updatedProgress
+        };
+
+        setUserProgress(newProgress);
+        localStorage.setItem("userProgress", JSON.stringify(newProgress));
+    };
+
+    // Función para verificar si una sección de FlipCard ya se completó
+    const isFlipCardSectionCompleted = (courseId, etapaId, seccionId) => {
+        const courseIdNum = parseInt(courseId);
+        const etapaIdNum = parseInt(etapaId);
+
+        return userProgress[courseIdNum]?.flipCardProgress?.[etapaIdNum]?.[seccionId] || false;
+    };
+
+
     return (
         <TrainingLogiTransContext.Provider value={{
             getTrainingsWithProgress,
             getCourseById, hasUserProgress, getUserProgressForCourse, createCourseProgress, resetCourseProgress, completeModule,
-            showContentSidebar, setShowContentSidebar
+            showContentSidebar, setShowContentSidebar,
+            completeFlipCardSection,isFlipCardSectionCompleted
         }}>
             {children}
         </TrainingLogiTransContext.Provider>
