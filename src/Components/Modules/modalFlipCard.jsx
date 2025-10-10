@@ -12,12 +12,12 @@ const ModalFlipCard = ({ etapaActualData, children, onClose }) => {
         <div onClick={onClose}  className='fixed inset-0 min-h-screen bg-zinc-950/80 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fadeIn'>
             <div onClick={(e) => e.stopPropagation()} className='bg-zinc-900 rounded-2xl w-full max-w-6xl max-h-[95vh] min-h-[85vh] overflow-hidden border border-zinc-700 shadow-2xl animate-scaleIn flex flex-col'>
                 {/* Header */}
-                <div className={`bg-gradient-to-r ${etapaActualData.color} p-4 flex items-center justify-between`}>
+                <div className={`bg-gradient-to-r ${etapaActualData.color} p-3 flex items-center justify-between`}>
                     <div className='flex items-center gap-4'>
-                        <div className="text-5xl">{etapaActualData.icono}</div>
+                        <div className="text-2xl md:text-5xl">{etapaActualData.icono}</div>
                         <div>
-                            <div className='text-sm text-white opacity-90'>{etapaActualData.numero}</div>
-                            <h2 className='text-xl md:text-3xl font-bold text-white'>{etapaActualData.titulo}</h2>
+                            <div className='text-xs md:text-md text-white opacity-90'>{etapaActualData.numero}</div>
+                            <h2 className='text-md md:text-3xl font-bold text-white'>{etapaActualData.titulo}</h2>
                         </div>
                     </div>
                     <button onClick={onClose} className="text-white hover:bg-white hover:bg-opacity-20 p-2 rounded-lg transition-colors" >
@@ -26,7 +26,7 @@ const ModalFlipCard = ({ etapaActualData, children, onClose }) => {
                 </div>
 
                 {/* Contenido Scrollable */}
-                <div className="flex-1 overflow-y-auto p-8">
+                <div className="flex-1 overflow-y-auto">
                     {cuerpo}
                 </div>
 

@@ -225,12 +225,19 @@ function FlipCard({ cards, onContentIsEnded }) {
         if (todasVistas && !etapasCompletadas.includes(etapaId)) {
             setEtapasCompletadas(prev => [...prev, etapaId]);
 
-            // NUEVO: Desbloquea la siguiente etapa
+            // Desbloquea la siguiente etapa
             if (etapaId < cards.length) {
                 setEtapaActiva(etapaId + 1);
             }
+
+            // ✅ Si es la última etapa y se completó todo el contenido
+            if (etapaId === cards.length) {
+                console.log("🎉 Todo el contenido ha sido completado");
+                if (onContentIsEnded) onContentIsEnded();
+            }
         }
     };
+
 
     const siguienteSeccion = () => {
         if (!etapaAbierta) return;
@@ -272,7 +279,13 @@ function FlipCard({ cards, onContentIsEnded }) {
                     const estaCompletada = etapasCompletadas.includes(etapa.id);
 
                     return (
-                        <button key={etapa.id} onClick={() => !estaBloqueada && abrirEtapa(etapa.id)} disabled={estaBloqueada} className={`relative p-6 rounded-2xl border-2 transition-all duration-300 ${estaBloqueada ? 'bg-slate-800 border-slate-700 opacity-50 cursor-not-allowed' : `bg-gradient-to-br ${etapa.color} border-transparent hover:scale-105 hover:shadow-2xl cursor-pointer`}`}>
+                        <button
+                            key={etapa.id}
+                            onClick={() => !estaBloqueada && abrirEtapa(etapa.id)}
+                            disabled={estaBloqueada}
+                            className={`relative flex flex-col items-center justify-center p-6 rounded-2xl border-2 transition-all duration-300
+    ${estaBloqueada ? 'bg-slate-800 border-slate-700 opacity-50 cursor-not-allowed' : `bg-gradient-to-br ${etapa.color} border-transparent hover:scale-105 hover:shadow-2xl cursor-pointer`}`}
+                        >
                             {estaBloqueada && (
                                 <Lock size={24} className="absolute top-3 right-3 text-slate-500" />
                             )}
@@ -281,27 +294,28 @@ function FlipCard({ cards, onContentIsEnded }) {
                             )}
 
                             <div className="text-5xl mb-3">{etapa.icono}</div>
-                            <div className="text-white text-center">
+
+                            <div className="text-white text-center flex flex-col items-center">
                                 <div className="text-xs opacity-75 mb-1">{etapa.numero}</div>
                                 <div className="font-bold text-lg">{etapa.titulo}</div>
 
                                 {estaBloqueada ? (
-                                    <div className="text-xs opacity-90  text-center">
+                                    <div className="text-xs opacity-90 text-center mt-2">
                                         <p>Completa la etapa anterior</p>
                                     </div>
                                 ) : estaCompletada ? (
-                                    <div className="text-sm text-green-300 text-center flex items-center gap-2">
-                                        <CheckCircle size={20} />
+                                    <div className="text-sm text-zinc-300 text-center flex items-center gap-2 mt-2">
                                         <span>Etapa completada - Click para revisar</span>
                                     </div>
                                 ) : (
-                                    <div className="mt-4 flex text-center justify-center gap-2 text-sm opacity-75 animate-bounce">
+                                    <div className="mt-4 flex justify-center items-center gap-2 text-sm opacity-75 animate-bounce">
                                         <span>Click para comenzar</span>
                                         <ChevronRight size={20} />
                                     </div>
                                 )}
                             </div>
                         </button>
+
                     );
                 })}
             </div>
@@ -310,11 +324,11 @@ function FlipCard({ cards, onContentIsEnded }) {
             {etapaAbierta && etapaActualData && (
                 <ModalFlipCard etapaActualData={etapaActualData} onClose={cerrarModal}>
                     {/* Contenido del Modal */}
-                    <div className="p-8 space-y-4">
+                    <div className="p-8 space-y-2">
                         {seccionActiva === 'objetivo' && (
-                            <div className="space-y-4 animate-fadeIn">
+                            <div className="space-y-2 animate-fadeIn">
                                 <div className="flex items-center gap-2 text-zinc-200 mb-1">
-                                    <h3 className="text-xl md:text-2xl font-bold">Objetivo</h3>
+                                    <h3 className="text-md md:text-2xl font-bold">Objetivo</h3>
                                 </div>
                                 <p className="text-slate-300 leading-relaxed text-sm md:text-lg">
                                     {etapaActualData.objetivo}
@@ -323,25 +337,25 @@ function FlipCard({ cards, onContentIsEnded }) {
                         )}
 
                         {seccionActiva && seccionActiva !== 'objetivo' && (
-                            <div className="space-y-4 animate-fadeIn">
+                            <div className="space-y-3 animate-fadeIn">
                                 {(() => {
                                     const seccionData = etapaActualData.secciones.find(s => s.id === seccionActiva);
                                     return (
                                         <>
                                             <div className="flex items-center gap-2 text-zinc-300 mb-4">
                                                 {seccionData.icono}
-                                                <h3 className="text-2xl font-bold">{seccionData.titulo}</h3>
+                                                <h3 className="text-lg md:text-2xl font-bold">{seccionData.titulo}</h3>
                                             </div>
 
                                             {seccionData.contenido.map((item, idx) => (
                                                 <div key={idx} className="bg-zinc-800 rounded-lg p-5 border border-zinc-700">
                                                     {item.subtitulo && (
-                                                        <h4 className="text-white font-semibold mb-3 flex items-center gap-2 text-lg">
+                                                        <h4 className="text-white font-semibold mb-3 flex items-center gap-2 text-sm md:text-lg">
                                                             <span className="text-zinc-300">•</span>
                                                             {item.subtitulo}
                                                         </h4>
                                                     )}
-                                                    <p className="text-slate-300 leading-relaxed">
+                                                    <p className="text-slate-300 leading-relaxed text-sm md:text-lg">
                                                         {item.texto}
                                                     </p>
                                                 </div>
@@ -365,7 +379,7 @@ function FlipCard({ cards, onContentIsEnded }) {
                                     }`}
                             >
                                 <ChevronLeft size={20} />
-                                <span>Anterior</span>
+                                <span className='hidden md:block'>Anterior</span>
                             </button>
 
                             <div className="flex gap-2 flex-wrap justify-center">
@@ -425,7 +439,7 @@ function FlipCard({ cards, onContentIsEnded }) {
                                     : 'bg-slate-700 text-white hover:bg-slate-600'
                                     }`}
                             >
-                                <span>Siguiente</span>
+                                <span className='hidden md:block'>Siguiente</span>
                                 <ChevronRight size={20} />
                             </button>
                         </div>
