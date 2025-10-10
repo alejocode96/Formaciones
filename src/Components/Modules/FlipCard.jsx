@@ -354,6 +354,21 @@ function FlipCard({ cards, onContentIsEnded, courseId, moduleId }) {
         window.speechSynthesis.cancel(); // por si había otro audio
         window.speechSynthesis.speak(utterance);
     }, [mejorVoz, audioIntroReproducido]);
+    useEffect(() => {
+        const handleUserInteraction = () => {
+            window.speechSynthesis.resume(); // Desbloquea en iOS/Android
+            window.removeEventListener('touchstart', handleUserInteraction);
+            window.removeEventListener('click', handleUserInteraction);
+        };
+
+        window.addEventListener('touchstart', handleUserInteraction);
+        window.addEventListener('click', handleUserInteraction);
+
+        return () => {
+            window.removeEventListener('touchstart', handleUserInteraction);
+            window.removeEventListener('click', handleUserInteraction);
+        };
+    }, []);
 
     return (
         <div className='w-full mx-auto pt-10 pb-14 lg:pb-0' data-aos="fade-up" data-aos-delay={300} data-aos-duration="600">
