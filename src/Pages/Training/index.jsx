@@ -102,7 +102,7 @@ function Training() {
 
     //boton para cambiar data
     const handleConfirmChangeData = () => {
-        console.log(existingUserData)
+      
         if (validateForm()) {
             const userData = {
                 nombre: nombre.trim(),
@@ -110,7 +110,7 @@ function Training() {
             };
 
             if (resetCourseProgress(courseId, userData)) {
-                console.log(existingUserData)
+              
                 navigate(`/training/${courseId}/module/1`);
             }
         }

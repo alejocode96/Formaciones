@@ -20,7 +20,7 @@ function VideoModule({ src, resumen, onContentIsEnded }) {
                     await video.play();
                 } catch (error) {
                     // Si falla la reproducción automática (políticas del navegador)
-                    console.log('Auto-play bloqueado por el navegador:', error);
+                    
                 }
             }, 2000); // 2000ms = 2 segundos
 
@@ -91,7 +91,7 @@ function VideoModule({ src, resumen, onContentIsEnded }) {
         if (video) {
             // Si intenta ir más adelante de lo permitido
             if (video.currentTime > lastTimeRef.current + 0.1) {
-                console.log('Intento de adelantar bloqueado');
+                
                 video.currentTime = lastTimeRef.current;
             }
         }
