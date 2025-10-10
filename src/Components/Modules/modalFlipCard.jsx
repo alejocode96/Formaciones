@@ -25,7 +25,7 @@ const ModalFlipCard = ({ etapaActualData, children, onClose }) => {
                             <h2 className='text-md md:text-3xl font-bold text-white'>{etapaActualData.titulo}</h2>
                         </div>
                     </div>
-                    <button onClick={onClose} className="text-white hover:bg-white hover:bg-opacity-20 p-2 rounded-lg transition-colors" >
+                    <button onClick={onClose} className="text-white hover:bg-white hover:text-red-600   hover:bg-opacity-20 p-2 rounded-lg transition-colors" >
                         <X size={28} />
                     </button>
                 </div>

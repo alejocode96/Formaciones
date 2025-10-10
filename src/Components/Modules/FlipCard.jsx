@@ -5,9 +5,13 @@ import { TrainingLogiTransContext } from '../../Context';
 import ModalFlipCard from './modalFlipCard';
 import { Volume2, VolumeX, ChevronRight, ChevronLeft, BookOpen, Target, Lightbulb, Wrench, Lock, CheckCircle, X } from 'lucide-react';
 
-function FlipCard({ cards, onContentIsEnded }) {
+function FlipCard({ cards, onContentIsEnded, courseId, moduleId }) {
 
-    const { completeFlipCardSection,isFlipCardSectionCompleted } = React.useContext(TrainingLogiTransContext);
+    const { getUserProgressForCourse } = React.useContext(TrainingLogiTransContext);
+
+    // 🔹 Obtener progreso del curso desde el contexto
+    const courseProgress = getUserProgressForCourse(parseInt(courseId));
+
     // Control de progreso
     const [etapaActiva, setEtapaActiva] = useState(1);
     const [etapasCompletadas, setEtapasCompletadas] = useState([]);
@@ -16,13 +20,66 @@ function FlipCard({ cards, onContentIsEnded }) {
     const [seccionActiva, setSeccionActiva] = useState(null);
     const [seccionesVistas, setSeccionesVistas] = useState({});
     const [audioCompletado, setAudioCompletado] = useState(false);
-    const [audioEnReproduccion, setAudioEnReproduccion] = useState(false); // NUEVO
+    const [introMostrada, setIntroMostrada] = useState(false);
+    const [audioEnReproduccion, setAudioEnReproduccion] = useState(false);
+    const [audioIntroReproducido, setAudioIntroReproducido] = useState(false);
     const etapaActualData = etapaAbierta ? cards.find(e => e.id === etapaAbierta) : null;
-
+    const [mostrarCards, setMostrarCards] = useState(false);
     const [audioEnabled, setAudioEnabled] = useState(true);
     const [mejorVoz, setMejorVoz] = useState(null);
     const [isPlaying, setIsPlaying] = useState(false);
 
+    // 🔹 CARGAR PROGRESO DESDE EL CONTEXTO/LOCALSTORAGE AL MONTAR
+    useEffect(() => {
+        if (courseProgress && courseProgress.flipCardProgress) {
+            const flipCardData = courseProgress.flipCardProgress[moduleId];
+
+            if (flipCardData) {
+                setSeccionesVistas(flipCardData.seccionesVistas || {});
+                setEtapasCompletadas(flipCardData.etapasCompletadas || []);
+                setEtapaActiva(flipCardData.etapaActiva || 1);
+
+                console.log('✅ Progreso de FlipCard cargado desde localStorage:', flipCardData);
+            }
+        }
+    }, [courseProgress, moduleId]);
+
+    // 🔹 GUARDAR PROGRESO EN LOCALSTORAGE CADA VEZ QUE CAMBIE
+    // 🟢 Función reutilizable para guardar progreso
+    const saveFlipCardProgress = useCallback(() => {
+        if (!courseProgress) return;
+        try {
+            const storedProgress = localStorage.getItem("userProgress");
+            const allProgress = storedProgress ? JSON.parse(storedProgress) : {};
+
+            const updatedCourseProgress = {
+                ...allProgress[courseId],
+                flipCardProgress: {
+                    ...allProgress[courseId]?.flipCardProgress,
+                    [moduleId]: {
+                        seccionesVistas,
+                        etapasCompletadas,
+                        etapaActiva,
+                        lastUpdated: new Date().toISOString()
+                    }
+                }
+            };
+
+            allProgress[courseId] = updatedCourseProgress;
+            localStorage.setItem("userProgress", JSON.stringify(allProgress));
+
+            console.log('💾 Progreso de FlipCard guardado en localStorage (manual)');
+        } catch (error) {
+            console.error('❌ Error al guardar progreso de FlipCard:', error);
+        }
+    }, [seccionesVistas, etapasCompletadas, etapaActiva, courseId, moduleId, courseProgress]);
+
+    // 🟣 Mantén este efecto para autoguardado cuando cambien estados
+    useEffect(() => {
+        if (Object.keys(seccionesVistas).length > 0 || etapasCompletadas.length > 0) {
+            saveFlipCardProgress();
+        }
+    }, [seccionesVistas, etapasCompletadas, etapaActiva, saveFlipCardProgress]);
 
 
     useEffect(() => {
@@ -74,18 +131,23 @@ function FlipCard({ cards, onContentIsEnded }) {
         }
     }, []);
 
-    // FUNCIÓN MEJORADA: Ahora solo marca como vista cuando el audio termina completamente
-    const reproducirAudio = useCallback((texto, callback) => {
+    // 🔹 MODIFICADO: Agregado parámetro yaVista para mantener audioCompletado en true
+    const reproducirAudio = useCallback((texto, callback, yaVista = false) => {
+        window.speechSynthesis.cancel();
+        setIsPlaying(false);
+        setAudioEnReproduccion(false);
+
         if (!audioEnabled || !mejorVoz) {
             setAudioCompletado(true);
             if (callback) callback();
             return;
         }
 
-        window.speechSynthesis.cancel();
-        setAudioCompletado(false);
-        setAudioEnReproduccion(true); // NUEVO: marca que hay audio en curso
+        if (!yaVista) {
+            setAudioCompletado(false);
+        }
 
+        setAudioEnReproduccion(true);
         const utterance = new SpeechSynthesisUtterance(texto);
         utterance.voice = mejorVoz;
         utterance.lang = 'es-ES';
@@ -98,60 +160,63 @@ function FlipCard({ cards, onContentIsEnded }) {
         utterance.onend = () => {
             setIsPlaying(false);
             setAudioCompletado(true);
-            setAudioEnReproduccion(false); // NUEVO
-            if (callback) callback(); // Solo ejecuta el callback cuando termina
+            setAudioEnReproduccion(false);
+            if (callback) callback();
+
+            // 🟢 NUEVO: Verifica si al terminar este audio ya se completó toda la etapa
+
+            saveFlipCardProgress(); // 💾 Guardar progreso inmediatamente
+
         };
 
         utterance.onerror = () => {
             setIsPlaying(false);
-            setAudioCompletado(false); // CAMBIADO: en error NO marca como completado
-            setAudioEnReproduccion(false); // NUEVO
+            setAudioEnReproduccion(false);
         };
 
         window.speechSynthesis.speak(utterance);
-    }, [audioEnabled, mejorVoz]);
+    }, [audioEnabled, mejorVoz, etapaAbierta]);
 
 
 
-    //abrir etapa
+    // 🔹 MODIFICADO: Ahora verifica si ya está vista y pasa el flag a reproducirAudio
     const abrirEtapa = (etapaId) => {
         if (etapaId > etapaActiva) return;
 
         setEtapaAbierta(etapaId);
         setSeccionActiva('objetivo');
-        setAudioCompletado(false); // NUEVO: resetea el estado al abrir
 
         const etapa = cards.find(e => e.id === etapaId);
+        const seccionKey = `${etapaId}-objetivo`;
 
-        // CAMBIADO: Solo marca como vista cuando el audio termina
+        // 🔹 Si ya está vista, mantener audioCompletado en true mientras reproduce
+        const yaVista = seccionesVistas[seccionKey] === true;
+        if (yaVista) {
+            setAudioCompletado(true);
+        }
+
+        // 🔹 Siempre reproducir audio, pasando el flag de yaVista
         reproducirAudio(etapa.audioObjetivo, () => {
             setSeccionesVistas(prev => ({
                 ...prev,
-                [`${etapaId}-objetivo`]: true
+                [seccionKey]: true
             }));
-        });
+        }, yaVista);
     };
 
-    //cerrar modal
     const cerrarModal = () => {
-        // Detener cualquier audio en reproducción
         window.speechSynthesis.cancel();
         setIsPlaying(false);
         setAudioEnReproduccion(false);
         setAudioCompletado(false);
 
-        // ⚡ NUEVO: Verificar si la etapa que estaba abierta ya fue completada
-        // Esto garantiza que, aunque el usuario cierre el modal justo al terminar el último audio,
-        // la siguiente etapa se desbloquee correctamente.
         if (etapaAbierta) {
             verificarEtapaCompletada(etapaAbierta);
         }
 
-        // Cerrar modal y limpiar estados
         setEtapaAbierta(null);
         setSeccionActiva(null);
     };
-
 
     const puedeAvanzarASeccion = (seccionActual, nuevaSeccion) => {
         if (!etapaAbierta) return false;
@@ -161,55 +226,44 @@ function FlipCard({ cards, onContentIsEnded }) {
         const indexActual = secciones.indexOf(seccionActual);
         const indexNueva = secciones.indexOf(nuevaSeccion);
 
-        // CAMBIADO: Usa audioEnReproduccion en lugar de solo audioCompletado
-        if (audioEnReproduccion && indexNueva > indexActual) {
-            return false;
-        }
+        const currentKey = `${etapaAbierta}-${seccionActual}`;
 
-        if (indexNueva < indexActual) {
-            return seccionesVistas[`${etapaAbierta}-${nuevaSeccion}`] === true;
-        }
+        // Retroceder siempre
+        if (indexNueva < indexActual) return true;
 
-        if (indexNueva > indexActual) {
-            return seccionesVistas[`${etapaAbierta}-${seccionActual}`] === true;
-        }
+        // Avanzar si la sección actual ya fue vista (ya escuchaste el audio) 
+        if (seccionesVistas[currentKey]) return true;
 
-        return true;
+        // Bloquear si no se cumple
+        return false;
     };
 
+
+    // 🔹 MODIFICADO: Ahora verifica si ya está vista y pasa el flag a reproducirAudio
     const cambiarSeccion = (nuevaSeccion) => {
         if (!etapaAbierta) return;
 
-        if (!puedeAvanzarASeccion(seccionActiva, nuevaSeccion)) {
-            return;
-        }
+        const etapa = cards.find(e => e.id === etapaAbierta);
+        const seccionKey = `${etapaAbierta}-${nuevaSeccion}`;
+        const yaVista = seccionesVistas[seccionKey] === true;
 
         setSeccionActiva(nuevaSeccion);
-        setAudioCompletado(false); // NUEVO: resetea al cambiar de sección
+        setAudioCompletado(yaVista); // ✅ mantener si ya se vio
 
-        const etapa = cards.find(e => e.id === etapaAbierta);
+        const reproducir = (texto) => {
+            reproducirAudio(texto, () => {
+                setSeccionesVistas(prev => ({ ...prev, [seccionKey]: true }));
+                verificarEtapaCompletada(etapaAbierta);
+                // ✅ reafirmar completado si ya estaba vista
+                if (yaVista) setAudioCompletado(true);
+            }, yaVista);
+        };
 
         if (nuevaSeccion === 'objetivo') {
-            // CAMBIADO: Solo marca como vista cuando el audio termina
-            reproducirAudio(etapa.audioObjetivo, () => {
-                setSeccionesVistas(prev => ({
-                    ...prev,
-                    [`${etapaAbierta}-objetivo`]: true
-                }));
-            });
+            reproducir(etapa.audioObjetivo);
         } else {
             const seccion = etapa.secciones.find(s => s.id === nuevaSeccion);
-
-            // CAMBIADO: Solo marca como vista cuando el audio termina
-            reproducirAudio(seccion.audio, () => {
-                setSeccionesVistas(prev => ({
-                    ...prev,
-                    [`${etapaAbierta}-${nuevaSeccion}`]: true
-                }));
-
-                // NUEVO: Verifica si completó toda la etapa DESPUÉS de marcar como vista
-                verificarEtapaCompletada(etapaAbierta);
-            });
+            reproducir(seccion.audio);
         }
     };
 
@@ -225,12 +279,10 @@ function FlipCard({ cards, onContentIsEnded }) {
         if (todasVistas && !etapasCompletadas.includes(etapaId)) {
             setEtapasCompletadas(prev => [...prev, etapaId]);
 
-            // Desbloquea la siguiente etapa
             if (etapaId < cards.length) {
                 setEtapaActiva(etapaId + 1);
             }
 
-            // ✅ Si es la última etapa y se completó todo el contenido
             if (etapaId === cards.length) {
                 console.log("🎉 Todo el contenido ha sido completado");
                 if (onContentIsEnded) onContentIsEnded();
@@ -238,15 +290,20 @@ function FlipCard({ cards, onContentIsEnded }) {
         }
     };
 
-
     const siguienteSeccion = () => {
         if (!etapaAbierta) return;
         const etapa = cards.find(e => e.id === etapaAbierta);
         const secciones = ['objetivo', ...etapa.secciones.map(s => s.id)];
         const currentIndex = secciones.indexOf(seccionActiva);
 
-        if (currentIndex < secciones.length - 1 && audioCompletado) {
-            cambiarSeccion(secciones[currentIndex + 1]);
+        if (currentIndex < secciones.length - 1) {
+            const siguienteSeccionKey = `${etapaAbierta}-${secciones[currentIndex + 1]}`;
+            const currentKey = `${etapaAbierta}-${seccionActiva}`;
+
+            // 🔹 Avanzar si la sección actual ya fue vista
+            if (seccionesVistas[currentKey]) {
+                cambiarSeccion(secciones[currentIndex + 1]);
+            }
         }
     };
 
@@ -257,73 +314,109 @@ function FlipCard({ cards, onContentIsEnded }) {
         const currentIndex = secciones.indexOf(seccionActiva);
 
         if (currentIndex > 0) {
-            cambiarSeccion(secciones[currentIndex - 1]);
+            const seccionAnterior = secciones[currentIndex - 1];
+            const keyAnterior = `${etapaAbierta}-${seccionAnterior}`;
+
+            // ✅ Si la anterior ya fue vista, no bloquees el siguiente botón al volver
+            const yaVista = seccionesVistas[keyAnterior] === true;
+            setAudioCompletado(yaVista);
+
+            cambiarSeccion(seccionAnterior);
         }
     };
 
+    // 🔹 Reproducir introducción solo una vez por carga
+    useEffect(() => {
+        if (audioIntroReproducido || !mejorVoz) return; // Ya se escuchó → no repetir
+        setAudioIntroReproducido(true); // Marcar como ya reproducida
+
+        setAudioEnReproduccion(true);
+        setMostrarCards(false);
+
+        const textoIntro =
+            "Etapas del SARLAFT. El SARLAFT funciona como un ciclo de protección que nunca se detiene. Sus etapas son: identificación, medición, control y monitoreo. Haz clic sobre cada etapa para ver su información.";
+
+        const utterance = new SpeechSynthesisUtterance(textoIntro);
+        utterance.voice = mejorVoz;
+        utterance.lang = 'es-ES';
+        utterance.rate = 0.9;
+        utterance.pitch = 1;
+
+        utterance.onend = () => {
+            setAudioEnReproduccion(false);
+            setMostrarCards(true);
+        };
+
+        window.speechSynthesis.cancel(); // por si había otro audio
+        window.speechSynthesis.speak(utterance);
+    }, [mejorVoz, audioIntroReproducido]);
+
     return (
-        <div className='w-full  mx-auto pt-10 pb-14 lg:pb-0' data-aos="fade-up" data-aos-delay={300} data-aos-duration="600">
-            <div className="text-start mb-12">
-                <h1 className="text-xl md:text-2xl font-bold text-white">
-                    Etapas del SARLAFT
-                </h1>
-                <p className="text-slate-300 text-xs md:text-sm">
-                    Haz clic en cada tarjeta para explorar el contenido paso a paso
-                </p>
-                <div className="w-[50%] h-[2px] bg-zinc-500 mt-1 rounded"></div>
-            </div>
-            {/* Cards Pequeñas */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                {cards.map((etapa) => {
-                    const estaBloqueada = etapa.id > etapaActiva;
-                    const estaCompletada = etapasCompletadas.includes(etapa.id);
+        <div className='w-full mx-auto pt-10 pb-14 lg:pb-0' data-aos="fade-up" data-aos-delay={300} data-aos-duration="600">
+            {/* 🔹 INTRODUCCIÓN ANTES DE LAS ETAPAS */}
+            {!audioCompletado && etapaAbierta === null && (
+                <div className="text-center px-6 py-10 max-w-3xl mx-auto animate-fadeIn" data-aos="fade-up">
+                    <h1 className="text-2xl md:text-3xl font-bold text-white mb-0">
+                        Etapas del SARLAFT
+                    </h1>
+                    <p className="text-slate-300 text-sm md:text-base leading-relaxed">
+                        El SARLAFT funciona como un ciclo de protección que nunca se detiene. Sus etapas son:
+                    </p>
+                </div>
+            )}
+            {mostrarCards && (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6" data-aos="fade-up">
+                    {cards.map((etapa) => {
+                        const estaBloqueada = etapa.id > etapaActiva;
+                        const estaCompletada = etapasCompletadas.includes(etapa.id);
 
-                    return (
-                        <button
-                            key={etapa.id}
-                            onClick={() => !estaBloqueada && abrirEtapa(etapa.id)}
-                            disabled={estaBloqueada}
-                            className={`relative flex flex-col items-center justify-center p-6 rounded-2xl border-2 transition-all duration-300
-                            ${estaBloqueada ? 'bg-slate-800 border-slate-700 opacity-50 cursor-not-allowed' : `bg-gradient-to-br ${etapa.color} border-transparent hover:scale-105 hover:shadow-2xl cursor-pointer`}`}
-                        >
-                            {estaBloqueada && (
-                                <Lock size={24} className="absolute top-3 right-3 text-slate-500" />
-                            )}
-                            {estaCompletada && (
-                                <CheckCircle size={24} className="absolute top-3 right-3 text-green-400" />
-                            )}
 
-                            <div className="text-5xl mb-3">{etapa.icono}</div>
-
-                            <div className="text-white text-center flex flex-col items-center">
-                                <div className="text-xs opacity-75 mb-1">{etapa.numero}</div>
-                                <div className="font-bold text-lg">{etapa.titulo}</div>
-
-                                {estaBloqueada ? (
-                                    <div className="text-xs opacity-90 text-center mt-2">
-                                        <p>Completa la etapa anterior</p>
-                                    </div>
-                                ) : estaCompletada ? (
-                                    <div className="text-sm text-zinc-300 text-center flex items-center gap-2 mt-2">
-                                        <span>Etapa completada - Click para revisar</span>
-                                    </div>
-                                ) : (
-                                    <div className="mt-4 flex justify-center items-center gap-2 text-sm opacity-75 animate-bounce">
-                                        <span>Click para comenzar</span>
-                                        <ChevronRight size={20} />
-                                    </div>
+                        return (
+                            <button
+                                key={etapa.id}
+                                onClick={() => !estaBloqueada && abrirEtapa(etapa.id)}
+                                disabled={estaBloqueada}
+                                className={`relative flex flex-col items-center justify-center p-6 rounded-2xl border-2 transition-all duration-300
+                                ${estaBloqueada ? 'bg-slate-800 border-slate-700 opacity-50 cursor-not-allowed' : `bg-gradient-to-br ${etapa.color} border-transparent hover:scale-105 hover:shadow-2xl cursor-pointer`}`}
+                            >
+                                {estaBloqueada && (
+                                    <Lock size={24} className="absolute top-3 right-3 text-slate-500" />
                                 )}
-                            </div>
-                        </button>
+                                {estaCompletada && (
+                                    <CheckCircle size={24} className="absolute top-3 right-3 text-green-400" />
+                                )}
 
-                    );
-                })}
-            </div>
+                                <div className="text-5xl mb-3">{etapa.icono}</div>
 
-            {/* Modal Expandido */}
+                                <div className="text-white text-center flex flex-col items-center">
+                                    <div className="text-xs opacity-75 mb-1">{etapa.numero}</div>
+                                    <div className="font-bold text-lg">{etapa.titulo}</div>
+
+                                    {estaBloqueada ? (
+                                        <div className="text-xs opacity-90 text-center mt-2">
+                                            <p>Completa la etapa anterior</p>
+                                        </div>
+                                    ) : estaCompletada ? (
+                                        <div className="text-sm text-zinc-300 text-center flex items-center gap-2 mt-2">
+                                            <span>Etapa completada - Click para revisar</span>
+                                        </div>
+                                    ) : (
+                                        <div className="mt-4 flex justify-center items-center gap-2 text-sm opacity-75 animate-bounce">
+                                            <span>Click para comenzar</span>
+                                            <ChevronRight size={20} />
+                                        </div>
+                                    )}
+                                </div>
+                            </button>
+                        );
+                    })}
+                </div>
+            )}
+
             {etapaAbierta && etapaActualData && (
+
                 <ModalFlipCard etapaActualData={etapaActualData} onClose={cerrarModal}>
-                    {/* Contenido del Modal */}
+
                     <div className="p-2 md:p-4 space-y-2">
                         {seccionActiva === 'objetivo' && (
                             <div className="space-y-2 animate-fadeIn">
@@ -367,8 +460,7 @@ function FlipCard({ cards, onContentIsEnded }) {
                         )}
                     </div>
 
-                    {/* Footer - Navegación */}
-                    <div className="bg-[#151518] border-t-2 border-slate-700 p-4    ">
+                    <div className="bg-[#151518] border-t-2 border-slate-700 p-4">
                         <div className="flex items-center justify-between gap-1 md:gap-4">
                             <button
                                 onClick={anteriorSeccion}
@@ -385,7 +477,7 @@ function FlipCard({ cards, onContentIsEnded }) {
                             <div className="flex gap-2 flex-wrap justify-center">
                                 <button
                                     onClick={() => cambiarSeccion('objetivo')}
-                                    disabled={!audioCompletado && seccionActiva !== 'objetivo'}
+                                    disabled={!audioCompletado && seccionActiva !== 'objetivo' && !seccionesVistas[`${etapaAbierta}-objetivo`]}
                                     className={`px-4 py-2 rounded-lg text-sm font-medium transition-all relative ${seccionActiva === 'objetivo'
                                         ? `${etapaActualData.colorSolido} text-white`
                                         : seccionesVistas[`${etapaAbierta}-objetivo`]
@@ -408,7 +500,7 @@ function FlipCard({ cards, onContentIsEnded }) {
                                             key={s.id}
                                             onClick={() => cambiarSeccion(s.id)}
                                             disabled={!puedeAcceder}
-                                            className={` px-2 md:px-4 py-2 rounded-lg text-sm font-medium transition-all relative ${seccionActiva === s.id
+                                            className={`px-2 md:px-4 py-2 rounded-lg text-sm font-medium transition-all relative ${seccionActiva === s.id
                                                 ? `${etapaActualData.colorSolido} text-white`
                                                 : seccionVista
                                                     ? 'bg-slate-700 text-slate-300 hover:bg-slate-600'
@@ -433,7 +525,7 @@ function FlipCard({ cards, onContentIsEnded }) {
                                     !audioCompletado ||
                                     seccionActiva === etapaActualData.secciones[etapaActualData.secciones.length - 1].id
                                 }
-                                className={`flex items-center gap-2  px-1 md:px-4 py-2 rounded-lg font-medium transition-all ${!audioCompletado ||
+                                className={`flex items-center gap-2 px-1 md:px-4 py-2 rounded-lg font-medium transition-all ${!audioCompletado ||
                                     seccionActiva === etapaActualData.secciones[etapaActualData.secciones.length - 1].id
                                     ? 'bg-slate-800 text-slate-600 cursor-not-allowed'
                                     : 'bg-slate-700 text-white hover:bg-slate-600'
@@ -445,14 +537,8 @@ function FlipCard({ cards, onContentIsEnded }) {
                         </div>
                     </div>
                 </ModalFlipCard>
-
             )}
-
         </div>
-
-
-
-
     );
 }
 

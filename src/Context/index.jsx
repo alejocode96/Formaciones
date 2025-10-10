@@ -316,7 +316,8 @@ function TrainingLogiTransProvider({ children }) {
             startedAt: new Date().toISOString(),
             lastAccessAt: new Date().toISOString(),
             currentModule: 1,
-            completedModules: []
+            completedModules: [],
+            flipCardProgress: {}
         };
 
         const newProgress = {
@@ -410,56 +411,12 @@ function TrainingLogiTransProvider({ children }) {
     }, []);
 
 
-    // Dentro de TrainingLogiTransProvider
-
-    // Función para marcar una sección de FlipCard como completada
-    const completeFlipCardSection = (courseId, moduleId, etapaId, seccionId) => {
-        const courseIdNum = parseInt(courseId);
-        const moduleIdNum = parseInt(moduleId);
-        const etapaIdNum = parseInt(etapaId);
-
-        const currentProgress = userProgress[courseIdNum] || {
-            completedModules: [],
-            flipCardProgress: {},
-        };
-
-        const flipCardProgress = currentProgress.flipCardProgress || {};
-
-        // Guardamos el progreso por etapa y sección
-        const etapaProgress = flipCardProgress[etapaIdNum] || {};
-        etapaProgress[seccionId] = true; // true = completado
-
-        flipCardProgress[etapaIdNum] = etapaProgress;
-
-        const updatedProgress = {
-            ...currentProgress,
-            flipCardProgress
-        };
-
-        const newProgress = {
-            ...userProgress,
-            [courseIdNum]: updatedProgress
-        };
-
-        setUserProgress(newProgress);
-        localStorage.setItem("userProgress", JSON.stringify(newProgress));
-    };
-
-    // Función para verificar si una sección de FlipCard ya se completó
-    const isFlipCardSectionCompleted = (courseId, etapaId, seccionId) => {
-        const courseIdNum = parseInt(courseId);
-        const etapaIdNum = parseInt(etapaId);
-
-        return userProgress[courseIdNum]?.flipCardProgress?.[etapaIdNum]?.[seccionId] || false;
-    };
-
 
     return (
         <TrainingLogiTransContext.Provider value={{
             getTrainingsWithProgress,
             getCourseById, hasUserProgress, getUserProgressForCourse, createCourseProgress, resetCourseProgress, completeModule,
-            showContentSidebar, setShowContentSidebar,
-            completeFlipCardSection,isFlipCardSectionCompleted
+            showContentSidebar, setShowContentSidebar
         }}>
             {children}
         </TrainingLogiTransContext.Provider>
