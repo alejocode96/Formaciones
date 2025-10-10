@@ -10,7 +10,7 @@ const ModalFlipCard = ({ etapaActualData, children, onClose }) => {
 
     return createPortal(
         <div onClick={onClose}  className='fixed inset-0 min-h-screen bg-zinc-950/80 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fadeIn'>
-            <div onClick={(e) => e.stopPropagation()} className='bg-zinc-900 rounded-2xl w-full max-w-6xl max-h-[95vh] min-h-[85vh] overflow-hidden border border-zinc-700 shadow-2xl animate-scaleIn flex flex-col'>
+            <div onClick={(e) => e.stopPropagation()} className='bg-zinc-900 rounded-2xl w-full max-w-6xl max-h-[95vh] overflow-hidden border border-zinc-700 shadow-2xl animate-scaleIn flex flex-col'>
                 {/* Header */}
                 <div className={`bg-gradient-to-r ${etapaActualData.color} p-3 flex items-center justify-between`}>
                     <div className='flex items-center gap-4'>
@@ -26,7 +26,7 @@ const ModalFlipCard = ({ etapaActualData, children, onClose }) => {
                 </div>
 
                 {/* Contenido Scrollable */}
-                <div className="flex-1 overflow-y-auto">
+                <div className="flex-1 overflow-y-auto   p-4">
                     {cuerpo}
                 </div>
 

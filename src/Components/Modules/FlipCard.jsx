@@ -284,7 +284,7 @@ function FlipCard({ cards, onContentIsEnded }) {
                             onClick={() => !estaBloqueada && abrirEtapa(etapa.id)}
                             disabled={estaBloqueada}
                             className={`relative flex flex-col items-center justify-center p-6 rounded-2xl border-2 transition-all duration-300
-    ${estaBloqueada ? 'bg-slate-800 border-slate-700 opacity-50 cursor-not-allowed' : `bg-gradient-to-br ${etapa.color} border-transparent hover:scale-105 hover:shadow-2xl cursor-pointer`}`}
+                            ${estaBloqueada ? 'bg-slate-800 border-slate-700 opacity-50 cursor-not-allowed' : `bg-gradient-to-br ${etapa.color} border-transparent hover:scale-105 hover:shadow-2xl cursor-pointer`}`}
                         >
                             {estaBloqueada && (
                                 <Lock size={24} className="absolute top-3 right-3 text-slate-500" />
@@ -368,12 +368,12 @@ function FlipCard({ cards, onContentIsEnded }) {
                     </div>
 
                     {/* Footer - Navegación */}
-                    <div className="bg-[#151518] border-t-2 border-slate-700 p-6">
-                        <div className="flex items-center justify-between gap-4 mb-4">
+                    <div className="bg-[#151518] border-t-2 border-slate-700 p-4    ">
+                        <div className="flex items-center justify-between gap-1 md:gap-4">
                             <button
                                 onClick={anteriorSeccion}
                                 disabled={seccionActiva === 'objetivo'}
-                                className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all ${seccionActiva === 'objetivo'
+                                className={`flex items-center gap-2 px-1 md:px-4 py-2 rounded-lg font-medium transition-all ${seccionActiva === 'objetivo'
                                     ? 'bg-slate-800 text-slate-600 cursor-not-allowed'
                                     : 'bg-slate-700 text-white hover:bg-slate-600'
                                     }`}
@@ -408,7 +408,7 @@ function FlipCard({ cards, onContentIsEnded }) {
                                             key={s.id}
                                             onClick={() => cambiarSeccion(s.id)}
                                             disabled={!puedeAcceder}
-                                            className={`px-4 py-2 rounded-lg text-sm font-medium transition-all relative ${seccionActiva === s.id
+                                            className={` px-2 md:px-4 py-2 rounded-lg text-sm font-medium transition-all relative ${seccionActiva === s.id
                                                 ? `${etapaActualData.colorSolido} text-white`
                                                 : seccionVista
                                                     ? 'bg-slate-700 text-slate-300 hover:bg-slate-600'
@@ -433,7 +433,7 @@ function FlipCard({ cards, onContentIsEnded }) {
                                     !audioCompletado ||
                                     seccionActiva === etapaActualData.secciones[etapaActualData.secciones.length - 1].id
                                 }
-                                className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all ${!audioCompletado ||
+                                className={`flex items-center gap-2  px-1 md:px-4 py-2 rounded-lg font-medium transition-all ${!audioCompletado ||
                                     seccionActiva === etapaActualData.secciones[etapaActualData.secciones.length - 1].id
                                     ? 'bg-slate-800 text-slate-600 cursor-not-allowed'
                                     : 'bg-slate-700 text-white hover:bg-slate-600'
