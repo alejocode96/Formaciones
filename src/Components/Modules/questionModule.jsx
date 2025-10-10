@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect,useRef } from 'react';
 import { CheckCircle, XCircle, Send, RotateCcw } from 'lucide-react';
 import { TrainingLogiTransContext } from '../../Context';
 
@@ -11,15 +11,18 @@ function QuestionModule({ question, answer, onContentIsEnded, onAttempt, onCorre
   const [shuffledAnswers, setShuffledAnswers] = useState([]);
 
   // 🔹 Barajar respuestas una sola vez al cargar la pregunta
-  useEffect(() => {
-    if (answer && answer.length > 0) {
-      const respuestasAleatorias = [...answer]
-        .map((a) => ({ ...a }))
-        .sort(() => Math.random() - 0.5); // mezcla aleatoria
+  const respuestasIniciales = useRef([]);
 
-      setShuffledAnswers(respuestasAleatorias);
+  useEffect(() => {
+    if (answer && answer.length > 0 && respuestasIniciales.current.length === 0) {
+      respuestasIniciales.current = [...answer]
+        .map((a) => ({ ...a }))
+        .sort(() => Math.random() - 0.5);
+      setShuffledAnswers(respuestasIniciales.current);
     }
   }, [answer]);
+
+
 
   // Encontrar la respuesta correcta dentro de las respuestas ya mezcladas
   const correctAnswerIndex = shuffledAnswers.findIndex(a => a.rsp === true);

@@ -123,7 +123,7 @@ function FlipCard({ cards, onContentIsEnded, courseId, moduleId }) {
 
             if (mejorOpcion) {
                 setMejorVoz(mejorOpcion);
-             
+               
             } else {
                 console.warn('⚠️ No se encontró ninguna voz en español.');
             }
@@ -174,7 +174,7 @@ function FlipCard({ cards, onContentIsEnded, courseId, moduleId }) {
             // 🟢 Si es la última sección, espera un tick para verificar
             if (esUltimaSeccion && etapaAbierta) {
                 setTimeout(() => {
-                  
+                   
                     verificarEtapaCompletada(etapaAbierta);
                 }, 200);
             }
@@ -203,7 +203,7 @@ function FlipCard({ cards, onContentIsEnded, courseId, moduleId }) {
         );
 
         if (todasVistas && !etapasCompletadas.includes(etapaAbierta)) {
-           
+       
             verificarEtapaCompletada(etapaAbierta);
         }
     }, [seccionesVistas]);
@@ -220,7 +220,7 @@ function FlipCard({ cards, onContentIsEnded, courseId, moduleId }) {
                     window.speechSynthesis.cancel();
                     setIsPlaying(false);
                     setAudioEnReproduccion(false);
-                   
+                  
                 }
             } else if (remainingTextRef.current && !window.speechSynthesis.speaking) {
                 // ▶️ Si el usuario regresa → continuar donde iba
@@ -241,14 +241,14 @@ function FlipCard({ cards, onContentIsEnded, courseId, moduleId }) {
                     currentCharIndexRef.current = 0;
                     setIsPlaying(false);
                     setAudioEnReproduccion(false);
-                  
+                   
                 };
 
                 currentUtteranceRef.current = utterance;
                 window.speechSynthesis.speak(utterance);
                 setIsPlaying(true);
                 setAudioEnReproduccion(true);
-              
+               
             }
         };
 
@@ -364,11 +364,11 @@ function FlipCard({ cards, onContentIsEnded, courseId, moduleId }) {
         const todasVistas = todasLasSecciones.every(seccion =>
             seccionesVistas[`${etapaId}-${seccion}`] === true
         );
-       
+        
         if (todasVistas && !etapasCompletadas.includes(etapaId)) {
             
             setEtapasCompletadas(prev => [...prev, etapaId]);
-           
+          
             if (etapaId < cards.length) {
                 setEtapaActiva(etapaId + 1);
                
@@ -450,11 +450,9 @@ function FlipCard({ cards, onContentIsEnded, courseId, moduleId }) {
                     <h1 className="text-2xl md:text-3xl font-bold text-white mb-0">
                         Etapas del SARLAFT
                     </h1>
-                    <p className="text-slate-300 text-sm md:text-base leading-relaxed mb-6">
+                    <p className="text-slate-300 text-sm md:text-base leading-relaxed">
                         El SARLAFT funciona como un ciclo de protección que nunca se detiene. Sus etapas son:
                     </p>
-
-
                 </div>
             )}
             {mostrarCards && (
