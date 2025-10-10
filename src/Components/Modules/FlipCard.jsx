@@ -43,7 +43,7 @@ function FlipCard({ cards, onContentIsEnded, courseId, moduleId }) {
                 setEtapasCompletadas(flipCardData.etapasCompletadas || []);
                 setEtapaActiva(flipCardData.etapaActiva || 1);
 
-               
+                console.log('✅ Progreso de FlipCard cargado desde localStorage:', flipCardData);
             }
         }
     }, [courseProgress, moduleId]);
@@ -72,7 +72,7 @@ function FlipCard({ cards, onContentIsEnded, courseId, moduleId }) {
             allProgress[courseId] = updatedCourseProgress;
             localStorage.setItem("userProgress", JSON.stringify(allProgress));
 
-           
+            console.log('💾 Progreso de FlipCard guardado en localStorage (manual)');
         } catch (error) {
             console.error('❌ Error al guardar progreso de FlipCard:', error);
         }
@@ -123,7 +123,7 @@ function FlipCard({ cards, onContentIsEnded, courseId, moduleId }) {
 
             if (mejorOpcion) {
                 setMejorVoz(mejorOpcion);
-               
+                console.log(`✅ Voz seleccionada: ${mejorOpcion.name} [${mejorOpcion.lang}]`);
             } else {
                 console.warn('⚠️ No se encontró ninguna voz en español.');
             }
@@ -174,7 +174,7 @@ function FlipCard({ cards, onContentIsEnded, courseId, moduleId }) {
             // 🟢 Si es la última sección, espera un tick para verificar
             if (esUltimaSeccion && etapaAbierta) {
                 setTimeout(() => {
-                   
+                    console.log('✅ Última sección completada, verificando etapa...');
                     verificarEtapaCompletada(etapaAbierta);
                 }, 200);
             }
@@ -203,7 +203,7 @@ function FlipCard({ cards, onContentIsEnded, courseId, moduleId }) {
         );
 
         if (todasVistas && !etapasCompletadas.includes(etapaAbierta)) {
-       
+            console.log('🎯 Etapa completada detectada automáticamente');
             verificarEtapaCompletada(etapaAbierta);
         }
     }, [seccionesVistas]);
@@ -220,7 +220,7 @@ function FlipCard({ cards, onContentIsEnded, courseId, moduleId }) {
                     window.speechSynthesis.cancel();
                     setIsPlaying(false);
                     setAudioEnReproduccion(false);
-                  
+                    console.log("🔇 Audio pausado y posición guardada");
                 }
             } else if (remainingTextRef.current && !window.speechSynthesis.speaking) {
                 // ▶️ Si el usuario regresa → continuar donde iba
@@ -241,14 +241,14 @@ function FlipCard({ cards, onContentIsEnded, courseId, moduleId }) {
                     currentCharIndexRef.current = 0;
                     setIsPlaying(false);
                     setAudioEnReproduccion(false);
-                   
+                    console.log("✅ Audio reanudado completamente");
                 };
 
                 currentUtteranceRef.current = utterance;
                 window.speechSynthesis.speak(utterance);
                 setIsPlaying(true);
                 setAudioEnReproduccion(true);
-               
+                console.log("▶️ Audio reanudado al volver a la pestaña");
             }
         };
 
@@ -360,22 +360,22 @@ function FlipCard({ cards, onContentIsEnded, courseId, moduleId }) {
     const verificarEtapaCompletada = (etapaId) => {
         const etapa = cards.find(e => e.id === etapaId);
         const todasLasSecciones = ['objetivo', ...etapa.secciones.map(s => s.id)];
-       
+        console.log('verificando etapa', etapa)
         const todasVistas = todasLasSecciones.every(seccion =>
             seccionesVistas[`${etapaId}-${seccion}`] === true
         );
-        
+        console.log('vistas', todasVistas, ' ', etapasCompletadas)
         if (todasVistas && !etapasCompletadas.includes(etapaId)) {
-            
+            console.log('entra verificando etapa', etapasCompletadas)
             setEtapasCompletadas(prev => [...prev, etapaId]);
-          
+            console.log(etapasCompletadas)
             if (etapaId < cards.length) {
                 setEtapaActiva(etapaId + 1);
-               
+                console.log('entra2 verificando etapa', etapaActiva)
             }
 
             if (etapaId === cards.length) {
-               
+                console.log("🎉 Todo el contenido ha sido completado");
                 if (onContentIsEnded) onContentIsEnded();
             }
         }
@@ -450,9 +450,11 @@ function FlipCard({ cards, onContentIsEnded, courseId, moduleId }) {
                     <h1 className="text-2xl md:text-3xl font-bold text-white mb-0">
                         Etapas del SARLAFT
                     </h1>
-                    <p className="text-slate-300 text-sm md:text-base leading-relaxed">
+                    <p className="text-slate-300 text-sm md:text-base leading-relaxed mb-6">
                         El SARLAFT funciona como un ciclo de protección que nunca se detiene. Sus etapas son:
                     </p>
+                   
+
                 </div>
             )}
             {mostrarCards && (
