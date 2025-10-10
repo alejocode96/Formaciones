@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useLocation } from 'react-router-dom';
 import { TrainingLogiTransContext } from '../../Context';
 
@@ -6,7 +6,10 @@ import ModalFlipCard from './modalFlipCard';
 import { Volume2, VolumeX, ChevronRight, ChevronLeft, BookOpen, Target, Lightbulb, Wrench, Lock, CheckCircle, X } from 'lucide-react';
 
 function FlipCard({ cards, onContentIsEnded, courseId, moduleId }) {
-
+    const utteranceRef = useRef(null);
+    const audioTextRef = useRef(null); // 🆕 Guardar el texto actual
+    const audioCallbackRef = useRef(null); // 🆕 Guardar el callback
+    const wasPlayingRef = useRef(false); // 🆕 Saber si estaba reproduciendo
     const { getUserProgressForCourse } = React.useContext(TrainingLogiTransContext);
 
     // 🔹 Obtener progreso del curso desde el contexto
@@ -20,7 +23,6 @@ function FlipCard({ cards, onContentIsEnded, courseId, moduleId }) {
     const [seccionActiva, setSeccionActiva] = useState(null);
     const [seccionesVistas, setSeccionesVistas] = useState({});
     const [audioCompletado, setAudioCompletado] = useState(false);
-    const [introMostrada, setIntroMostrada] = useState(false);
     const [audioEnReproduccion, setAudioEnReproduccion] = useState(false);
     const [audioIntroReproducido, setAudioIntroReproducido] = useState(false);
     const etapaActualData = etapaAbierta ? cards.find(e => e.id === etapaAbierta) : null;
@@ -45,7 +47,6 @@ function FlipCard({ cards, onContentIsEnded, courseId, moduleId }) {
     }, [courseProgress, moduleId]);
 
     // 🔹 GUARDAR PROGRESO EN LOCALSTORAGE CADA VEZ QUE CAMBIE
-    // 🟢 Función reutilizable para guardar progreso
     const saveFlipCardProgress = useCallback(() => {
         if (!courseProgress) return;
         try {
@@ -131,9 +132,33 @@ function FlipCard({ cards, onContentIsEnded, courseId, moduleId }) {
         }
     }, []);
 
+    const verificarEtapaCompletada = useCallback((etapaId) => {
+        const etapa = cards.find(e => e.id === etapaId);
+        const todasLasSecciones = ['objetivo', ...etapa.secciones.map(s => s.id)];
+
+        const todasVistas = todasLasSecciones.every(seccion =>
+            seccionesVistas[`${etapaId}-${seccion}`] === true
+        );
+
+        if (todasVistas && !etapasCompletadas.includes(etapaId)) {
+            setEtapasCompletadas(prev => [...prev, etapaId]);
+
+            if (etapaId < cards.length) {
+                setEtapaActiva(etapaId + 1);
+            }
+
+            if (etapaId === cards.length) {
+                console.log("🎉 Todo el contenido ha sido completado");
+                if (onContentIsEnded) onContentIsEnded();
+            }
+        }
+    }, [cards, seccionesVistas, etapasCompletadas, onContentIsEnded]);
+
     // 🔹 MODIFICADO: Agregado parámetro yaVista para mantener audioCompletado en true
     const reproducirAudio = useCallback((texto, callback, yaVista = false) => {
+        // Cancelar cualquier audio previo
         window.speechSynthesis.cancel();
+        utteranceRef.current = null;
         setIsPlaying(false);
         setAudioEnReproduccion(false);
 
@@ -147,6 +172,11 @@ function FlipCard({ cards, onContentIsEnded, courseId, moduleId }) {
             setAudioCompletado(false);
         }
 
+        // 🆕 Guardar texto y callback para poder reiniciar si es necesario
+        audioTextRef.current = texto;
+        audioCallbackRef.current = callback;
+        wasPlayingRef.current = true;
+
         setAudioEnReproduccion(true);
         const utterance = new SpeechSynthesisUtterance(texto);
         utterance.voice = mejorVoz;
@@ -155,31 +185,51 @@ function FlipCard({ cards, onContentIsEnded, courseId, moduleId }) {
         utterance.pitch = 1;
         utterance.volume = 0.8;
 
-        utterance.onstart = () => setIsPlaying(true);
+        // 🔹 Guardar la instancia activa ANTES de reproducir
+        utteranceRef.current = utterance;
+
+        utterance.onstart = () => {
+            setIsPlaying(true);
+            wasPlayingRef.current = true;
+            console.log("▶️ Audio iniciado");
+        };
 
         utterance.onend = () => {
+            utteranceRef.current = null;
+            audioTextRef.current = null;
+            audioCallbackRef.current = null;
+            wasPlayingRef.current = false;
             setIsPlaying(false);
             setAudioCompletado(true);
             setAudioEnReproduccion(false);
+            console.log("✅ Audio completado");
+            
             if (callback) callback();
 
-            // 🟢 NUEVO: Verifica si al terminar este audio ya se completó toda la etapa
-
+            // 🟢 Verifica si al terminar este audio ya se completó toda la etapa
             if (etapaAbierta) {
-                console.log('entra')
                 verificarEtapaCompletada(etapaAbierta);
                 saveFlipCardProgress(); // 💾 Guardar progreso inmediatamente
             }
-
         };
 
-        utterance.onerror = () => {
+        utterance.onerror = (e) => {
+            console.error("❌ Error en audio:", e);
+            utteranceRef.current = null;
+            audioTextRef.current = null;
+            audioCallbackRef.current = null;
+            wasPlayingRef.current = false;
             setIsPlaying(false);
             setAudioEnReproduccion(false);
+            setAudioCompletado(true); // Marcar como completado para no bloquear
+            if (callback) callback();
         };
 
-        window.speechSynthesis.speak(utterance);
-    }, [audioEnabled, mejorVoz, etapaAbierta]);
+        // Pequeño delay para asegurar que el navegador está listo
+        setTimeout(() => {
+            window.speechSynthesis.speak(utterance);
+        }, 50);
+    }, [audioEnabled, mejorVoz, etapaAbierta, verificarEtapaCompletada, saveFlipCardProgress]);
 
 
 
@@ -271,29 +321,6 @@ function FlipCard({ cards, onContentIsEnded, courseId, moduleId }) {
         }
     };
 
-
-    const verificarEtapaCompletada = (etapaId) => {
-        const etapa = cards.find(e => e.id === etapaId);
-        const todasLasSecciones = ['objetivo', ...etapa.secciones.map(s => s.id)];
-
-        const todasVistas = todasLasSecciones.every(seccion =>
-            seccionesVistas[`${etapaId}-${seccion}`] === true
-        );
-
-        if (todasVistas && !etapasCompletadas.includes(etapaId)) {
-            setEtapasCompletadas(prev => [...prev, etapaId]);
-
-            if (etapaId < cards.length) {
-                setEtapaActiva(etapaId + 1);
-            }
-
-            if (etapaId === cards.length) {
-                console.log("🎉 Todo el contenido ha sido completado");
-                if (onContentIsEnded) onContentIsEnded();
-            }
-        }
-    };
-
     const siguienteSeccion = () => {
         if (!etapaAbierta) return;
         const etapa = cards.find(e => e.id === etapaAbierta);
@@ -331,52 +358,215 @@ function FlipCard({ cards, onContentIsEnded, courseId, moduleId }) {
 
     // 🔹 Reproducir introducción solo una vez por carga
     useEffect(() => {
-        if (audioIntroReproducido || !mejorVoz) return; // Ya se escuchó → no repetir
-        setAudioIntroReproducido(true); // Marcar como ya reproducida
-
+        if (audioIntroReproducido || !mejorVoz) return;
+        
+        setAudioIntroReproducido(true);
         setAudioEnReproduccion(true);
         setMostrarCards(false);
 
         const textoIntro =
             "Etapas del SARLAFT. El SARLAFT funciona como un ciclo de protección que nunca se detiene. Sus etapas son: identificación, medición, control y monitoreo. Haz clic sobre cada etapa para ver su información.";
 
+        // 🆕 Guardar referencias para poder reiniciar
+        audioTextRef.current = textoIntro;
+        wasPlayingRef.current = true;
+        
         const utterance = new SpeechSynthesisUtterance(textoIntro);
         utterance.voice = mejorVoz;
         utterance.lang = 'es-ES';
         utterance.rate = 0.9;
         utterance.pitch = 1;
+        utterance.volume = 0.8;
+
+        // Guardar referencia del audio intro
+        utteranceRef.current = utterance;
+
+        utterance.onstart = () => {
+            console.log("▶️ Audio introducción iniciado");
+        };
 
         utterance.onend = () => {
+            utteranceRef.current = null;
+            audioTextRef.current = null;
+            wasPlayingRef.current = false;
             setAudioEnReproduccion(false);
             setMostrarCards(true);
+            console.log("✅ Audio introducción completado");
         };
 
-        // 🔹 Si ocurre error o el navegador bloquea la reproducción
         utterance.onerror = (e) => {
             console.warn("⚠️ No se pudo reproducir el audio introductorio:", e);
-            clearTimeout(timeoutFallback);
+            utteranceRef.current = null;
+            audioTextRef.current = null;
+            wasPlayingRef.current = false;
             setAudioEnReproduccion(false);
             setMostrarCards(true);
         };
-        window.speechSynthesis.cancel(); // por si había otro audio
-        window.speechSynthesis.speak(utterance);
+
+        window.speechSynthesis.cancel();
+        
+        // Pequeño delay para asegurar que el navegador está listo
+        setTimeout(() => {
+            window.speechSynthesis.speak(utterance);
+        }, 100);
+
     }, [mejorVoz, audioIntroReproducido]);
 
+
+
     useEffect(() => {
-        const handleUserInteraction = () => {
-            window.speechSynthesis.resume(); // Desbloquea en iOS/Android
-            window.removeEventListener('touchstart', handleUserInteraction);
-            window.removeEventListener('click', handleUserInteraction);
+        const synth = window.speechSynthesis;
+
+        const handleVisibilityChange = () => {
+            if (document.hidden) {
+                // Cuando se oculta, cancelar completamente
+                if (synth.speaking) {
+                    console.log("🔇 Pestaña oculta - Cancelando audio");
+                    synth.cancel();
+                }
+            } else {
+                // Cuando vuelve a estar visible, reiniciar si había algo reproduciéndose
+                console.log("👁️ Pestaña visible de nuevo");
+                
+                if (wasPlayingRef.current && audioTextRef.current && mejorVoz) {
+                    console.log("🔄 Reiniciando audio desde el principio...");
+                    
+                    setTimeout(() => {
+                        const utterance = new SpeechSynthesisUtterance(audioTextRef.current);
+                        utterance.voice = mejorVoz;
+                        utterance.lang = 'es-ES';
+                        utterance.rate = 0.9;
+                        utterance.pitch = 1;
+                        utterance.volume = 0.8;
+
+                        utteranceRef.current = utterance;
+
+                        utterance.onstart = () => {
+                            setIsPlaying(true);
+                            setAudioEnReproduccion(true);
+                            console.log("🔊 Audio reiniciado correctamente");
+                        };
+
+                        utterance.onend = () => {
+                            utteranceRef.current = null;
+                            audioTextRef.current = null;
+                            wasPlayingRef.current = false;
+                            setIsPlaying(false);
+                            setAudioCompletado(true);
+                            setAudioEnReproduccion(false);
+                            console.log("✅ Audio completado");
+                            
+                            if (audioCallbackRef.current) {
+                                audioCallbackRef.current();
+                                audioCallbackRef.current = null;
+                            }
+
+                            if (etapaAbierta) {
+                                verificarEtapaCompletada(etapaAbierta);
+                                saveFlipCardProgress();
+                            }
+                        };
+
+                        utterance.onerror = (e) => {
+                            console.error("❌ Error al reiniciar audio:", e);
+                            utteranceRef.current = null;
+                            audioTextRef.current = null;
+                            wasPlayingRef.current = false;
+                            setIsPlaying(false);
+                            setAudioEnReproduccion(false);
+                        };
+
+                        synth.speak(utterance);
+                    }, 300);
+                }
+            }
         };
 
-        window.addEventListener('touchstart', handleUserInteraction);
-        window.addEventListener('click', handleUserInteraction);
+        const handleWindowBlur = () => {
+            if (synth.speaking) {
+                console.log("🔇 Ventana perdió foco - Cancelando audio");
+                synth.cancel();
+            }
+        };
 
+        const handleWindowFocus = () => {
+            console.log("👁️ Ventana recuperó foco");
+            
+            if (wasPlayingRef.current && audioTextRef.current && mejorVoz) {
+                console.log("🔄 Reiniciando audio desde el principio...");
+                
+                setTimeout(() => {
+                    const utterance = new SpeechSynthesisUtterance(audioTextRef.current);
+                    utterance.voice = mejorVoz;
+                    utterance.lang = 'es-ES';
+                    utterance.rate = 0.9;
+                    utterance.pitch = 1;
+                    utterance.volume = 0.8;
+
+                    utteranceRef.current = utterance;
+
+                    utterance.onstart = () => {
+                        setIsPlaying(true);
+                        setAudioEnReproduccion(true);
+                        console.log("🔊 Audio reiniciado correctamente");
+                    };
+
+                    utterance.onend = () => {
+                        utteranceRef.current = null;
+                        audioTextRef.current = null;
+                        wasPlayingRef.current = false;
+                        setIsPlaying(false);
+                        setAudioCompletado(true);
+                        setAudioEnReproduccion(false);
+                        console.log("✅ Audio completado");
+                        
+                        if (audioCallbackRef.current) {
+                            audioCallbackRef.current();
+                            audioCallbackRef.current = null;
+                        }
+
+                        if (etapaAbierta) {
+                            verificarEtapaCompletada(etapaAbierta);
+                            saveFlipCardProgress();
+                        }
+                    };
+
+                    utterance.onerror = (e) => {
+                        console.error("❌ Error al reiniciar audio:", e);
+                        utteranceRef.current = null;
+                        audioTextRef.current = null;
+                        wasPlayingRef.current = false;
+                        setIsPlaying(false);
+                        setAudioEnReproduccion(false);
+                    };
+
+                    synth.speak(utterance);
+                }, 300);
+            }
+        };
+
+        // Event listeners
+        document.addEventListener('visibilitychange', handleVisibilityChange);
+        window.addEventListener('blur', handleWindowBlur);
+        window.addEventListener('focus', handleWindowFocus);
+
+        // Cleanup
         return () => {
-            window.removeEventListener('touchstart', handleUserInteraction);
-            window.removeEventListener('click', handleUserInteraction);
+            document.removeEventListener('visibilitychange', handleVisibilityChange);
+            window.removeEventListener('blur', handleWindowBlur);
+            window.removeEventListener('focus', handleWindowFocus);
+            
+            if (synth.speaking) {
+                synth.cancel();
+            }
+            
+            audioTextRef.current = null;
+            audioCallbackRef.current = null;
+            wasPlayingRef.current = false;
+            utteranceRef.current = null;
         };
-    }, []);
+    }, [mejorVoz, etapaAbierta, verificarEtapaCompletada, saveFlipCardProgress]);
+
 
     return (
         <div className='w-full mx-auto pt-10 pb-14 lg:pb-0' data-aos="fade-up" data-aos-delay={300} data-aos-duration="600">
