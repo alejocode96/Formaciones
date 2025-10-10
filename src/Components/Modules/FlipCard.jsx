@@ -351,9 +351,17 @@ function FlipCard({ cards, onContentIsEnded, courseId, moduleId }) {
             setMostrarCards(true);
         };
 
+        // 🔹 Si ocurre error o el navegador bloquea la reproducción
+        utterance.onerror = (e) => {
+            console.warn("⚠️ No se pudo reproducir el audio introductorio:", e);
+            clearTimeout(timeoutFallback);
+            setAudioEnReproduccion(false);
+            setMostrarCards(true);
+        };
         window.speechSynthesis.cancel(); // por si había otro audio
         window.speechSynthesis.speak(utterance);
     }, [mejorVoz, audioIntroReproducido]);
+
     useEffect(() => {
         const handleUserInteraction = () => {
             window.speechSynthesis.resume(); // Desbloquea en iOS/Android
