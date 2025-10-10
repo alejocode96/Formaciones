@@ -165,7 +165,11 @@ function FlipCard({ cards, onContentIsEnded, courseId, moduleId }) {
 
             // 🟢 NUEVO: Verifica si al terminar este audio ya se completó toda la etapa
 
-            saveFlipCardProgress(); // 💾 Guardar progreso inmediatamente
+            if (etapaAbierta) {
+                console.log('entra')
+                verificarEtapaCompletada(etapaAbierta);
+                saveFlipCardProgress(); // 💾 Guardar progreso inmediatamente
+            }
 
         };
 
