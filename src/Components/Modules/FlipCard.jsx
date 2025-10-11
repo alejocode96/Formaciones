@@ -544,7 +544,7 @@ function FlipCard({ cards, onContentIsEnded, courseId, moduleId }) {
     return (
         <div className='w-full mx-auto pt-10 pb-14 lg:pb-0' data-aos="fade-up" data-aos-delay={300} data-aos-duration="600">
             {/* 🔹 INTRODUCCIÓN SIMPLIFICADA - Solo texto */}
-            {!audioCompletado && etapaAbierta === null && audioEnReproduccion && (
+            {etapaAbierta === null && audioEnReproduccion && (
                 <div className="text-center px-6 py-10 max-w-3xl mx-auto animate-fadeIn" data-aos="fade-up">
                     <h1 className="text-2xl md:text-3xl font-bold text-white mb-4">
                         Etapas del SARLAFT
