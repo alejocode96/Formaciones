@@ -11,6 +11,7 @@ function FlipCard({ cards, onContentIsEnded, courseId, moduleId }) {
     const currentCharIndexRef = React.useRef(0);
     const remainingTextRef = React.useRef("");
     const currentCallbackRef = React.useRef(null);
+    const audioTimeoutRef = React.useRef(null); // 🟢 NUEVO: Para detectar fallos
 
     const { getUserProgressForCourse } = React.useContext(TrainingLogiTransContext);
 
@@ -25,7 +26,6 @@ function FlipCard({ cards, onContentIsEnded, courseId, moduleId }) {
     const [seccionActiva, setSeccionActiva] = useState(null);
     const [seccionesVistas, setSeccionesVistas] = useState({});
     const [audioCompletado, setAudioCompletado] = useState(false);
-    const [introMostrada, setIntroMostrada] = useState(false);
     const [audioEnReproduccion, setAudioEnReproduccion] = useState(false);
     const [audioIntroReproducido, setAudioIntroReproducido] = useState(false);
     const etapaActualData = etapaAbierta ? cards.find(e => e.id === etapaAbierta) : null;
@@ -33,6 +33,17 @@ function FlipCard({ cards, onContentIsEnded, courseId, moduleId }) {
     const [audioEnabled, setAudioEnabled] = useState(true);
     const [mejorVoz, setMejorVoz] = useState(null);
     const [isPlaying, setIsPlaying] = useState(false);
+    
+    // 🟢 NUEVO: Detectar móvil y requerir interacción
+    const [isMobile, setIsMobile] = useState(false);
+    const [requiereInteraccionMovil, setRequiereInteraccionMovil] = useState(false);
+
+    // 🟢 Detectar si es móvil al cargar
+    useEffect(() => {
+        const checkMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        setIsMobile(checkMobile);
+        setRequiereInteraccionMovil(checkMobile); // Solo móviles necesitan click inicial
+    }, []);
 
     // 🔹 CARGAR PROGRESO DESDE EL CONTEXTO/LOCALSTORAGE AL MONTAR
     useEffect(() => {
@@ -50,7 +61,6 @@ function FlipCard({ cards, onContentIsEnded, courseId, moduleId }) {
     }, [courseProgress, moduleId]);
 
     // 🔹 GUARDAR PROGRESO EN LOCALSTORAGE CADA VEZ QUE CAMBIE
-    // 🟢 Función reutilizable para guardar progreso
     const saveFlipCardProgress = useCallback(() => {
         if (!courseProgress) return;
         try {
@@ -73,14 +83,13 @@ function FlipCard({ cards, onContentIsEnded, courseId, moduleId }) {
             allProgress[courseId] = updatedCourseProgress;
             localStorage.setItem("userProgress", JSON.stringify(allProgress));
 
-            console.log('💾 Progreso de FlipCard guardado en localStorage (manual)');
+            console.log('💾 Progreso de FlipCard guardado en localStorage');
         } catch (error) {
             console.error('❌ Error al guardar progreso de FlipCard:', error);
         }
-    }, [seccionesVistas, etapasCompletadas]);
+    }, [seccionesVistas, etapasCompletadas, etapaActiva, courseId, moduleId, courseProgress]);
 
 
-    // 🟣 Mantén este efecto para autoguardado cuando cambien estados
     useEffect(() => {
         if (Object.keys(seccionesVistas).length > 0 || etapasCompletadas.length > 0) {
             saveFlipCardProgress();
@@ -137,8 +146,14 @@ function FlipCard({ cards, onContentIsEnded, courseId, moduleId }) {
         }
     }, []);
 
-    // 🔹 MODIFICADO: Agregado parámetro yaVista para mantener audioCompletado en true
+    // 🟢 MODIFICADO: Ahora con timeout para detectar fallos y habilitar contenido
     const reproducirAudio = useCallback((texto, callback, yaVista = false, esUltimaSeccion = false) => {
+        // Limpiar timeout anterior si existe
+        if (audioTimeoutRef.current) {
+            clearTimeout(audioTimeoutRef.current);
+            audioTimeoutRef.current = null;
+        }
+
         window.speechSynthesis.cancel();
         setIsPlaying(false);
         setAudioEnReproduccion(false);
@@ -162,18 +177,22 @@ function FlipCard({ cards, onContentIsEnded, courseId, moduleId }) {
         utterance.pitch = 1;
         utterance.volume = 0.8;
 
-        utterance.onstart = () => setIsPlaying(true);
+        utterance.onstart = () => {
+            setIsPlaying(true);
+            // Limpiar timeout si el audio sí inició
+            if (audioTimeoutRef.current) {
+                clearTimeout(audioTimeoutRef.current);
+                audioTimeoutRef.current = null;
+            }
+        };
 
         utterance.onend = () => {
             setIsPlaying(false);
             setAudioCompletado(true);
             setAudioEnReproduccion(false);
 
-
-            // 🟢 Ejecutar primero el callback (marca sección como vista)
             if (callback) callback();
 
-            // 🟢 Si es la última sección, espera un tick para verificar
             if (esUltimaSeccion && etapaAbierta) {
                 setTimeout(() => {
                     console.log('✅ Última sección completada, verificando etapa...');
@@ -182,16 +201,40 @@ function FlipCard({ cards, onContentIsEnded, courseId, moduleId }) {
             }
         };
 
-        utterance.onerror = () => {
+        utterance.onerror = (event) => {
+            console.warn('⚠️ Error en audio, habilitando contenido:', event);
             setIsPlaying(false);
             setAudioEnReproduccion(false);
+            setAudioCompletado(true);
+            if (callback) callback();
         };
+
         currentUtteranceRef.current = utterance;
         utterance.onboundary = (event) => {
             currentCharIndexRef.current = event.charIndex;
         };
-        window.speechSynthesis.speak(utterance);
-    }, [audioEnabled, mejorVoz, etapaAbierta]);
+
+        try {
+            window.speechSynthesis.speak(utterance);
+            
+            // 🟢 TIMEOUT: Si después de 2 segundos no inició, habilitar contenido
+            audioTimeoutRef.current = setTimeout(() => {
+                if (!isPlaying) {
+                    console.warn('⚠️ Audio no se inició en 2s, habilitando contenido automáticamente');
+                    window.speechSynthesis.cancel();
+                    setIsPlaying(false);
+                    setAudioEnReproduccion(false);
+                    setAudioCompletado(true);
+                    if (callback) callback();
+                }
+            }, 2000);
+            
+        } catch (error) {
+            console.error('❌ Error al reproducir audio:', error);
+            setAudioCompletado(true);
+            if (callback) callback();
+        }
+    }, [audioEnabled, mejorVoz, etapaAbierta, isPlaying]);
 
 
     useEffect(() => {
@@ -210,11 +253,12 @@ function FlipCard({ cards, onContentIsEnded, courseId, moduleId }) {
         }
     }, [seccionesVistas]);
 
-    // 🟣 Controlar pausa/reanudación de audio al cambiar de pestaña o salir de la página
+    // 🟢 MODIFICADO: Solo en desktop
     useEffect(() => {
+        if (isMobile) return; // No ejecutar en móviles
+
         const handleVisibilityChange = () => {
             if (document.hidden) {
-                // 🛑 Si la pestaña pierde el foco → detener y guardar posición
                 if (window.speechSynthesis.speaking && currentUtteranceRef.current) {
                     const textoOriginal = currentUtteranceRef.current.text;
                     const posicion = currentCharIndexRef.current;
@@ -236,7 +280,6 @@ function FlipCard({ cards, onContentIsEnded, courseId, moduleId }) {
                     currentCharIndexRef.current = event.charIndex;
                 };
 
-                // 🟢 Asegura que al terminar reanude el comportamiento normal
                 utterance.onend = () => {
                     if (typeof currentCallbackRef.current === 'function') {
                         currentCallbackRef.current();
@@ -247,21 +290,9 @@ function FlipCard({ cards, onContentIsEnded, courseId, moduleId }) {
                     currentCallbackRef.current = null;
                     setIsPlaying(false);
                     setAudioEnReproduccion(false);
-                    setAudioCompletado(true); // 👈 Marca el audio como completado
+                    setAudioCompletado(true);
                     console.log("✅ Audio reanudado completamente y marcado como completado");
-
-
-
-                    // 🟢 Si es la última sección, espera un tick para verificar
-                    // if (esUltimaSeccion && etapaAbierta) {
-                    //     setTimeout(() => {
-                    //         console.log('✅ Última sección completada, verificando etapa...');
-                    //         verificarEtapaCompletada(etapaAbierta);
-                    //     }, 200);
-                    // }
                 };
-
-
 
                 currentUtteranceRef.current = utterance;
                 window.speechSynthesis.speak(utterance);
@@ -269,7 +300,6 @@ function FlipCard({ cards, onContentIsEnded, courseId, moduleId }) {
                 setAudioEnReproduccion(true);
                 console.log("▶️ Audio reanudado al volver a la pestaña");
             }
-
         };
 
         document.addEventListener("visibilitychange", handleVisibilityChange);
@@ -277,11 +307,85 @@ function FlipCard({ cards, onContentIsEnded, courseId, moduleId }) {
             document.removeEventListener("visibilitychange", handleVisibilityChange);
             window.speechSynthesis.cancel();
         };
-    }, [mejorVoz]);
+    }, [mejorVoz, isMobile]);
+
+    // 🟢 NUEVO: Función para iniciar desde móvil con interacción del usuario
+    const iniciarDesdeMovil = () => {
+        setRequiereInteraccionMovil(false);
+        
+        if (!audioEnabled || !mejorVoz) {
+            setMostrarCards(true);
+            return;
+        }
+
+        // Reproducir intro con interacción del usuario
+        const textoIntro = "Etapas del SARLAFT. El SARLAFT funciona como un ciclo de protección que nunca se detiene. Sus etapas son: identificación, medición, control y monitoreo. Haz clic sobre cada etapa para ver su información.";
+        
+        const utterance = new SpeechSynthesisUtterance(textoIntro);
+        utterance.voice = mejorVoz;
+        utterance.lang = 'es-ES';
+        utterance.rate = 0.9;
+        utterance.pitch = 1;
+
+        utterance.onend = () => {
+            setAudioEnReproduccion(false);
+            setMostrarCards(true);
+            setAudioIntroReproducido(true);
+        };
+
+        utterance.onerror = () => {
+            console.warn('⚠️ Error en intro, mostrando cards');
+            setMostrarCards(true);
+            setAudioIntroReproducido(true);
+        };
+
+        try {
+            window.speechSynthesis.cancel();
+            window.speechSynthesis.speak(utterance);
+            setAudioEnReproduccion(true);
+            
+            // Timeout de seguridad
+            setTimeout(() => {
+                if (!mostrarCards) {
+                    console.warn('⚠️ Timeout intro, mostrando cards');
+                    setMostrarCards(true);
+                    setAudioIntroReproducido(true);
+                }
+            }, 15000); // 15 segundos máximo para la intro
+        } catch (error) {
+            console.error('❌ Error al reproducir intro:', error);
+            setMostrarCards(true);
+            setAudioIntroReproducido(true);
+        }
+    };
+
+    // 🟢 MODIFICADO: Reproducir intro automáticamente solo en desktop
+    useEffect(() => {
+        if (audioIntroReproducido || !mejorVoz || isMobile) return;
+        
+        setAudioIntroReproducido(true);
+        setAudioEnReproduccion(true);
+        setMostrarCards(false);
+
+        const textoIntro = "Etapas del SARLAFT. El SARLAFT funciona como un ciclo de protección que nunca se detiene. Sus etapas son: identificación, medición, control y monitoreo. Haz clic sobre cada etapa para ver su información.";
+
+        const utterance = new SpeechSynthesisUtterance(textoIntro);
+        utterance.voice = mejorVoz;
+        utterance.lang = 'es-ES';
+        utterance.rate = 0.9;
+        utterance.pitch = 1;
+
+        utterance.onend = () => {
+            setAudioEnReproduccion(false);
+            setMostrarCards(true);
+        };
+        utterance.onerror = () => {setMostrarCards(true);}
+        
+        window.speechSynthesis.cancel();
+        window.speechSynthesis.speak(utterance);
+    }, [mejorVoz, audioIntroReproducido, isMobile]);
 
 
-
-    // 🔹 MODIFICADO: Ahora verifica si ya está vista y pasa el flag a reproducirAudio
     const abrirEtapa = (etapaId) => {
         if (etapaId > etapaActiva) return;
 
@@ -291,17 +395,14 @@ function FlipCard({ cards, onContentIsEnded, courseId, moduleId }) {
         const etapa = cards.find(e => e.id === etapaId);
         const seccionKey = `${etapaId}-objetivo`;
 
-        // 🔹 Si ya está vista, mantener audioCompletado en true mientras reproduce
         const yaVista = seccionesVistas[seccionKey] === true;
         if (yaVista) {
             setAudioCompletado(true);
         }
 
-        // 🟢 Determinar si objetivo es la única y última sección
         const todasLasSecciones = ['objetivo', ...etapa.secciones.map(s => s.id)];
         const esUltimaSeccion = todasLasSecciones.length === 1;
 
-        // 🔹 Siempre reproducir audio, pasando el flag de yaVista
         reproducirAudio(etapa.audioObjetivo, () => {
             setSeccionesVistas(prev => ({
                 ...prev,
@@ -334,36 +435,29 @@ function FlipCard({ cards, onContentIsEnded, courseId, moduleId }) {
 
         const currentKey = `${etapaAbierta}-${seccionActual}`;
 
-        // Retroceder siempre
         if (indexNueva < indexActual) return true;
-
-        // Avanzar si la sección actual ya fue vista (ya escuchaste el audio) 
         if (seccionesVistas[currentKey]) return true;
 
-        // Bloquear si no se cumple
         return false;
     };
 
-
-    // 🔹 MODIFICADO: Ahora verifica si ya está vista y pasa el flag a reproducirAudio
     const cambiarSeccion = (nuevaSeccion) => {
         if (!etapaAbierta) return;
 
         const etapa = cards.find(e => e.id === etapaAbierta);
         const seccionKey = `${etapaAbierta}-${nuevaSeccion}`;
         const yaVista = seccionesVistas[seccionKey] === true;
-        // 🟢 Determinar si es la última sección
+
         const todasLasSecciones = ['objetivo', ...etapa.secciones.map(s => s.id)];
         const esUltimaSeccion = nuevaSeccion === todasLasSecciones[todasLasSecciones.length - 1];
 
         setSeccionActiva(nuevaSeccion);
-        setAudioCompletado(yaVista); // ✅ mantener si ya se vio
+        setAudioCompletado(yaVista);
 
         const reproducir = (texto) => {
             reproducirAudio(texto, () => {
                 setSeccionesVistas(prev => ({ ...prev, [seccionKey]: true }));
                 verificarEtapaCompletada(etapaAbierta);
-                // ✅ reafirmar completado si ya estaba vista
                 if (yaVista) setAudioCompletado(true);
             }, yaVista, esUltimaSeccion);
         };
@@ -376,22 +470,19 @@ function FlipCard({ cards, onContentIsEnded, courseId, moduleId }) {
         }
     };
 
-
     const verificarEtapaCompletada = (etapaId) => {
         const etapa = cards.find(e => e.id === etapaId);
         const todasLasSecciones = ['objetivo', ...etapa.secciones.map(s => s.id)];
-        console.log('verificando etapa', etapa)
+        
         const todasVistas = todasLasSecciones.every(seccion =>
             seccionesVistas[`${etapaId}-${seccion}`] === true
         );
-        console.log('vistas', todasVistas, ' ', etapasCompletadas)
+        
         if (todasVistas && !etapasCompletadas.includes(etapaId)) {
-            console.log('entra verificando etapa', etapasCompletadas)
             setEtapasCompletadas(prev => [...prev, etapaId]);
-            console.log(etapasCompletadas)
+            
             if (etapaId < cards.length) {
                 setEtapaActiva(etapaId + 1);
-                console.log('entra2 verificando etapa', etapaActiva)
             }
 
             if (etapaId === cards.length) {
@@ -402,17 +493,14 @@ function FlipCard({ cards, onContentIsEnded, courseId, moduleId }) {
     };
 
     const siguienteSeccion = () => {
-
         if (!etapaAbierta) return;
         const etapa = cards.find(e => e.id === etapaAbierta);
         const secciones = ['objetivo', ...etapa.secciones.map(s => s.id)];
         const currentIndex = secciones.indexOf(seccionActiva);
 
         if (currentIndex < secciones.length - 1) {
-            const siguienteSeccionKey = `${etapaAbierta}-${secciones[currentIndex + 1]}`;
             const currentKey = `${etapaAbierta}-${seccionActiva}`;
 
-            // 🔹 Avanzar si la sección actual ya fue vista
             if (seccionesVistas[currentKey]) {
                 cambiarSeccion(secciones[currentIndex + 1]);
             }
@@ -428,48 +516,46 @@ function FlipCard({ cards, onContentIsEnded, courseId, moduleId }) {
         if (currentIndex > 0) {
             const seccionAnterior = secciones[currentIndex - 1];
             const keyAnterior = `${etapaAbierta}-${seccionAnterior}`;
-
-            // ✅ Si la anterior ya fue vista, no bloquees el siguiente botón al volver
             const yaVista = seccionesVistas[keyAnterior] === true;
             setAudioCompletado(yaVista);
-
             cambiarSeccion(seccionAnterior);
         }
     };
 
-    // 🔹 Reproducir introducción solo una vez por carga
+    // Limpiar timeout al desmontar
     useEffect(() => {
-        if (audioIntroReproducido || !mejorVoz) return; // Ya se escuchó → no repetir
-        setAudioIntroReproducido(true); // Marcar como ya reproducida
-
-        setAudioEnReproduccion(true);
-        setMostrarCards(false);
-
-        const textoIntro =
-            "Etapas del SARLAFT. El SARLAFT funciona como un ciclo de protección que nunca se detiene. Sus etapas son: identificación, medición, control y monitoreo. Haz clic sobre cada etapa para ver su información.";
-
-        const utterance = new SpeechSynthesisUtterance(textoIntro);
-        utterance.voice = mejorVoz;
-        utterance.lang = 'es-ES';
-        utterance.rate = 0.9;
-        utterance.pitch = 1;
-
-        utterance.onend = () => {
-            setAudioEnReproduccion(false);
-            setMostrarCards(true);
+        return () => {
+            if (audioTimeoutRef.current) {
+                clearTimeout(audioTimeoutRef.current);
+            }
         };
-        utterance.onerror = () => {setMostrarCards(true);}
-        
-        window.speechSynthesis.cancel(); // por si había otro audio
-        window.speechSynthesis.speak(utterance);
-    }, [mejorVoz, audioIntroReproducido]);
-
-
+    }, []);
 
     return (
         <div className='w-full mx-auto pt-10 pb-14 lg:pb-0' data-aos="fade-up" data-aos-delay={300} data-aos-duration="600">
-            {/* 🔹 INTRODUCCIÓN ANTES DE LAS ETAPAS */}
-            {!audioCompletado && etapaAbierta === null && (
+            {/* 🟢 BOTÓN SOLO PARA MÓVILES */}
+            {requiereInteraccionMovil && (
+                <div className="text-center px-6 py-10 max-w-3xl mx-auto animate-fadeIn">
+                    <h1 className="text-2xl md:text-3xl font-bold text-white mb-4">
+                        Etapas del SARLAFT
+                    </h1>
+                    <p className="text-slate-300 text-sm md:text-base leading-relaxed mb-8">
+                        El SARLAFT funciona como un ciclo de protección que nunca se detiene. Sus etapas son: identificación, medición, control y monitoreo.
+                    </p>
+                    <button
+                        onClick={iniciarDesdeMovil}
+                        className="px-8 py-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl font-bold text-lg hover:scale-105 transition-transform shadow-lg"
+                    >
+                        📱 Comenzar
+                    </button>
+                    <p className="text-slate-400 text-xs mt-4">
+                        Toca para iniciar el contenido
+                    </p>
+                </div>
+            )}
+
+            {/* 🔹 INTRODUCCIÓN ANTES DE LAS ETAPAS (Desktop) */}
+            {!isMobile && !audioCompletado && etapaAbierta === null && audioEnReproduccion && (
                 <div className="text-center px-6 py-10 max-w-3xl mx-auto animate-fadeIn" data-aos="fade-up">
                     <h1 className="text-2xl md:text-3xl font-bold text-white mb-0">
                         Etapas del SARLAFT
@@ -477,16 +563,17 @@ function FlipCard({ cards, onContentIsEnded, courseId, moduleId }) {
                     <p className="text-slate-300 text-sm md:text-base leading-relaxed mb-6">
                         El SARLAFT funciona como un ciclo de protección que nunca se detiene. Sus etapas son:
                     </p>
-
-
+                    <div className="animate-pulse">
+                        <Volume2 size={48} className="mx-auto text-blue-400" />
+                    </div>
                 </div>
             )}
+
             {mostrarCards && (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6" data-aos="fade-up">
                     {cards.map((etapa) => {
                         const estaBloqueada = etapa.id > etapaActiva;
                         const estaCompletada = etapasCompletadas.includes(etapa.id);
-
 
                         return (
                             <button
@@ -531,9 +618,7 @@ function FlipCard({ cards, onContentIsEnded, courseId, moduleId }) {
             )}
 
             {etapaAbierta && etapaActualData && (
-
                 <ModalFlipCard etapaActualData={etapaActualData} onClose={cerrarModal}>
-
                     <div className="p-2 md:p-4 space-y-2">
                         {seccionActiva === 'objetivo' && (
                             <div className="space-y-2 animate-fadeIn">
@@ -575,7 +660,7 @@ function FlipCard({ cards, onContentIsEnded, courseId, moduleId }) {
                                 })()}
                             </div>
                         )}
-                    </div>
+         </div>
 
                     <div className="bg-[#151518] border-t-2 border-slate-700 p-4">
                         <div className="flex items-center justify-between gap-1 md:gap-4">
