@@ -38,6 +38,7 @@ function FlipCard({ cards, onContentIsEnded, courseId, moduleId }) {
     // 🟢 Detectar móvil
     const [isMobile, setIsMobile] = useState(false);
     const [interaccionInicialMovil, setInteraccionInicialMovil] = useState(false);
+    const botonInvisibleRef = React.useRef(null); // 🟢 Ref para botón invisible
 
     // 🟢 Detectar si es móvil al cargar
     useEffect(() => {
@@ -321,18 +322,30 @@ function FlipCard({ cards, onContentIsEnded, courseId, moduleId }) {
         };
     }, [mejorVoz, isMobile]);
 
-    // 🟢 NUEVO: Simular interacción en móvil automáticamente
+    // 🟢 NUEVO: Simular interacción en móvil con click real
     useEffect(() => {
         if (!isMobile || interaccionInicialMovil || !mejorVoz || audioIntroReproducido) return;
 
         // Simular click del usuario en móvil después de cargar
         const simularInteraccion = () => {
-            setInteraccionInicialMovil(true);
-            reproducirIntroMovil();
+            // Crear evento de click real para desbloquear audio en móviles
+            const clickEvent = new MouseEvent('click', {
+                view: window,
+                bubbles: true,
+                cancelable: true
+            });
+            
+            document.body.dispatchEvent(clickEvent);
+            
+            // Pequeño delay después del click simulado
+            setTimeout(() => {
+                setInteraccionInicialMovil(true);
+                reproducirIntroMovil();
+            }, 100);
         };
 
         // Esperar un momento para que todo cargue
-        const timer = setTimeout(simularInteraccion, 800);
+        const timer = setTimeout(simularInteraccion, 1000);
         return () => clearTimeout(timer);
     }, [isMobile, mejorVoz, audioIntroReproducido, interaccionInicialMovil]);
 
