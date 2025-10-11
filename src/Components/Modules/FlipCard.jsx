@@ -437,15 +437,11 @@ function FlipCard({ cards, onContentIsEnded, courseId, moduleId }) {
         }
     };
 
+    // 🔹 Reproducir introducción solo una vez por carga
     useEffect(() => {
-        if (audioIntroReproducido) return;
+        if (audioIntroReproducido || !mejorVoz) return; // Ya se escuchó → no repetir
+        setAudioIntroReproducido(true); // Marcar como ya reproducida
 
-        if (!mejorVoz || !window.speechSynthesis) {
-            console.warn("⚠️ No hay voz disponible o speechSynthesis no soportado aún.");
-            return; // Espera a que mejorVoz esté disponible en el siguiente render
-        }
-
-        setAudioIntroReproducido(true); // Solo se marca como reproducido una vez que mejorVoz está listo
         setAudioEnReproduccion(true);
         setMostrarCards(false);
 
@@ -458,34 +454,14 @@ function FlipCard({ cards, onContentIsEnded, courseId, moduleId }) {
         utterance.rate = 0.9;
         utterance.pitch = 1;
 
-        const fallbackTimeout = setTimeout(() => {
-            console.warn("⏳ Timeout: activando mostrarCards por fallback (audio no inició)");
-            window.speechSynthesis.cancel();
-            setAudioEnReproduccion(false);
-            setMostrarCards(true);
-        }, 8000); // Tiempo estimado para que inicie o termine el audio
-
         utterance.onend = () => {
-            clearTimeout(fallbackTimeout);
-            setAudioEnReproduccion(false);
-            setMostrarCards(true);
-            console.log("✅ Introducción finalizada correctamente");
-        };
-
-        utterance.onerror = (e) => {
-            console.error("❌ Error al reproducir audio de introducción:", e);
-            clearTimeout(fallbackTimeout);
             setAudioEnReproduccion(false);
             setMostrarCards(true);
         };
-
-        window.speechSynthesis.cancel(); // Detener audios previos
+        utterance.onerror = () => {setMostrarCards(true);}
+        
+        window.speechSynthesis.cancel(); // por si había otro audio
         window.speechSynthesis.speak(utterance);
-
-        return () => {
-            clearTimeout(fallbackTimeout);
-            window.speechSynthesis.cancel();
-        };
     }, [mejorVoz, audioIntroReproducido]);
 
 
