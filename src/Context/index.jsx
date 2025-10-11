@@ -337,6 +337,7 @@ function TrainingLogiTransProvider({ children }) {
     };
 
     //funcion para completar modulo
+    //funcion para completar modulo
     const completeModule = (courseId, moduleId, attempts = 1) => {
         const courseIdNum = parseInt(courseId);
         const moduleIdNum = parseInt(moduleId);
@@ -372,22 +373,37 @@ function TrainingLogiTransProvider({ children }) {
         const completedCount = updatedCompletedModules.length;
         const cumplimiento = Math.round((completedCount / totalModules) * 100);
 
-        // Actualizar el progreso
+        // 🟢 LEER PRIMERO el localStorage para obtener datos más recientes
+        const storedProgress = localStorage.getItem("userProgress");
+        const allStoredProgress = storedProgress ? JSON.parse(storedProgress) : {};
+        const currentStoredCourseProgress = allStoredProgress[courseIdNum] || currentProgress;
+
+        // 🟢 PRESERVAR flipCardProgress y otros datos que puedan existir
         const updatedProgress = {
             ...currentProgress,
+            ...currentStoredCourseProgress, // Tomar datos más recientes del localStorage
             currentModule: nextModule,
             completedModules: updatedCompletedModules,
             cumplimiento,
-            lastAccessAt: new Date().toISOString()
+            lastAccessAt: new Date().toISOString(),
+            // 🟢 PRESERVAR explícitamente flipCardProgress
+            flipCardProgress: currentStoredCourseProgress.flipCardProgress || currentProgress.flipCardProgress || {}
         };
 
         const newProgress = {
             ...userProgress,
+            ...allStoredProgress, // Mantener todo lo que ya existe en localStorage
             [courseIdNum]: updatedProgress
         };
 
         setUserProgress(newProgress);
         localStorage.setItem("userProgress", JSON.stringify(newProgress));
+
+        console.log('✅ Módulo completado - Progreso guardado:', {
+            moduleId: moduleIdNum,
+            flipCardProgress: updatedProgress.flipCardProgress,
+            completedModules: updatedCompletedModules
+        });
 
         return true;
     };

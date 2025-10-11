@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useLocation } from 'react-router-dom';
 import { TrainingLogiTransContext } from '../../Context';
 
@@ -12,7 +12,12 @@ function FlipCard({ cards, onContentIsEnded, courseId, moduleId }) {
     const remainingTextRef = React.useRef("");
     const currentCallbackRef = React.useRef(null);
 
-    const { getUserProgressForCourse } = React.useContext(TrainingLogiTransContext);
+    // 🟢 Refs para mantener los valores más recientes de los estados
+    const seccionesVistasRef = useRef({});
+    const etapasCompletadasRef = useRef([]);
+    const etapaActivaRef = useRef(1);
+
+    const { getUserProgressForCourse,completeModule } = React.useContext(TrainingLogiTransContext);
 
     // 🔹 Obtener progreso del curso desde el contexto
     const courseProgress = getUserProgressForCourse(parseInt(courseId));
@@ -35,6 +40,19 @@ function FlipCard({ cards, onContentIsEnded, courseId, moduleId }) {
     const [mejorVoz, setMejorVoz] = useState(null);
     const [isPlaying, setIsPlaying] = useState(false);
 
+    // 🟢 Actualizar refs cuando cambien los estados
+    useEffect(() => {
+        seccionesVistasRef.current = seccionesVistas;
+    }, [seccionesVistas]);
+
+    useEffect(() => {
+        etapasCompletadasRef.current = etapasCompletadas;
+    }, [etapasCompletadas]);
+
+    useEffect(() => {
+        etapaActivaRef.current = etapaActiva;
+    }, [etapaActiva]);
+
     // 🔹 CARGAR PROGRESO DESDE EL CONTEXTO/LOCALSTORAGE AL MONTAR
     useEffect(() => {
         if (courseProgress && courseProgress.flipCardProgress) {
@@ -50,44 +68,90 @@ function FlipCard({ cards, onContentIsEnded, courseId, moduleId }) {
         }
     }, [courseProgress, moduleId]);
 
-    // 🔹 GUARDAR PROGRESO EN LOCALSTORAGE CADA VEZ QUE CAMBIE
-    // 🟢 Función reutilizable para guardar progreso
-    const saveFlipCardProgress = useCallback(() => {
-        if (!courseProgress) return;
+    // 🟢 Función DIRECTA para guardar en localStorage COMBINANDO datos existentes
+    // 🟢 Guardar siempre fusionando con lo que ya existe
+    const guardarProgresoDirecto = useCallback((seccionesVistasActual, etapasCompletadasActual, etapaActivaActual) => {
         try {
             const storedProgress = localStorage.getItem("userProgress");
             const allProgress = storedProgress ? JSON.parse(storedProgress) : {};
+
+            // Mezclar con progreso existente sin borrar nada previo
+            const progresoPrevio =
+                allProgress?.[courseId]?.flipCardProgress?.[moduleId] || {};
+
+            const mergedSecciones = {
+                ...(progresoPrevio.seccionesVistas || {}),
+                ...seccionesVistasActual,
+            };
+
+            const mergedEtapas = Array.from(
+                new Set([...(progresoPrevio.etapasCompletadas || []), ...etapasCompletadasActual])
+            );
+
+            const todasEtapasCompletadas = mergedEtapas.length === cards.length;
 
             const updatedCourseProgress = {
                 ...allProgress[courseId],
                 flipCardProgress: {
                     ...allProgress[courseId]?.flipCardProgress,
                     [moduleId]: {
-                        seccionesVistas,
-                        etapasCompletadas,
-                        etapaActiva,
-                        lastUpdated: new Date().toISOString()
-                    }
-                }
+                        seccionesVistas: mergedSecciones,
+                        etapasCompletadas: mergedEtapas,
+                        etapaActiva: etapaActivaActual,
+                        completado: todasEtapasCompletadas,
+                        lastUpdated: new Date().toISOString(),
+                    },
+                },
             };
 
             allProgress[courseId] = updatedCourseProgress;
             localStorage.setItem("userProgress", JSON.stringify(allProgress));
 
-            console.log('💾 Progreso de FlipCard guardado en localStorage (manual)');
+            console.log("💾 Progreso fusionado guardado correctamente:", {
+                seccionesVistas: mergedSecciones,
+                etapasCompletadas: mergedEtapas,
+                etapaActiva: etapaActivaActual,
+            });
         } catch (error) {
-            console.error('❌ Error al guardar progreso de FlipCard:', error);
+            console.error("❌ Error al guardar progreso:", error);
         }
-    }, [seccionesVistas, etapasCompletadas]);
+    }, [courseId, moduleId, cards.length]);
 
 
-    // 🟣 Mantén este efecto para autoguardado cuando cambien estados
+    // 🟢 Función reutilizable para guardar progreso usando los estados actuales
+    const saveFlipCardProgress = useCallback(() => {
+        if (!courseProgress) return;
+        guardarProgresoDirecto(
+            seccionesVistasRef.current,
+            etapasCompletadasRef.current,
+            etapaActivaRef.current
+        );
+    }, [courseProgress, guardarProgresoDirecto]);
+
+    // 🟣 Efecto para autoguardado cuando cambien estados
     useEffect(() => {
         if (Object.keys(seccionesVistas).length > 0 || etapasCompletadas.length > 0) {
-            saveFlipCardProgress();
-        }
-    }, [seccionesVistas, etapaActiva, saveFlipCardProgress]);
+            const timeoutId = setTimeout(() => {
+                saveFlipCardProgress();
+            }, 150);
 
+            return () => clearTimeout(timeoutId);
+        }
+    }, [seccionesVistas, etapasCompletadas, etapaActiva, saveFlipCardProgress]);
+
+    // 🟢 Guardar progreso cuando el componente se desmonte
+    useEffect(() => {
+        return () => {
+            console.log('🔄 Componente desmontándose - Guardando progreso final');
+            if (Object.keys(seccionesVistasRef.current).length > 0 || etapasCompletadasRef.current.length > 0) {
+                guardarProgresoDirecto(
+                    seccionesVistasRef.current,
+                    etapasCompletadasRef.current,
+                    etapaActivaRef.current
+                );
+            }
+        };
+    }, [guardarProgresoDirecto]);
 
     useEffect(() => {
         const cargarVoces = () => {
@@ -170,16 +234,17 @@ function FlipCard({ cards, onContentIsEnded, courseId, moduleId }) {
             setAudioCompletado(true);
             setAudioEnReproduccion(false);
 
+            // 🟢 Ejecutar callback primero (marca sección como vista)
+            if (callback) {
+                callback();
+            }
 
-            // 🟢 Ejecutar primero el callback (marca sección como vista)
-            if (callback) callback();
-
-            // 🟢 Si es la última sección, espera un tick para verificar
+            // 🟢 Si es la última sección, esperar a que React actualice el estado
             if (esUltimaSeccion && etapaAbierta) {
                 setTimeout(() => {
                     console.log('✅ Última sección completada, verificando etapa...');
                     verificarEtapaCompletada(etapaAbierta);
-                }, 200);
+                }, 100);
             }
         };
 
@@ -193,7 +258,6 @@ function FlipCard({ cards, onContentIsEnded, courseId, moduleId }) {
         };
         window.speechSynthesis.speak(utterance);
     }, [audioEnabled, mejorVoz, etapaAbierta]);
-
 
     useEffect(() => {
         if (!etapaAbierta) return;
@@ -215,7 +279,6 @@ function FlipCard({ cards, onContentIsEnded, courseId, moduleId }) {
     useEffect(() => {
         const handleVisibilityChange = () => {
             if (document.hidden) {
-                // 🛑 Si la pestaña pierde el foco → detener y guardar posición
                 if (window.speechSynthesis.speaking && currentUtteranceRef.current) {
                     const textoOriginal = currentUtteranceRef.current.text;
                     const posicion = currentCharIndexRef.current;
@@ -237,7 +300,6 @@ function FlipCard({ cards, onContentIsEnded, courseId, moduleId }) {
                     currentCharIndexRef.current = event.charIndex;
                 };
 
-                // 🟢 Asegura que al terminar reanude el comportamiento normal
                 utterance.onend = () => {
                     if (typeof currentCallbackRef.current === 'function') {
                         currentCallbackRef.current();
@@ -258,7 +320,6 @@ function FlipCard({ cards, onContentIsEnded, courseId, moduleId }) {
                 setAudioEnReproduccion(true);
                 console.log("▶️ Audio reanudado al volver a la pestaña");
             }
-
         };
 
         document.addEventListener("visibilitychange", handleVisibilityChange);
@@ -268,9 +329,6 @@ function FlipCard({ cards, onContentIsEnded, courseId, moduleId }) {
         };
     }, [mejorVoz]);
 
-
-
-    // 🔹 MODIFICADO: Ahora verifica si ya está vista y pasa el flag a reproducirAudio
     const abrirEtapa = (etapaId) => {
         if (etapaId > etapaActiva) return;
 
@@ -280,17 +338,14 @@ function FlipCard({ cards, onContentIsEnded, courseId, moduleId }) {
         const etapa = cards.find(e => e.id === etapaId);
         const seccionKey = `${etapaId}-objetivo`;
 
-        // 🔹 Si ya está vista, mantener audioCompletado en true mientras reproduce
         const yaVista = seccionesVistas[seccionKey] === true;
         if (yaVista) {
             setAudioCompletado(true);
         }
 
-        // 🟢 Determinar si objetivo es la única y última sección
         const todasLasSecciones = ['objetivo', ...etapa.secciones.map(s => s.id)];
         const esUltimaSeccion = todasLasSecciones.length === 1;
 
-        // 🔹 Siempre reproducir audio, pasando el flag de yaVista
         reproducirAudio(etapa.audioObjetivo, () => {
             setSeccionesVistas(prev => ({
                 ...prev,
@@ -323,36 +378,35 @@ function FlipCard({ cards, onContentIsEnded, courseId, moduleId }) {
 
         const currentKey = `${etapaAbierta}-${seccionActual}`;
 
-        // Retroceder siempre
         if (indexNueva < indexActual) return true;
-
-        // Avanzar si la sección actual ya fue vista (ya escuchaste el audio) 
         if (seccionesVistas[currentKey]) return true;
 
-        // Bloquear si no se cumple
         return false;
     };
 
-
-    // 🔹 MODIFICADO: Ahora verifica si ya está vista y pasa el flag a reproducirAudio
     const cambiarSeccion = (nuevaSeccion) => {
         if (!etapaAbierta) return;
 
         const etapa = cards.find(e => e.id === etapaAbierta);
         const seccionKey = `${etapaAbierta}-${nuevaSeccion}`;
         const yaVista = seccionesVistas[seccionKey] === true;
-        // 🟢 Determinar si es la última sección
+
         const todasLasSecciones = ['objetivo', ...etapa.secciones.map(s => s.id)];
         const esUltimaSeccion = nuevaSeccion === todasLasSecciones[todasLasSecciones.length - 1];
 
         setSeccionActiva(nuevaSeccion);
-        setAudioCompletado(yaVista); // ✅ mantener si ya se vio
+        setAudioCompletado(yaVista);
 
         const reproducir = (texto) => {
             reproducirAudio(texto, () => {
                 setSeccionesVistas(prev => ({ ...prev, [seccionKey]: true }));
-                verificarEtapaCompletada(etapaAbierta);
-                // ✅ reafirmar completado si ya estaba vista
+
+                if (!esUltimaSeccion) {
+                    setTimeout(() => {
+                        verificarEtapaCompletada(etapaAbierta);
+                    }, 100);
+                }
+
                 if (yaVista) setAudioCompletado(true);
             }, yaVista, esUltimaSeccion);
         };
@@ -365,43 +419,67 @@ function FlipCard({ cards, onContentIsEnded, courseId, moduleId }) {
         }
     };
 
-
     const verificarEtapaCompletada = (etapaId) => {
         const etapa = cards.find(e => e.id === etapaId);
         const todasLasSecciones = ['objetivo', ...etapa.secciones.map(s => s.id)];
-        console.log('verificando etapa', etapa)
-        const todasVistas = todasLasSecciones.every(seccion =>
-            seccionesVistas[`${etapaId}-${seccion}`] === true
-        );
-        console.log('vistas', todasVistas, ' ', etapasCompletadas)
-        if (todasVistas && !etapasCompletadas.includes(etapaId)) {
-            console.log('entra verificando etapa', etapasCompletadas)
-            setEtapasCompletadas(prev => [...prev, etapaId]);
-            console.log(etapasCompletadas)
-            if (etapaId < cards.length) {
-                setEtapaActiva(etapaId + 1);
-                console.log('entra2 verificando etapa', etapaActiva)
-            }
 
-            if (etapaId === cards.length) {
-                console.log("🎉 Todo el contenido ha sido completado");
-                if (onContentIsEnded) onContentIsEnded();
+        // 🟢 Usar setTimeout para asegurar que los estados estén actualizados
+        setTimeout(() => {
+            const seccionesActuales = seccionesVistasRef.current;
+            const etapasCompletadasActuales = etapasCompletadasRef.current;
+
+            const todasVistas = todasLasSecciones.every(seccion =>
+                seccionesActuales[`${etapaId}-${seccion}`] === true
+            );
+
+            console.log('🔍 Verificando etapa:', etapaId);
+            console.log('📋 Secciones actuales:', seccionesActuales);
+            console.log('✅ Todas vistas:', todasVistas);
+
+            if (todasVistas && !etapasCompletadasActuales.includes(etapaId)) {
+                console.log('✅ Etapa completada:', etapaId);
+
+                const nuevasEtapasCompletadas = [...etapasCompletadasActuales, etapaId];
+                const nuevaEtapaActiva = etapaId < cards.length ? etapaId + 1 : etapaId;
+
+                // 🟢 Actualizar estados
+                setEtapasCompletadas(nuevasEtapasCompletadas);
+                if (etapaId < cards.length) {
+                    setEtapaActiva(nuevaEtapaActiva);
+                }
+
+                // 🟢 Guardar INMEDIATAMENTE con los valores correctos
+                guardarProgresoDirecto(
+                    seccionesActuales,
+                    nuevasEtapasCompletadas,
+                    nuevaEtapaActiva
+                );
+
+              
+
+                if (etapaId === cards.length) {
+                    console.log("🎉 Última etapa completada, guardando definitivamente...");
+                    guardarProgresoDirecto(seccionesActuales, nuevasEtapasCompletadas, nuevaEtapaActiva);
+
+                    setTimeout(() => {
+                        console.log("🚀 Llamando a onContentIsEnded");
+                        if (onContentIsEnded) onContentIsEnded();
+                    }, 800);
+                }
+
             }
-        }
+        }, 200);
     };
 
     const siguienteSeccion = () => {
-
         if (!etapaAbierta) return;
         const etapa = cards.find(e => e.id === etapaAbierta);
         const secciones = ['objetivo', ...etapa.secciones.map(s => s.id)];
         const currentIndex = secciones.indexOf(seccionActiva);
 
         if (currentIndex < secciones.length - 1) {
-            const siguienteSeccionKey = `${etapaAbierta}-${secciones[currentIndex + 1]}`;
             const currentKey = `${etapaAbierta}-${seccionActiva}`;
 
-            // 🔹 Avanzar si la sección actual ya fue vista
             if (seccionesVistas[currentKey]) {
                 cambiarSeccion(secciones[currentIndex + 1]);
             }
@@ -418,7 +496,6 @@ function FlipCard({ cards, onContentIsEnded, courseId, moduleId }) {
             const seccionAnterior = secciones[currentIndex - 1];
             const keyAnterior = `${etapaAbierta}-${seccionAnterior}`;
 
-            // ✅ Si la anterior ya fue vista, no bloquees el siguiente botón al volver
             const yaVista = seccionesVistas[keyAnterior] === true;
             setAudioCompletado(yaVista);
 
@@ -426,21 +503,17 @@ function FlipCard({ cards, onContentIsEnded, courseId, moduleId }) {
         }
     };
 
-    // 🔹 Reproducir introducción solo una vez por carga
     useEffect(() => {
         if (audioIntroReproducido || !mejorVoz) return;
-        
-        // 🟢 Detectar si estamos en móvil
+
         const esMovil = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-        
+
         if (esMovil) {
-            // En móvil, requerir interacción del usuario
             setRequiereInteraccion(true);
             setMostrarCards(false);
             return;
         }
 
-        // En desktop, intentar reproducir automáticamente
         iniciarAudioIntroduccion();
     }, [mejorVoz, audioIntroReproducido]);
 
@@ -459,7 +532,6 @@ function FlipCard({ cards, onContentIsEnded, courseId, moduleId }) {
         utterance.rate = 0.9;
         utterance.pitch = 1;
 
-        // 🟢 Timeout de seguridad: si el audio no inicia en 2 segundos, mostrar las cards
         const timeoutId = setTimeout(() => {
             if (!window.speechSynthesis.speaking) {
                 console.warn('⚠️ Audio bloqueado o no se pudo reproducir, mostrando cards');
@@ -478,27 +550,24 @@ function FlipCard({ cards, onContentIsEnded, courseId, moduleId }) {
             setAudioEnReproduccion(false);
             setMostrarCards(true);
         };
-        
+
         utterance.onerror = (error) => {
             clearTimeout(timeoutId);
             console.error('❌ Error en audio de introducción:', error);
             setAudioEnReproduccion(false);
             setMostrarCards(true);
         };
-        
+
         window.speechSynthesis.cancel();
         window.speechSynthesis.speak(utterance);
     };
 
-
-
     return (
         <div className='w-full mx-auto pt-10 pb-14 lg:pb-0' data-aos="fade-up" data-aos-delay={300} data-aos-duration="600">
-            {/* 🟢 PANTALLA TÁCTIL PARA MÓVILES */}
             {requiereInteraccion && (
-                <div 
+                <div
                     onClick={iniciarAudioIntroduccion}
-                    className="      bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 rounded-xl flex items-center justify-center z-50 cursor-pointer"
+                    className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 rounded-xl flex items-center justify-center z-50 cursor-pointer"
                 >
                     <div className="text-center animate-pulse py-2">
                         <p className="text-white text-2xl md:text-3xl font-light">
@@ -508,7 +577,6 @@ function FlipCard({ cards, onContentIsEnded, courseId, moduleId }) {
                 </div>
             )}
 
-            {/* 🔹 INTRODUCCIÓN ANTES DE LAS ETAPAS */}
             {!audioCompletado && etapaAbierta === null && !requiereInteraccion && (
                 <div className="text-center px-6 py-10 max-w-3xl mx-auto animate-fadeIn" data-aos="fade-up">
                     <h1 className="text-2xl md:text-3xl font-bold text-white mb-0">
@@ -517,8 +585,6 @@ function FlipCard({ cards, onContentIsEnded, courseId, moduleId }) {
                     <p className="text-slate-300 text-sm md:text-base leading-relaxed mb-6">
                         El SARLAFT funciona como un ciclo de protección que nunca se detiene. Sus etapas son:
                     </p>
-
-
                 </div>
             )}
             {mostrarCards && (
@@ -526,7 +592,6 @@ function FlipCard({ cards, onContentIsEnded, courseId, moduleId }) {
                     {cards.map((etapa) => {
                         const estaBloqueada = etapa.id > etapaActiva;
                         const estaCompletada = etapasCompletadas.includes(etapa.id);
-
 
                         return (
                             <button
@@ -571,9 +636,7 @@ function FlipCard({ cards, onContentIsEnded, courseId, moduleId }) {
             )}
 
             {etapaAbierta && etapaActualData && (
-
                 <ModalFlipCard etapaActualData={etapaActualData} onClose={cerrarModal}>
-
                     <div className="p-2 md:p-4 space-y-2">
                         {seccionActiva === 'objetivo' && (
                             <div className="space-y-2 animate-fadeIn">
