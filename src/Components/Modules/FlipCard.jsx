@@ -253,12 +253,12 @@ function FlipCard({ cards, onContentIsEnded, courseId, moduleId }) {
 
 
                     // 🟢 Si es la última sección, espera un tick para verificar
-                    if (esUltimaSeccion && etapaAbierta) {
-                        setTimeout(() => {
-                            console.log('✅ Última sección completada, verificando etapa...');
-                            verificarEtapaCompletada(etapaAbierta);
-                        }, 200);
-                    }
+                    // if (esUltimaSeccion && etapaAbierta) {
+                    //     setTimeout(() => {
+                    //         console.log('✅ Última sección completada, verificando etapa...');
+                    //         verificarEtapaCompletada(etapaAbierta);
+                    //     }, 200);
+                    // }
                 };
 
 
