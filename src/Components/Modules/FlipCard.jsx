@@ -660,7 +660,7 @@ function FlipCard({ cards, onContentIsEnded, courseId, moduleId }) {
                                 })()}
                             </div>
                         )}
-         </div>
+                  </div>
 
                     <div className="bg-[#151518] border-t-2 border-slate-700 p-4">
                         <div className="flex items-center justify-between gap-1 md:gap-4">
