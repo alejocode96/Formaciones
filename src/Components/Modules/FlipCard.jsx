@@ -28,6 +28,7 @@ function FlipCard({ cards, onContentIsEnded, courseId, moduleId }) {
     const [introMostrada, setIntroMostrada] = useState(false);
     const [audioEnReproduccion, setAudioEnReproduccion] = useState(false);
     const [audioIntroReproducido, setAudioIntroReproducido] = useState(false);
+    const [requiereInteraccion, setRequiereInteraccion] = useState(false);
     const etapaActualData = etapaAbierta ? cards.find(e => e.id === etapaAbierta) : null;
     const [mostrarCards, setMostrarCards] = useState(false);
     const [audioEnabled, setAudioEnabled] = useState(true);
@@ -247,21 +248,9 @@ function FlipCard({ cards, onContentIsEnded, courseId, moduleId }) {
                     currentCallbackRef.current = null;
                     setIsPlaying(false);
                     setAudioEnReproduccion(false);
-                    setAudioCompletado(true); // 👈 Marca el audio como completado
+                    setAudioCompletado(true);
                     console.log("✅ Audio reanudado completamente y marcado como completado");
-
-
-
-                    // 🟢 Si es la última sección, espera un tick para verificar
-                    // if (esUltimaSeccion && etapaAbierta) {
-                    //     setTimeout(() => {
-                    //         console.log('✅ Última sección completada, verificando etapa...');
-                    //         verificarEtapaCompletada(etapaAbierta);
-                    //     }, 200);
-                    // }
                 };
-
-
 
                 currentUtteranceRef.current = utterance;
                 window.speechSynthesis.speak(utterance);
@@ -439,11 +428,27 @@ function FlipCard({ cards, onContentIsEnded, courseId, moduleId }) {
 
     // 🔹 Reproducir introducción solo una vez por carga
     useEffect(() => {
-        if (audioIntroReproducido || !mejorVoz) return; // Ya se escuchó → no repetir
-        setAudioIntroReproducido(true); // Marcar como ya reproducida
+        if (audioIntroReproducido || !mejorVoz) return;
+        
+        // 🟢 Detectar si estamos en móvil
+        const esMovil = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        
+        if (esMovil) {
+            // En móvil, requerir interacción del usuario
+            setRequiereInteraccion(true);
+            setMostrarCards(false);
+            return;
+        }
 
+        // En desktop, intentar reproducir automáticamente
+        iniciarAudioIntroduccion();
+    }, [mejorVoz, audioIntroReproducido]);
+
+    const iniciarAudioIntroduccion = () => {
+        setAudioIntroReproducido(true);
         setAudioEnReproduccion(true);
         setMostrarCards(false);
+        setRequiereInteraccion(false);
 
         const textoIntro =
             "Etapas del SARLAFT. El SARLAFT funciona como un ciclo de protección que nunca se detiene. Sus etapas son: identificación, medición, control y monitoreo. Haz clic sobre cada etapa para ver su información.";
@@ -454,22 +459,57 @@ function FlipCard({ cards, onContentIsEnded, courseId, moduleId }) {
         utterance.rate = 0.9;
         utterance.pitch = 1;
 
+        // 🟢 Timeout de seguridad: si el audio no inicia en 2 segundos, mostrar las cards
+        const timeoutId = setTimeout(() => {
+            if (!window.speechSynthesis.speaking) {
+                console.warn('⚠️ Audio bloqueado o no se pudo reproducir, mostrando cards');
+                setAudioEnReproduccion(false);
+                setMostrarCards(true);
+            }
+        }, 2000);
+
+        utterance.onstart = () => {
+            clearTimeout(timeoutId);
+            console.log('✅ Audio de introducción iniciado correctamente');
+        };
+
         utterance.onend = () => {
+            clearTimeout(timeoutId);
             setAudioEnReproduccion(false);
             setMostrarCards(true);
         };
-        utterance.onerror = () => {setMostrarCards(true);}
         
-        window.speechSynthesis.cancel(); // por si había otro audio
+        utterance.onerror = (error) => {
+            clearTimeout(timeoutId);
+            console.error('❌ Error en audio de introducción:', error);
+            setAudioEnReproduccion(false);
+            setMostrarCards(true);
+        };
+        
+        window.speechSynthesis.cancel();
         window.speechSynthesis.speak(utterance);
-    }, [mejorVoz, audioIntroReproducido]);
+    };
 
 
 
     return (
         <div className='w-full mx-auto pt-10 pb-14 lg:pb-0' data-aos="fade-up" data-aos-delay={300} data-aos-duration="600">
+            {/* 🟢 PANTALLA TÁCTIL PARA MÓVILES */}
+            {requiereInteraccion && (
+                <div 
+                    onClick={iniciarAudioIntroduccion}
+                    className="      bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 rounded-xl flex items-center justify-center z-50 cursor-pointer"
+                >
+                    <div className="text-center animate-pulse py-2">
+                        <p className="text-white text-2xl md:text-3xl font-light">
+                            Click para iniciar
+                        </p>
+                    </div>
+                </div>
+            )}
+
             {/* 🔹 INTRODUCCIÓN ANTES DE LAS ETAPAS */}
-            {!audioCompletado && etapaAbierta === null && (
+            {!audioCompletado && etapaAbierta === null && !requiereInteraccion && (
                 <div className="text-center px-6 py-10 max-w-3xl mx-auto animate-fadeIn" data-aos="fade-up">
                     <h1 className="text-2xl md:text-3xl font-bold text-white mb-0">
                         Etapas del SARLAFT
