@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation } from '@tailwindcss/vite';
 import { TrainingLogiTransContext } from '../../Context';
 
 import ModalFlipCard from './modalFlipCard';
@@ -14,6 +14,7 @@ const currentCallbackRef = React.useRef(null);
 const audioTimeoutRef = React.useRef(null);
 const audioStartedRef = React.useRef(false);
 const introAttemptedRef = React.useRef(false);
+
 
 const { getUserProgressForCourse } = React.useContext(TrainingLogiTransContext);
 
@@ -93,13 +94,11 @@ const saveFlipCardProgress = useCallback(() => {
     }
 }, [seccionesVistas, etapasCompletadas, etapaActiva, courseId, moduleId, courseProgress]);
 
-
 useEffect(() => {
     if (Object.keys(seccionesVistas).length > 0 || etapasCompletadas.length > 0) {
         saveFlipCardProgress();
     }
 }, [seccionesVistas, etapaActiva, saveFlipCardProgress]);
-
 
 useEffect(() => {
     const cargarVoces = () => {
@@ -269,7 +268,6 @@ const reproducirAudio = useCallback((texto, callback, yaVista = false, esUltimaS
     }
 }, [audioEnabled, mejorVoz, etapaAbierta, verificarEtapaCompletada]);
 
-
 useEffect(() => {
     if (!etapaAbierta) return;
 
@@ -349,7 +347,7 @@ const reproducirIntro = useCallback(() => {
     introAttemptedRef.current = true;
     setAudioIntroReproducido(true);
     setAudioEnReproduccion(true);
-    setEsperandoInteraccion(false);
+    // ❌ NO establecer esperandoInteraccion a false aquí para mantener el texto visible
 
     const textoIntro = "Etapas del SARLAFT. El SARLAFT funciona como un ciclo de protección que nunca se detiene. Sus etapas son: identificación, medición, control y monitoreo. Haz clic sobre cada etapa para ver su información.";
     
@@ -365,6 +363,7 @@ const reproducirIntro = useCallback(() => {
     utterance.onstart = () => {
         console.log('▶️ Intro INICIÓ correctamente');
         audioInicioReal = true;
+        setEsperandoInteraccion(false); // ✅ Ahora sí, ocultar el mensaje después de que inicie
     };
 
     utterance.onend = () => {
@@ -377,6 +376,7 @@ const reproducirIntro = useCallback(() => {
         console.warn('⚠️ Error en intro:', e);
         setAudioEnReproduccion(false);
         setMostrarCards(true);
+        setEsperandoInteraccion(false);
     };
 
     try {
@@ -390,12 +390,14 @@ const reproducirIntro = useCallback(() => {
                 window.speechSynthesis.cancel();
                 setAudioEnReproduccion(false);
                 setMostrarCards(true);
+                setEsperandoInteraccion(false);
             }
         }, 5000);
     } catch (error) {
         console.error('❌ Error al reproducir intro:', error);
         setAudioEnReproduccion(false);
         setMostrarCards(true);
+        setEsperandoInteraccion(false);
     }
 }, [mejorVoz]);
 
@@ -430,7 +432,6 @@ useEffect(() => {
 
     return () => clearTimeout(timer);
 }, [mejorVoz, audioIntroReproducido, isMobile, reproducirIntro]);
-
 
 const abrirEtapa = (etapaId) => {
     if (etapaId > etapaActiva) return;
@@ -557,37 +558,28 @@ useEffect(() => {
 
 return (
     <div className='w-full mx-auto pt-10 pb-14 lg:pb-0' data-aos="fade-up" data-aos-delay={300} data-aos-duration="600">
-        {/* 🔹 PANTALLA DE INTERACCIÓN EN MÓVIL - Solo texto, sin iconos ni botones */}
-        {esperandoInteraccion && isMobile && (
-            <div 
-                className="text-center px-6 py-20 max-w-3xl mx-auto animate-fadeIn cursor-pointer"
-                data-aos="fade-up"
-            >
+        {/* 🔹 INTRODUCCIÓN - Siempre visible, cambia solo el mensaje de interacción */}
+        {etapaAbierta === null && !mostrarCards && (
+            <div className="text-center px-6 py-10 md:py-20 max-w-3xl mx-auto animate-fadeIn mb-8" data-aos="fade-up">
                 <h1 className="text-2xl md:text-3xl font-bold text-white mb-6">
                     Etapas del SARLAFT
                 </h1>
                 <p className="text-slate-300 text-base md:text-lg leading-relaxed mb-8">
                     El SARLAFT funciona como un ciclo de protección que nunca se detiene. Sus etapas son: identificación, medición, control y monitoreo. Haz clic sobre cada etapa para ver su información.
                 </p>
-                <p className="text-blue-400 text-lg font-semibold animate-pulse">
-                    Toca la pantalla para comenzar
-                </p>
-            </div>
-        )}
-
-        {/* 🔹 INTRODUCCIÓN DESKTOP - Con indicador de audio */}
-        {!isMobile && etapaAbierta === null && !mostrarCards && (
-            <div className="text-center px-6 py-10 max-w-3xl mx-auto animate-fadeIn mb-8" data-aos="fade-up">
-                <h1 className="text-2xl md:text-3xl font-bold text-white mb-4">
-                    Etapas del SARLAFT
-                </h1>
-                <p className="text-slate-300 text-sm md:text-base leading-relaxed">
-                    El SARLAFT funciona como un ciclo de protección que nunca se detiene. Sus etapas son: identificación, medición, control y monitoreo. Haz clic sobre cada etapa para ver su información.
-                </p>
+                
+                {/* 🔹 Mensaje de interacción para móviles */}
+                {isMobile && esperandoInteraccion && (
+                    <p className="text-blue-400 text-lg font-semibold animate-pulse">
+                        Toca la pantalla para comenzar
+                    </p>
+                )}
+                
+                {/* 🔹 Indicador de audio reproduciéndose */}
                 {audioEnReproduccion && (
                     <div className="mt-6 flex items-center justify-center gap-2 text-blue-400">
                         <Volume2 size={24} className="animate-pulse" />
-                        <span className="text-sm">Reproduciendo audio...</span>
+                        <span className="text-sm md:text-base">Reproduciendo audio...</span>
                     </div>
                 )}
             </div>
@@ -767,6 +759,7 @@ return (
         )}
     </div>
 );
+
 
 }
 
