@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { useLocation } from '@tailwindcss/vite';
+import { useLocation } from 'react-router-dom';
 import { TrainingLogiTransContext } from '../../Context';
 
 import ModalFlipCard from './modalFlipCard';
