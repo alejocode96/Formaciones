@@ -10,6 +10,7 @@ function FlipCard({ cards, onContentIsEnded, courseId, moduleId }) {
     const currentUtteranceRef = React.useRef(null);
     const currentCharIndexRef = React.useRef(0);
     const remainingTextRef = React.useRef("");
+    const currentCallbackRef = React.useRef(null);
 
     const { getUserProgressForCourse } = React.useContext(TrainingLogiTransContext);
 
@@ -153,6 +154,7 @@ function FlipCard({ cards, onContentIsEnded, courseId, moduleId }) {
         }
 
         setAudioEnReproduccion(true);
+        currentCallbackRef.current = callback;
         const utterance = new SpeechSynthesisUtterance(texto);
         utterance.voice = mejorVoz;
         utterance.lang = 'es-ES';
@@ -236,19 +238,30 @@ function FlipCard({ cards, onContentIsEnded, courseId, moduleId }) {
 
                 // 🟢 Asegura que al terminar reanude el comportamiento normal
                 utterance.onend = () => {
+                    if (typeof currentCallbackRef.current === 'function') {
+                        currentCallbackRef.current();
+                    }
                     remainingTextRef.current = "";
                     currentUtteranceRef.current = null;
                     currentCharIndexRef.current = 0;
+                    currentCallbackRef.current = null;
                     setIsPlaying(false);
                     setAudioEnReproduccion(false);
                     setAudioCompletado(true); // 👈 Marca el audio como completado
                     console.log("✅ Audio reanudado completamente y marcado como completado");
 
-                    // Si estabas en una etapa abierta, verifica su estado
-                    if (etapaAbierta) {
-                        verificarEtapaCompletada(etapaAbierta);
+
+
+                    // 🟢 Si es la última sección, espera un tick para verificar
+                    if (esUltimaSeccion && etapaAbierta) {
+                        setTimeout(() => {
+                            console.log('✅ Última sección completada, verificando etapa...');
+                            verificarEtapaCompletada(etapaAbierta);
+                        }, 200);
                     }
                 };
+
+
 
                 currentUtteranceRef.current = utterance;
                 window.speechSynthesis.speak(utterance);
