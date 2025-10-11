@@ -12,7 +12,8 @@ function FlipCard({ cards, onContentIsEnded, courseId, moduleId }) {
     const remainingTextRef = React.useRef("");
     const currentCallbackRef = React.useRef(null);
     const audioTimeoutRef = React.useRef(null);
-    const audioStartedRef = React.useRef(false); // 🟢 Para detectar si el audio realmente inició
+    const audioStartedRef = React.useRef(false);
+    const introAttemptedRef = React.useRef(false); // 🟢 Para evitar múltiples intentos
 
     const { getUserProgressForCourse } = React.useContext(TrainingLogiTransContext);
 
@@ -37,8 +38,7 @@ function FlipCard({ cards, onContentIsEnded, courseId, moduleId }) {
     
     // 🟢 Detectar móvil
     const [isMobile, setIsMobile] = useState(false);
-    const [interaccionInicialMovil, setInteraccionInicialMovil] = useState(false);
-    const botonInvisibleRef = React.useRef(null); // 🟢 Ref para botón invisible
+    const [mostrarIntro, setMostrarIntro] = useState(true); // 🟢 Siempre mostrar intro inicialmente
 
     // 🟢 Detectar si es móvil al cargar
     useEffect(() => {
@@ -147,9 +147,7 @@ function FlipCard({ cards, onContentIsEnded, courseId, moduleId }) {
         }
     }, []);
 
-    // 🟢 FUNCIÓN MEJORADA: Solo avanza si el audio REALMENTE falló
     const reproducirAudio = useCallback((texto, callback, yaVista = false, esUltimaSeccion = false) => {
-        // Limpiar timeout anterior si existe
         if (audioTimeoutRef.current) {
             clearTimeout(audioTimeoutRef.current);
             audioTimeoutRef.current = null;
@@ -158,7 +156,7 @@ function FlipCard({ cards, onContentIsEnded, courseId, moduleId }) {
         window.speechSynthesis.cancel();
         setIsPlaying(false);
         setAudioEnReproduccion(false);
-        audioStartedRef.current = false; // Resetear flag
+        audioStartedRef.current = false;
 
         if (!audioEnabled || !mejorVoz) {
             console.log('⚠️ Audio deshabilitado o sin voz, avanzando directamente');
@@ -183,8 +181,7 @@ function FlipCard({ cards, onContentIsEnded, courseId, moduleId }) {
         utterance.onstart = () => {
             console.log('▶️ Audio INICIÓ correctamente');
             setIsPlaying(true);
-            audioStartedRef.current = true; // 🟢 Marcamos que SÍ inició
-            // Limpiar timeout porque el audio sí inició
+            audioStartedRef.current = true;
             if (audioTimeoutRef.current) {
                 clearTimeout(audioTimeoutRef.current);
                 audioTimeoutRef.current = null;
@@ -212,7 +209,6 @@ function FlipCard({ cards, onContentIsEnded, courseId, moduleId }) {
             setIsPlaying(false);
             setAudioEnReproduccion(false);
             
-            // 🟢 SOLO habilitar si el audio NUNCA inició (fallo real)
             if (!audioStartedRef.current) {
                 console.warn('❌ Audio FALLÓ (nunca inició), habilitando contenido');
                 setAudioCompletado(true);
@@ -230,7 +226,6 @@ function FlipCard({ cards, onContentIsEnded, courseId, moduleId }) {
         try {
             window.speechSynthesis.speak(utterance);
             
-            // 🟢 TIMEOUT: Si después de 3 segundos no inició, habilitar contenido (fallo real)
             audioTimeoutRef.current = setTimeout(() => {
                 if (!audioStartedRef.current) {
                     console.warn('❌ Audio no inició en 3s (FALLO REAL), habilitando contenido');
@@ -322,37 +317,11 @@ function FlipCard({ cards, onContentIsEnded, courseId, moduleId }) {
         };
     }, [mejorVoz, isMobile]);
 
-    // 🟢 NUEVO: Simular interacción en móvil con click real
-    useEffect(() => {
-        if (!isMobile || interaccionInicialMovil || !mejorVoz || audioIntroReproducido) return;
-
-        // Simular click del usuario en móvil después de cargar
-        const simularInteraccion = () => {
-            // Crear evento de click real para desbloquear audio en móviles
-            const clickEvent = new MouseEvent('click', {
-                view: window,
-                bubbles: true,
-                cancelable: true
-            });
-            
-            document.body.dispatchEvent(clickEvent);
-            
-            // Pequeño delay después del click simulado
-            setTimeout(() => {
-                setInteraccionInicialMovil(true);
-                reproducirIntroMovil();
-            }, 100);
-        };
-
-        // Esperar un momento para que todo cargue
-        const timer = setTimeout(simularInteraccion, 1000);
-        return () => clearTimeout(timer);
-    }, [isMobile, mejorVoz, audioIntroReproducido, interaccionInicialMovil]);
-
-    // 🟢 Función para reproducir intro en móvil
-    const reproducirIntroMovil = () => {
-        if (audioIntroReproducido) return;
+    // 🟢 FUNCIÓN MEJORADA: Reproducir intro con manejo especial para móviles
+    const reproducirIntro = useCallback(() => {
+        if (introAttemptedRef.current || !mejorVoz) return;
         
+        introAttemptedRef.current = true;
         setAudioIntroReproducido(true);
         setAudioEnReproduccion(true);
 
@@ -363,19 +332,23 @@ function FlipCard({ cards, onContentIsEnded, courseId, moduleId }) {
         utterance.lang = 'es-ES';
         utterance.rate = 0.9;
         utterance.pitch = 1;
+        utterance.volume = 0.8;
+
+        let audioInicioReal = false;
 
         utterance.onstart = () => {
-            console.log('▶️ Intro móvil INICIÓ');
+            console.log('▶️ Intro INICIÓ correctamente');
+            audioInicioReal = true;
         };
 
         utterance.onend = () => {
-            console.log('✅ Intro móvil COMPLETADA');
+            console.log('✅ Intro COMPLETADA');
             setAudioEnReproduccion(false);
             setMostrarCards(true);
         };
 
         utterance.onerror = (e) => {
-            console.warn('⚠️ Error en intro móvil:', e);
+            console.warn('⚠️ Error en intro:', e);
             setAudioEnReproduccion(false);
             setMostrarCards(true);
         };
@@ -384,64 +357,68 @@ function FlipCard({ cards, onContentIsEnded, courseId, moduleId }) {
             window.speechSynthesis.cancel();
             window.speechSynthesis.speak(utterance);
             
-            // Timeout de seguridad para intro
+            // 🟢 Timeout de seguridad: Si después de 5s no inició, mostrar cards
             setTimeout(() => {
-                if (!mostrarCards) {
-                    console.warn('⚠️ Timeout intro móvil, mostrando cards');
+                if (!audioInicioReal) {
+                    console.warn('⚠️ Audio intro no inició en 5s, mostrando cards');
+                    window.speechSynthesis.cancel();
                     setAudioEnReproduccion(false);
                     setMostrarCards(true);
                 }
-            }, 18000);
+            }, 5000);
         } catch (error) {
-            console.error('❌ Error al reproducir intro móvil:', error);
+            console.error('❌ Error al reproducir intro:', error);
+            setAudioEnReproduccion(false);
             setMostrarCards(true);
         }
-    };
+    }, [mejorVoz]);
 
-    // 🟢 Reproducir intro automáticamente en DESKTOP
+    // 🟢 MANEJO DE INTERACCIÓN INICIAL EN MÓVIL
     useEffect(() => {
-        if (audioIntroReproducido || !mejorVoz || isMobile) return;
-        
-        setAudioIntroReproducido(true);
-        setAudioEnReproduccion(true);
-        setMostrarCards(false);
+        if (!isMobile || !mejorVoz || audioIntroReproducido) return;
 
-        const textoIntro = "Etapas del SARLAFT. El SARLAFT funciona como un ciclo de protección que nunca se detiene. Sus etapas son: identificación, medición, control y monitoreo. Haz clic sobre cada etapa para ver su información.";
-
-        const utterance = new SpeechSynthesisUtterance(textoIntro);
-        utterance.voice = mejorVoz;
-        utterance.lang = 'es-ES';
-        utterance.rate = 0.9;
-        utterance.pitch = 1;
-
-        utterance.onstart = () => {
-            console.log('▶️ Intro desktop INICIÓ');
+        // Esperar a que el usuario toque la pantalla por primera vez
+        const handleFirstTouch = () => {
+            console.log('👆 Primera interacción detectada en móvil');
+            reproducirIntro();
+            // Remover el listener después de la primera interacción
+            document.removeEventListener('touchstart', handleFirstTouch);
+            document.removeEventListener('click', handleFirstTouch);
         };
 
-        utterance.onend = () => {
-            console.log('✅ Intro desktop COMPLETADA');
-            setAudioEnReproduccion(false);
-            setMostrarCards(true);
-        };
+        // Agregar listeners para detectar primera interacción
+        document.addEventListener('touchstart', handleFirstTouch, { once: true });
+        document.addEventListener('click', handleFirstTouch, { once: true });
 
-        utterance.onerror = () => {
-            console.warn('⚠️ Error en intro desktop');
-            setAudioEnReproduccion(false);
-            setMostrarCards(true);
-        };
-        
-        window.speechSynthesis.cancel();
-        window.speechSynthesis.speak(utterance);
-
-        // Timeout de seguridad
-        setTimeout(() => {
-            if (!mostrarCards) {
-                console.warn('⚠️ Timeout intro desktop');
-                setAudioEnReproduccion(false);
+        // Timeout de seguridad: Si no hay interacción en 10s, mostrar cards directamente
+        const timeoutId = setTimeout(() => {
+            if (!introAttemptedRef.current) {
+                console.warn('⚠️ No hubo interacción en móvil, mostrando cards directamente');
+                introAttemptedRef.current = true;
                 setMostrarCards(true);
+                document.removeEventListener('touchstart', handleFirstTouch);
+                document.removeEventListener('click', handleFirstTouch);
             }
-        }, 18000);
-    }, [mejorVoz, audioIntroReproducido, isMobile]);
+        }, 10000);
+
+        return () => {
+            clearTimeout(timeoutId);
+            document.removeEventListener('touchstart', handleFirstTouch);
+            document.removeEventListener('click', handleFirstTouch);
+        };
+    }, [isMobile, mejorVoz, audioIntroReproducido, reproducirIntro]);
+
+    // 🟢 REPRODUCIR INTRO AUTOMÁTICAMENTE EN DESKTOP
+    useEffect(() => {
+        if (isMobile || audioIntroReproducido || !mejorVoz) return;
+        
+        // En desktop, reproducir inmediatamente
+        const timer = setTimeout(() => {
+            reproducirIntro();
+        }, 500);
+
+        return () => clearTimeout(timer);
+    }, [mejorVoz, audioIntroReproducido, isMobile, reproducirIntro]);
 
 
     const abrirEtapa = (etapaId) => {
@@ -591,18 +568,33 @@ function FlipCard({ cards, onContentIsEnded, courseId, moduleId }) {
 
     return (
         <div className='w-full mx-auto pt-10 pb-14 lg:pb-0' data-aos="fade-up" data-aos-delay={300} data-aos-duration="600">
-            {/* 🔹 INTRODUCCIÓN - Sin botones, solo texto mientras suena */}
-            {etapaAbierta === null && audioEnReproduccion && (
-                <div className="text-center px-6 py-10 max-w-3xl mx-auto animate-fadeIn" data-aos="fade-up">
+            {/* 🔹 INTRODUCCIÓN - Siempre visible, sin botones ni iconos */}
+            {etapaAbierta === null && mostrarIntro && (
+                <div className="text-center px-6 py-10 max-w-3xl mx-auto animate-fadeIn mb-8" data-aos="fade-up">
                     <h1 className="text-2xl md:text-3xl font-bold text-white mb-4">
                         Etapas del SARLAFT
                     </h1>
                     <p className="text-slate-300 text-sm md:text-base leading-relaxed">
-                        El SARLAFT funciona como un ciclo de protección que nunca se detiene. Sus etapas son: identificación, medición, control y monitoreo.
+                        El SARLAFT funciona como un ciclo de protección que nunca se detiene. Sus etapas son: identificación, medición, control y monitoreo. Haz clic sobre cada etapa para ver su información.
                     </p>
+                    {/* 🟢 Indicador de carga mientras se reproduce el audio */}
+                    {audioEnReproduccion && !mostrarCards && (
+                        <div className="mt-6 flex flex-col items-center gap-3">
+                            <div className="flex items-center gap-2 text-blue-400">
+                                <Volume2 size={24} className="animate-pulse" />
+                                <span className="text-sm">Reproduciendo audio...</span>
+                            </div>
+                            {isMobile && (
+                                <p className="text-xs text-slate-400 italic">
+                                    Toca la pantalla si no escuchas el audio
+                                </p>
+                            )}
+                        </div>
+                    )}
                 </div>
             )}
 
+            {/* 🔹 CARDS - Solo se muestran después de la intro */}
             {mostrarCards && (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6" data-aos="fade-up">
                     {cards.map((etapa) => {
@@ -679,7 +671,7 @@ function FlipCard({ cards, onContentIsEnded, courseId, moduleId }) {
                                             {seccionData.contenido.map((item, idx) => (
                                                 <div key={idx} className="bg-zinc-800 rounded-lg p-5 border border-zinc-700">
                                                     {item.subtitulo && (
-                                                        <h4 className="text-white font-semibold mb-3 flex items-center gap-2 text-sm md:text-lg">
+        <h4 className="text-white font-semibold mb-3 flex items-center gap-2 text-sm md:text-lg">
                                                             <span className="text-zinc-300">•</span>
                                                             {item.subtitulo}
                                                         </h4>
@@ -694,7 +686,7 @@ function FlipCard({ cards, onContentIsEnded, courseId, moduleId }) {
                                 })()}
                             </div>
                         )}
-                  </div>
+                    </div>
 
                     <div className="bg-[#151518] border-t-2 border-slate-700 p-4">
                         <div className="flex items-center justify-between gap-1 md:gap-4">
