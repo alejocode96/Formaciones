@@ -12,7 +12,7 @@ function FlipCard({ cards, onContentIsEnded, courseId, moduleId }) {
     const remainingTextRef = React.useRef("");
     const currentCallbackRef = React.useRef(null);
     const audioTimeoutRef = React.useRef(null);
-    const audioStartedRef = React.useRef(false); // 🟢 NUEVO: Detectar si el audio realmente inició
+    const audioStartedRef = React.useRef(false); // 🟢 Para detectar si el audio realmente inició
 
     const { getUserProgressForCourse } = React.useContext(TrainingLogiTransContext);
 
@@ -35,8 +35,9 @@ function FlipCard({ cards, onContentIsEnded, courseId, moduleId }) {
     const [mejorVoz, setMejorVoz] = useState(null);
     const [isPlaying, setIsPlaying] = useState(false);
     
-    // 🟢 NUEVO: Detectar móvil
+    // 🟢 Detectar móvil
     const [isMobile, setIsMobile] = useState(false);
+    const [interaccionInicialMovil, setInteraccionInicialMovil] = useState(false);
 
     // 🟢 Detectar si es móvil al cargar
     useEffect(() => {
@@ -145,7 +146,7 @@ function FlipCard({ cards, onContentIsEnded, courseId, moduleId }) {
         }
     }, []);
 
-    // 🟢 MODIFICADO: Detectar correctamente si el audio falló o solo se pausó
+    // 🟢 FUNCIÓN MEJORADA: Solo avanza si el audio REALMENTE falló
     const reproducirAudio = useCallback((texto, callback, yaVista = false, esUltimaSeccion = false) => {
         // Limpiar timeout anterior si existe
         if (audioTimeoutRef.current) {
@@ -156,9 +157,10 @@ function FlipCard({ cards, onContentIsEnded, courseId, moduleId }) {
         window.speechSynthesis.cancel();
         setIsPlaying(false);
         setAudioEnReproduccion(false);
-        audioStartedRef.current = false; // 🟢 Resetear flag
+        audioStartedRef.current = false; // Resetear flag
 
         if (!audioEnabled || !mejorVoz) {
+            console.log('⚠️ Audio deshabilitado o sin voz, avanzando directamente');
             setAudioCompletado(true);
             if (callback) callback();
             return;
@@ -178,9 +180,10 @@ function FlipCard({ cards, onContentIsEnded, courseId, moduleId }) {
         utterance.volume = 0.8;
 
         utterance.onstart = () => {
+            console.log('▶️ Audio INICIÓ correctamente');
             setIsPlaying(true);
             audioStartedRef.current = true; // 🟢 Marcamos que SÍ inició
-            // Limpiar timeout si el audio sí inició
+            // Limpiar timeout porque el audio sí inició
             if (audioTimeoutRef.current) {
                 clearTimeout(audioTimeoutRef.current);
                 audioTimeoutRef.current = null;
@@ -188,6 +191,7 @@ function FlipCard({ cards, onContentIsEnded, courseId, moduleId }) {
         };
 
         utterance.onend = () => {
+            console.log('✅ Audio COMPLETADO correctamente');
             setIsPlaying(false);
             setAudioCompletado(true);
             setAudioEnReproduccion(false);
@@ -207,11 +211,13 @@ function FlipCard({ cards, onContentIsEnded, courseId, moduleId }) {
             setIsPlaying(false);
             setAudioEnReproduccion(false);
             
-            // 🟢 SOLO habilitar contenido si el audio NUNCA inició
+            // 🟢 SOLO habilitar si el audio NUNCA inició (fallo real)
             if (!audioStartedRef.current) {
-                console.warn('⚠️ Audio falló (nunca inició), habilitando contenido');
+                console.warn('❌ Audio FALLÓ (nunca inició), habilitando contenido');
                 setAudioCompletado(true);
                 if (callback) callback();
+            } else {
+                console.log('⚠️ Audio se interrumpió pero había iniciado, NO avanzar automáticamente');
             }
         };
 
@@ -223,17 +229,17 @@ function FlipCard({ cards, onContentIsEnded, courseId, moduleId }) {
         try {
             window.speechSynthesis.speak(utterance);
             
-            // 🟢 TIMEOUT: Si después de 2 segundos no inició, habilitar contenido
+            // 🟢 TIMEOUT: Si después de 3 segundos no inició, habilitar contenido (fallo real)
             audioTimeoutRef.current = setTimeout(() => {
                 if (!audioStartedRef.current) {
-                    console.warn('⚠️ Audio no se inició en 2s, habilitando contenido automáticamente');
+                    console.warn('❌ Audio no inició en 3s (FALLO REAL), habilitando contenido');
                     window.speechSynthesis.cancel();
                     setIsPlaying(false);
                     setAudioEnReproduccion(false);
                     setAudioCompletado(true);
                     if (callback) callback();
                 }
-            }, 2000);
+            }, 3000);
             
         } catch (error) {
             console.error('❌ Error al reproducir audio:', error);
@@ -259,9 +265,9 @@ function FlipCard({ cards, onContentIsEnded, courseId, moduleId }) {
         }
     }, [seccionesVistas]);
 
-    // 🟢 MODIFICADO: Solo en desktop
+    // 🟢 Solo en desktop: Pausar/reanudar al cambiar de pestaña
     useEffect(() => {
-        if (isMobile) return; // No ejecutar en móviles
+        if (isMobile) return;
 
         const handleVisibilityChange = () => {
             if (document.hidden) {
@@ -272,7 +278,7 @@ function FlipCard({ cards, onContentIsEnded, courseId, moduleId }) {
                     window.speechSynthesis.cancel();
                     setIsPlaying(false);
                     setAudioEnReproduccion(false);
-                    console.log("🔇 Audio pausado y posición guardada");
+                    console.log("🔇 Audio pausado (cambio de pestaña)");
                 }
             } else if (remainingTextRef.current && !window.speechSynthesis.speaking) {
                 const utterance = new SpeechSynthesisUtterance(remainingTextRef.current);
@@ -297,14 +303,14 @@ function FlipCard({ cards, onContentIsEnded, courseId, moduleId }) {
                     setIsPlaying(false);
                     setAudioEnReproduccion(false);
                     setAudioCompletado(true);
-                    console.log("✅ Audio reanudado completamente y marcado como completado");
+                    console.log("✅ Audio reanudado y completado");
                 };
 
                 currentUtteranceRef.current = utterance;
                 window.speechSynthesis.speak(utterance);
                 setIsPlaying(true);
                 setAudioEnReproduccion(true);
-                console.log("▶️ Audio reanudado al volver a la pestaña");
+                console.log("▶️ Audio reanudado");
             }
         };
 
@@ -315,9 +321,27 @@ function FlipCard({ cards, onContentIsEnded, courseId, moduleId }) {
         };
     }, [mejorVoz, isMobile]);
 
-    // 🟢 NUEVO: Función para iniciar automáticamente (simula click del usuario en móvil)
-    const iniciarAutomaticamente = useCallback(() => {
-        if (!mejorVoz) return;
+    // 🟢 NUEVO: Simular interacción en móvil automáticamente
+    useEffect(() => {
+        if (!isMobile || interaccionInicialMovil || !mejorVoz || audioIntroReproducido) return;
+
+        // Simular click del usuario en móvil después de cargar
+        const simularInteraccion = () => {
+            setInteraccionInicialMovil(true);
+            reproducirIntroMovil();
+        };
+
+        // Esperar un momento para que todo cargue
+        const timer = setTimeout(simularInteraccion, 800);
+        return () => clearTimeout(timer);
+    }, [isMobile, mejorVoz, audioIntroReproducido, interaccionInicialMovil]);
+
+    // 🟢 Función para reproducir intro en móvil
+    const reproducirIntroMovil = () => {
+        if (audioIntroReproducido) return;
+        
+        setAudioIntroReproducido(true);
+        setAudioEnReproduccion(true);
 
         const textoIntro = "Etapas del SARLAFT. El SARLAFT funciona como un ciclo de protección que nunca se detiene. Sus etapas son: identificación, medición, control y monitoreo. Haz clic sobre cada etapa para ver su información.";
         
@@ -327,73 +351,84 @@ function FlipCard({ cards, onContentIsEnded, courseId, moduleId }) {
         utterance.rate = 0.9;
         utterance.pitch = 1;
 
-        utterance.onend = () => {
-            setAudioEnReproduccion(false);
-            setMostrarCards(true);
-            setAudioIntroReproducido(true);
+        utterance.onstart = () => {
+            console.log('▶️ Intro móvil INICIÓ');
         };
 
-        utterance.onerror = () => {
-            console.warn('⚠️ Error en intro, mostrando cards');
+        utterance.onend = () => {
+            console.log('✅ Intro móvil COMPLETADA');
+            setAudioEnReproduccion(false);
             setMostrarCards(true);
-            setAudioIntroReproducido(true);
+        };
+
+        utterance.onerror = (e) => {
+            console.warn('⚠️ Error en intro móvil:', e);
+            setAudioEnReproduccion(false);
+            setMostrarCards(true);
         };
 
         try {
             window.speechSynthesis.cancel();
             window.speechSynthesis.speak(utterance);
-            setAudioEnReproduccion(true);
             
-            // Timeout de seguridad
+            // Timeout de seguridad para intro
             setTimeout(() => {
                 if (!mostrarCards) {
-                    console.warn('⚠️ Timeout intro, mostrando cards');
+                    console.warn('⚠️ Timeout intro móvil, mostrando cards');
+                    setAudioEnReproduccion(false);
                     setMostrarCards(true);
-                    setAudioIntroReproducido(true);
                 }
-            }, 15000);
+            }, 18000);
         } catch (error) {
-            console.error('❌ Error al reproducir intro:', error);
+            console.error('❌ Error al reproducir intro móvil:', error);
             setMostrarCards(true);
-            setAudioIntroReproducido(true);
         }
-    }, [mejorVoz, mostrarCards]);
+    };
 
-    // 🟢 MODIFICADO: Auto-iniciar en móviles y desktop
+    // 🟢 Reproducir intro automáticamente en DESKTOP
     useEffect(() => {
-        if (audioIntroReproducido || !mejorVoz) return;
+        if (audioIntroReproducido || !mejorVoz || isMobile) return;
         
         setAudioIntroReproducido(true);
+        setAudioEnReproduccion(true);
+        setMostrarCards(false);
+
+        const textoIntro = "Etapas del SARLAFT. El SARLAFT funciona como un ciclo de protección que nunca se detiene. Sus etapas son: identificación, medición, control y monitoreo. Haz clic sobre cada etapa para ver su información.";
+
+        const utterance = new SpeechSynthesisUtterance(textoIntro);
+        utterance.voice = mejorVoz;
+        utterance.lang = 'es-ES';
+        utterance.rate = 0.9;
+        utterance.pitch = 1;
+
+        utterance.onstart = () => {
+            console.log('▶️ Intro desktop INICIÓ');
+        };
+
+        utterance.onend = () => {
+            console.log('✅ Intro desktop COMPLETADA');
+            setAudioEnReproduccion(false);
+            setMostrarCards(true);
+        };
+
+        utterance.onerror = () => {
+            console.warn('⚠️ Error en intro desktop');
+            setAudioEnReproduccion(false);
+            setMostrarCards(true);
+        };
         
-        if (isMobile) {
-            // En móvil: simular interacción con un pequeño delay
-            const timer = setTimeout(() => {
-                iniciarAutomaticamente();
-            }, 500);
-            return () => clearTimeout(timer);
-        } else {
-            // En desktop: iniciar inmediatamente
-            setAudioEnReproduccion(true);
-            setMostrarCards(false);
+        window.speechSynthesis.cancel();
+        window.speechSynthesis.speak(utterance);
 
-            const textoIntro = "Etapas del SARLAFT. El SARLAFT funciona como un ciclo de protección que nunca se detiene. Sus etapas son: identificación, medición, control y monitoreo. Haz clic sobre cada etapa para ver su información.";
-
-            const utterance = new SpeechSynthesisUtterance(textoIntro);
-            utterance.voice = mejorVoz;
-            utterance.lang = 'es-ES';
-            utterance.rate = 0.9;
-            utterance.pitch = 1;
-
-            utterance.onend = () => {
+        // Timeout de seguridad
+        setTimeout(() => {
+            if (!mostrarCards) {
+                console.warn('⚠️ Timeout intro desktop');
                 setAudioEnReproduccion(false);
                 setMostrarCards(true);
-            };
-            utterance.onerror = () => {setMostrarCards(true);}
-            
-            window.speechSynthesis.cancel();
-            window.speechSynthesis.speak(utterance);
-        }
-    }, [mejorVoz, audioIntroReproducido, isMobile, iniciarAutomaticamente]);
+            }
+        }, 18000);
+    }, [mejorVoz, audioIntroReproducido, isMobile]);
 
 
     const abrirEtapa = (etapaId) => {
@@ -543,7 +578,7 @@ function FlipCard({ cards, onContentIsEnded, courseId, moduleId }) {
 
     return (
         <div className='w-full mx-auto pt-10 pb-14 lg:pb-0' data-aos="fade-up" data-aos-delay={300} data-aos-duration="600">
-            {/* 🔹 INTRODUCCIÓN SIMPLIFICADA - Solo texto */}
+            {/* 🔹 INTRODUCCIÓN - Sin botones, solo texto mientras suena */}
             {etapaAbierta === null && audioEnReproduccion && (
                 <div className="text-center px-6 py-10 max-w-3xl mx-auto animate-fadeIn" data-aos="fade-up">
                     <h1 className="text-2xl md:text-3xl font-bold text-white mb-4">
