@@ -440,32 +440,30 @@ function FlipCard({ cards, onContentIsEnded, courseId, moduleId }) {
     useEffect(() => {
         if (audioIntroReproducido) return;
 
-        setAudioIntroReproducido(true); // Marca como ya reproducido para evitar loops
+        if (!mejorVoz || !window.speechSynthesis) {
+            console.warn("⚠️ No hay voz disponible o speechSynthesis no soportado aún.");
+            return; // Espera a que mejorVoz esté disponible en el siguiente render
+        }
+
+        setAudioIntroReproducido(true); // Solo se marca como reproducido una vez que mejorVoz está listo
         setAudioEnReproduccion(true);
         setMostrarCards(false);
 
         const textoIntro =
             "Etapas del SARLAFT. El SARLAFT funciona como un ciclo de protección que nunca se detiene. Sus etapas son: identificación, medición, control y monitoreo. Haz clic sobre cada etapa para ver su información.";
 
-        const fallbackTimeout = setTimeout(() => {
-            console.warn("⏳ Timeout: activando mostrarCards por fallback");
-            setAudioEnReproduccion(false);
-            setMostrarCards(true);
-        }, 8000); // ⏱️ Cambia este valor según duración estimada del audio
-
-        if (!mejorVoz || !window.speechSynthesis) {
-            console.warn("⚠️ No hay voz disponible o speechSynthesis no soportado.");
-            clearTimeout(fallbackTimeout);
-            setAudioEnReproduccion(false);
-            setMostrarCards(true);
-            return;
-        }
-
         const utterance = new SpeechSynthesisUtterance(textoIntro);
         utterance.voice = mejorVoz;
         utterance.lang = 'es-ES';
         utterance.rate = 0.9;
         utterance.pitch = 1;
+
+        const fallbackTimeout = setTimeout(() => {
+            console.warn("⏳ Timeout: activando mostrarCards por fallback (audio no inició)");
+            window.speechSynthesis.cancel();
+            setAudioEnReproduccion(false);
+            setMostrarCards(true);
+        }, 8000); // Tiempo estimado para que inicie o termine el audio
 
         utterance.onend = () => {
             clearTimeout(fallbackTimeout);
@@ -481,9 +479,15 @@ function FlipCard({ cards, onContentIsEnded, courseId, moduleId }) {
             setMostrarCards(true);
         };
 
-        window.speechSynthesis.cancel(); // detener audios previos
+        window.speechSynthesis.cancel(); // Detener audios previos
         window.speechSynthesis.speak(utterance);
+
+        return () => {
+            clearTimeout(fallbackTimeout);
+            window.speechSynthesis.cancel();
+        };
     }, [mejorVoz, audioIntroReproducido]);
+
 
 
     return (
