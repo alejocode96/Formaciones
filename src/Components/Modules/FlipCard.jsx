@@ -1,83 +1,71 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useLocation } from 'react-router-dom';
 import { TrainingLogiTransContext } from '../../Context';
-
 import ModalFlipCard from './modalFlipCard';
 import { Volume2, VolumeX, ChevronRight, ChevronLeft, BookOpen, Target, Lightbulb, Wrench, Lock, CheckCircle, X } from 'lucide-react';
 
 function FlipCard({ cards, onContentIsEnded, courseId, moduleId }) {
-    // 🧠 Refs para manejar pausa/reanudación del audio
-    const currentUtteranceRef = React.useRef(null);
-    const currentCharIndexRef = React.useRef(0);
-    const remainingTextRef = React.useRef("");
-    const currentCallbackRef = React.useRef(null);
+    // ========================================
+    // 🔷 REFS
+    // ========================================
+    
+    // Refs para control de audio
+    const currentUtteranceRef = useRef(null);
+    const currentCharIndexRef = useRef(0);
+    const remainingTextRef = useRef("");
+    const currentCallbackRef = useRef(null);
 
-    // 🟢 Refs para mantener los valores más recientes de los estados
+    // Refs para mantener estados actualizados
     const seccionesVistasRef = useRef({});
     const etapasCompletadasRef = useRef([]);
     const etapaActivaRef = useRef(1);
 
-    const { getUserProgressForCourse,completeModule } = React.useContext(TrainingLogiTransContext);
-
-    // 🔹 Obtener progreso del curso desde el contexto
+    // ========================================
+    // 🔷 CONTEXT & PROPS
+    // ========================================
+    
+    const { getUserProgressForCourse, completeModule } = React.useContext(TrainingLogiTransContext);
     const courseProgress = getUserProgressForCourse(parseInt(courseId));
 
-    // Control de progreso
+    // ========================================
+    // 🔷 ESTADOS
+    // ========================================
+    
+    // Estados de progreso
     const [etapaActiva, setEtapaActiva] = useState(1);
     const [etapasCompletadas, setEtapasCompletadas] = useState([]);
+    const [seccionesVistas, setSeccionesVistas] = useState({});
 
+    // Estados de modal y navegación
     const [etapaAbierta, setEtapaAbierta] = useState(null);
     const [seccionActiva, setSeccionActiva] = useState(null);
-    const [seccionesVistas, setSeccionesVistas] = useState({});
+
+    // Estados de audio
     const [audioCompletado, setAudioCompletado] = useState(false);
-    const [introMostrada, setIntroMostrada] = useState(false);
     const [audioEnReproduccion, setAudioEnReproduccion] = useState(false);
     const [audioIntroReproducido, setAudioIntroReproducido] = useState(false);
-    const [requiereInteraccion, setRequiereInteraccion] = useState(false);
-    const etapaActualData = etapaAbierta ? cards.find(e => e.id === etapaAbierta) : null;
-    const [mostrarCards, setMostrarCards] = useState(false);
     const [audioEnabled, setAudioEnabled] = useState(true);
-    const [mejorVoz, setMejorVoz] = useState(null);
     const [isPlaying, setIsPlaying] = useState(false);
+    const [mejorVoz, setMejorVoz] = useState(null);
 
-    // 🟢 Actualizar refs cuando cambien los estados
-    useEffect(() => {
-        seccionesVistasRef.current = seccionesVistas;
-    }, [seccionesVistas]);
+    // Estados de UI
+    const [introMostrada, setIntroMostrada] = useState(false);
+    const [requiereInteraccion, setRequiereInteraccion] = useState(false);
+    const [mostrarCards, setMostrarCards] = useState(false);
 
-    useEffect(() => {
-        etapasCompletadasRef.current = etapasCompletadas;
-    }, [etapasCompletadas]);
+    // Datos de etapa actual
+    const etapaActualData = etapaAbierta ? cards.find(e => e.id === etapaAbierta) : null;
 
-    useEffect(() => {
-        etapaActivaRef.current = etapaActiva;
-    }, [etapaActiva]);
-
-    // 🔹 CARGAR PROGRESO DESDE EL CONTEXTO/LOCALSTORAGE AL MONTAR
-    useEffect(() => {
-        if (courseProgress && courseProgress.flipCardProgress) {
-            const flipCardData = courseProgress.flipCardProgress[moduleId];
-
-            if (flipCardData) {
-                setSeccionesVistas(flipCardData.seccionesVistas || {});
-                setEtapasCompletadas(flipCardData.etapasCompletadas || []);
-                setEtapaActiva(flipCardData.etapaActiva || 1);
-
-                console.log('✅ Progreso de FlipCard cargado desde localStorage:', flipCardData);
-            }
-        }
-    }, [courseProgress, moduleId]);
-
-    // 🟢 Función DIRECTA para guardar en localStorage COMBINANDO datos existentes
-    // 🟢 Guardar siempre fusionando con lo que ya existe
+    // ========================================
+    // 🔷 FUNCIONES DE GUARDADO
+    // ========================================
+    
     const guardarProgresoDirecto = useCallback((seccionesVistasActual, etapasCompletadasActual, etapaActivaActual) => {
         try {
             const storedProgress = localStorage.getItem("userProgress");
             const allProgress = storedProgress ? JSON.parse(storedProgress) : {};
 
-            // Mezclar con progreso existente sin borrar nada previo
-            const progresoPrevio =
-                allProgress?.[courseId]?.flipCardProgress?.[moduleId] || {};
+            const progresoPrevio = allProgress?.[courseId]?.flipCardProgress?.[moduleId] || {};
 
             const mergedSecciones = {
                 ...(progresoPrevio.seccionesVistas || {}),
@@ -117,8 +105,6 @@ function FlipCard({ cards, onContentIsEnded, courseId, moduleId }) {
         }
     }, [courseId, moduleId, cards.length]);
 
-
-    // 🟢 Función reutilizable para guardar progreso usando los estados actuales
     const saveFlipCardProgress = useCallback(() => {
         if (!courseProgress) return;
         guardarProgresoDirecto(
@@ -128,81 +114,51 @@ function FlipCard({ cards, onContentIsEnded, courseId, moduleId }) {
         );
     }, [courseProgress, guardarProgresoDirecto]);
 
-    // 🟣 Efecto para autoguardado cuando cambien estados
-    useEffect(() => {
-        if (Object.keys(seccionesVistas).length > 0 || etapasCompletadas.length > 0) {
-            const timeoutId = setTimeout(() => {
-                saveFlipCardProgress();
-            }, 150);
+    // ========================================
+    // 🔷 FUNCIONES DE AUDIO
+    // ========================================
+    
+    const cargarVoces = useCallback(() => {
+        const voices = window.speechSynthesis.getVoices();
+        if (!voices.length) return;
 
-            return () => clearTimeout(timeoutId);
+        const vocesEspanol = voices.filter(v => v.lang.toLowerCase().startsWith('es'));
+
+        const prioridadMicrosoft = [
+            'Microsoft Andrea Online (Natural) - Spanish (Ecuador)',
+            'Microsoft Dalia Online (Natural) - Spanish (Mexico)',
+            'Microsoft Camila Online (Natural) - Spanish (Peru)',
+            'Microsoft Catalina Online (Natural) - Spanish (Chile)',
+            'Microsoft Paola Online (Natural) - Spanish (Venezuela)',
+            'Microsoft Yolanda Online (Natural) - Spanish (Nicaragua)',
+            'Microsoft Salome Online (Natural) - Spanish (Colombia)',
+        ];
+
+        let mejorOpcion = null;
+
+        for (const nombre of prioridadMicrosoft) {
+            mejorOpcion = vocesEspanol.find(v => v.name.toLowerCase().includes(nombre.toLowerCase()));
+            if (mejorOpcion) break;
         }
-    }, [seccionesVistas, etapasCompletadas, etapaActiva, saveFlipCardProgress]);
 
-    // 🟢 Guardar progreso cuando el componente se desmonte
-    useEffect(() => {
-        return () => {
-            console.log('🔄 Componente desmontándose - Guardando progreso final');
-            if (Object.keys(seccionesVistasRef.current).length > 0 || etapasCompletadasRef.current.length > 0) {
-                guardarProgresoDirecto(
-                    seccionesVistasRef.current,
-                    etapasCompletadasRef.current,
-                    etapaActivaRef.current
-                );
-            }
-        };
-    }, [guardarProgresoDirecto]);
+        if (!mejorOpcion) {
+            mejorOpcion =
+                vocesEspanol.find(v => v.name.toLowerCase().includes('google') && v.name.toLowerCase().includes('espa')) ||
+                vocesEspanol.find(v => v.name.toLowerCase().includes('monica')) ||
+                vocesEspanol.find(v => v.name.toLowerCase().includes('paulina')) ||
+                vocesEspanol.find(v => v.name.toLowerCase().includes('google')) ||
+                vocesEspanol.find(v => v.name.toLowerCase().includes('microsoft')) ||
+                vocesEspanol[0];
+        }
 
-    useEffect(() => {
-        const cargarVoces = () => {
-            const voices = window.speechSynthesis.getVoices();
-            if (!voices.length) return;
-
-            const vocesEspanol = voices.filter(v => v.lang.toLowerCase().startsWith('es'));
-
-            const prioridadMicrosoft = [
-                'Microsoft Andrea Online (Natural) - Spanish (Ecuador)',
-                'Microsoft Dalia Online (Natural) - Spanish (Mexico)',
-                'Microsoft Camila Online (Natural) - Spanish (Peru)',
-                'Microsoft Catalina Online (Natural) - Spanish (Chile)',
-                'Microsoft Paola Online (Natural) - Spanish (Venezuela)',
-                'Microsoft Yolanda Online (Natural) - Spanish (Nicaragua)',
-                'Microsoft Salome Online (Natural) - Spanish (Colombia)',
-            ];
-
-            let mejorOpcion = null;
-
-            for (const nombre of prioridadMicrosoft) {
-                mejorOpcion = vocesEspanol.find(v => v.name.toLowerCase().includes(nombre.toLowerCase()));
-                if (mejorOpcion) break;
-            }
-
-            if (!mejorOpcion) {
-                mejorOpcion =
-                    vocesEspanol.find(v => v.name.toLowerCase().includes('google') && v.name.toLowerCase().includes('espa')) ||
-                    vocesEspanol.find(v => v.name.toLowerCase().includes('monica')) ||
-                    vocesEspanol.find(v => v.name.toLowerCase().includes('paulina')) ||
-                    vocesEspanol.find(v => v.name.toLowerCase().includes('google')) ||
-                    vocesEspanol.find(v => v.name.toLowerCase().includes('microsoft')) ||
-                    vocesEspanol[0];
-            }
-
-            if (mejorOpcion) {
-                setMejorVoz(mejorOpcion);
-                console.log(`✅ Voz seleccionada: ${mejorOpcion.name} [${mejorOpcion.lang}]`);
-            } else {
-                console.warn('⚠️ No se encontró ninguna voz en español.');
-            }
-        };
-
-        cargarVoces();
-
-        if (window.speechSynthesis.onvoiceschanged !== undefined) {
-            window.speechSynthesis.onvoiceschanged = cargarVoces;
+        if (mejorOpcion) {
+            setMejorVoz(mejorOpcion);
+            console.log(`✅ Voz seleccionada: ${mejorOpcion.name} [${mejorOpcion.lang}]`);
+        } else {
+            console.warn('⚠️ No se encontró ninguna voz en español.');
         }
     }, []);
 
-    // 🔹 MODIFICADO: Agregado parámetro yaVista para mantener audioCompletado en true
     const reproducirAudio = useCallback((texto, callback, yaVista = false, esUltimaSeccion = false) => {
         window.speechSynthesis.cancel();
         setIsPlaying(false);
@@ -220,6 +176,7 @@ function FlipCard({ cards, onContentIsEnded, courseId, moduleId }) {
 
         setAudioEnReproduccion(true);
         currentCallbackRef.current = callback;
+        
         const utterance = new SpeechSynthesisUtterance(texto);
         utterance.voice = mejorVoz;
         utterance.lang = 'es-ES';
@@ -234,12 +191,10 @@ function FlipCard({ cards, onContentIsEnded, courseId, moduleId }) {
             setAudioCompletado(true);
             setAudioEnReproduccion(false);
 
-            // 🟢 Ejecutar callback primero (marca sección como vista)
             if (callback) {
                 callback();
             }
 
-            // 🟢 Si es la última sección, esperar a que React actualice el estado
             if (esUltimaSeccion && etapaAbierta) {
                 setTimeout(() => {
                     console.log('✅ Última sección completada, verificando etapa...');
@@ -252,30 +207,323 @@ function FlipCard({ cards, onContentIsEnded, courseId, moduleId }) {
             setIsPlaying(false);
             setAudioEnReproduccion(false);
         };
-        currentUtteranceRef.current = utterance;
+
         utterance.onboundary = (event) => {
             currentCharIndexRef.current = event.charIndex;
         };
+
+        currentUtteranceRef.current = utterance;
         window.speechSynthesis.speak(utterance);
     }, [audioEnabled, mejorVoz, etapaAbierta]);
 
-    useEffect(() => {
+    const iniciarAudioIntroduccion = useCallback(() => {
+        setAudioIntroReproducido(true);
+        setAudioEnReproduccion(true);
+        setMostrarCards(false);
+        setRequiereInteraccion(false);
+
+        const textoIntro =
+            "Etapas del SARLAFT. El SARLAFT funciona como un ciclo de protección que nunca se detiene. Sus etapas son: identificación, medición, control y monitoreo. Haz clic sobre cada etapa para ver su información.";
+
+        const utterance = new SpeechSynthesisUtterance(textoIntro);
+        utterance.voice = mejorVoz;
+        utterance.lang = 'es-ES';
+        utterance.rate = 0.9;
+        utterance.pitch = 1;
+
+        const timeoutId = setTimeout(() => {
+            if (!window.speechSynthesis.speaking) {
+                console.warn('⚠️ Audio bloqueado o no se pudo reproducir, mostrando cards');
+                setAudioEnReproduccion(false);
+                setMostrarCards(true);
+            }
+        }, 2000);
+
+        utterance.onstart = () => {
+            clearTimeout(timeoutId);
+            console.log('✅ Audio de introducción iniciado correctamente');
+        };
+
+        utterance.onend = () => {
+            clearTimeout(timeoutId);
+            setAudioEnReproduccion(false);
+            setMostrarCards(true);
+        };
+
+        utterance.onerror = (error) => {
+            clearTimeout(timeoutId);
+            console.error('❌ Error en audio de introducción:', error);
+            setAudioEnReproduccion(false);
+            setMostrarCards(true);
+        };
+
+        window.speechSynthesis.cancel();
+        window.speechSynthesis.speak(utterance);
+    }, [mejorVoz]);
+
+    // ========================================
+    // 🔷 FUNCIONES DE NAVEGACIÓN Y CONTROL
+    // ========================================
+    
+    const verificarEtapaCompletada = useCallback((etapaId) => {
+        const etapa = cards.find(e => e.id === etapaId);
+        const todasLasSecciones = ['objetivo', ...etapa.secciones.map(s => s.id)];
+
+        setTimeout(() => {
+            const seccionesActuales = seccionesVistasRef.current;
+            const etapasCompletadasActuales = etapasCompletadasRef.current;
+
+            const todasVistas = todasLasSecciones.every(seccion =>
+                seccionesActuales[`${etapaId}-${seccion}`] === true
+            );
+
+            console.log('🔍 Verificando etapa:', etapaId);
+            console.log('📋 Secciones actuales:', seccionesActuales);
+            console.log('✅ Todas vistas:', todasVistas);
+
+            if (todasVistas && !etapasCompletadasActuales.includes(etapaId)) {
+                console.log('✅ Etapa completada:', etapaId);
+
+                const nuevasEtapasCompletadas = [...etapasCompletadasActuales, etapaId];
+                const nuevaEtapaActiva = etapaId < cards.length ? etapaId + 1 : etapaId;
+
+                setEtapasCompletadas(nuevasEtapasCompletadas);
+                if (etapaId < cards.length) {
+                    setEtapaActiva(nuevaEtapaActiva);
+                }
+
+                guardarProgresoDirecto(
+                    seccionesActuales,
+                    nuevasEtapasCompletadas,
+                    nuevaEtapaActiva
+                );
+
+                if (etapaId === cards.length) {
+                    console.log("🎉 Última etapa completada, guardando definitivamente...");
+                    guardarProgresoDirecto(seccionesActuales, nuevasEtapasCompletadas, nuevaEtapaActiva);
+
+                    setTimeout(() => {
+                        console.log("🚀 Llamando a onContentIsEnded");
+                        if (onContentIsEnded) onContentIsEnded();
+                    }, 800);
+                }
+            }
+        }, 200);
+    }, [cards, guardarProgresoDirecto, onContentIsEnded]);
+
+    const abrirEtapa = useCallback((etapaId) => {
+        if (etapaId > etapaActiva) return;
+
+        setEtapaAbierta(etapaId);
+        setSeccionActiva('objetivo');
+
+        const etapa = cards.find(e => e.id === etapaId);
+        const seccionKey = `${etapaId}-objetivo`;
+
+        const yaVista = seccionesVistas[seccionKey] === true;
+        if (yaVista) {
+            setAudioCompletado(true);
+        }
+
+        const todasLasSecciones = ['objetivo', ...etapa.secciones.map(s => s.id)];
+        const esUltimaSeccion = todasLasSecciones.length === 1;
+
+        reproducirAudio(etapa.audioObjetivo, () => {
+            setSeccionesVistas(prev => ({
+                ...prev,
+                [seccionKey]: true
+            }));
+        }, yaVista, esUltimaSeccion);
+    }, [etapaActiva, cards, seccionesVistas, reproducirAudio]);
+
+    const cerrarModal = useCallback(() => {
+        window.speechSynthesis.cancel();
+        setIsPlaying(false);
+        setAudioEnReproduccion(false);
+        setAudioCompletado(false);
+
+        if (etapaAbierta) {
+            verificarEtapaCompletada(etapaAbierta);
+        }
+
+        setEtapaAbierta(null);
+        setSeccionActiva(null);
+    }, [etapaAbierta, verificarEtapaCompletada]);
+
+    const puedeAvanzarASeccion = useCallback((seccionActual, nuevaSeccion) => {
+        if (!etapaAbierta) return false;
+
+        const etapa = cards.find(e => e.id === etapaAbierta);
+        const secciones = ['objetivo', ...etapa.secciones.map(s => s.id)];
+        const indexActual = secciones.indexOf(seccionActual);
+        const indexNueva = secciones.indexOf(nuevaSeccion);
+
+        const currentKey = `${etapaAbierta}-${seccionActual}`;
+
+        if (indexNueva < indexActual) return true;
+        if (seccionesVistas[currentKey]) return true;
+
+        return false;
+    }, [etapaAbierta, cards, seccionesVistas]);
+
+    const cambiarSeccion = useCallback((nuevaSeccion) => {
         if (!etapaAbierta) return;
 
         const etapa = cards.find(e => e.id === etapaAbierta);
+        const seccionKey = `${etapaAbierta}-${nuevaSeccion}`;
+        const yaVista = seccionesVistas[seccionKey] === true;
+
         const todasLasSecciones = ['objetivo', ...etapa.secciones.map(s => s.id)];
+        const esUltimaSeccion = nuevaSeccion === todasLasSecciones[todasLasSecciones.length - 1];
 
-        const todasVistas = todasLasSecciones.every(seccion =>
-            seccionesVistas[`${etapaAbierta}-${seccion}`]
-        );
+        setSeccionActiva(nuevaSeccion);
+        setAudioCompletado(yaVista);
 
-        if (todasVistas && !etapasCompletadas.includes(etapaAbierta)) {
-            console.log('🎯 Etapa completada detectada automáticamente');
-            verificarEtapaCompletada(etapaAbierta);
+        const reproducir = (texto) => {
+            reproducirAudio(texto, () => {
+                setSeccionesVistas(prev => ({ ...prev, [seccionKey]: true }));
+
+                if (!esUltimaSeccion) {
+                    setTimeout(() => {
+                        verificarEtapaCompletada(etapaAbierta);
+                    }, 100);
+                }
+
+                if (yaVista) setAudioCompletado(true);
+            }, yaVista, esUltimaSeccion);
+        };
+
+        if (nuevaSeccion === 'objetivo') {
+            reproducir(etapa.audioObjetivo);
+        } else {
+            const seccion = etapa.secciones.find(s => s.id === nuevaSeccion);
+            reproducir(seccion.audio);
         }
+    }, [etapaAbierta, cards, seccionesVistas, reproducirAudio, verificarEtapaCompletada]);
+
+    const siguienteSeccion = useCallback(() => {
+        if (!etapaAbierta) return;
+        const etapa = cards.find(e => e.id === etapaAbierta);
+        const secciones = ['objetivo', ...etapa.secciones.map(s => s.id)];
+        const currentIndex = secciones.indexOf(seccionActiva);
+
+        if (currentIndex < secciones.length - 1) {
+            const currentKey = `${etapaAbierta}-${seccionActiva}`;
+
+            if (seccionesVistas[currentKey]) {
+                cambiarSeccion(secciones[currentIndex + 1]);
+            }
+        }
+    }, [etapaAbierta, cards, seccionActiva, seccionesVistas, cambiarSeccion]);
+
+    const anteriorSeccion = useCallback(() => {
+        if (!etapaAbierta) return;
+        const etapa = cards.find(e => e.id === etapaAbierta);
+        const secciones = ['objetivo', ...etapa.secciones.map(s => s.id)];
+        const currentIndex = secciones.indexOf(seccionActiva);
+
+        if (currentIndex > 0) {
+            const seccionAnterior = secciones[currentIndex - 1];
+            const keyAnterior = `${etapaAbierta}-${seccionAnterior}`;
+
+            const yaVista = seccionesVistas[keyAnterior] === true;
+            setAudioCompletado(yaVista);
+
+            cambiarSeccion(seccionAnterior);
+        }
+    }, [etapaAbierta, cards, seccionActiva, seccionesVistas, cambiarSeccion]);
+
+    // ========================================
+    // 🔷 EFFECTS - Sincronización de Refs
+    // ========================================
+    
+    useEffect(() => {
+        seccionesVistasRef.current = seccionesVistas;
     }, [seccionesVistas]);
 
-    // 🟣 Controlar pausa/reanudación de audio al cambiar de pestaña o salir de la página
+    useEffect(() => {
+        etapasCompletadasRef.current = etapasCompletadas;
+    }, [etapasCompletadas]);
+
+    useEffect(() => {
+        etapaActivaRef.current = etapaActiva;
+    }, [etapaActiva]);
+
+    // ========================================
+    // 🔷 EFFECTS - Carga de Progreso
+    // ========================================
+    
+    useEffect(() => {
+        if (courseProgress && courseProgress.flipCardProgress) {
+            const flipCardData = courseProgress.flipCardProgress[moduleId];
+
+            if (flipCardData) {
+                setSeccionesVistas(flipCardData.seccionesVistas || {});
+                setEtapasCompletadas(flipCardData.etapasCompletadas || []);
+                setEtapaActiva(flipCardData.etapaActiva || 1);
+
+                console.log('✅ Progreso de FlipCard cargado desde localStorage:', flipCardData);
+            }
+        }
+    }, [courseProgress, moduleId]);
+
+    // ========================================
+    // 🔷 EFFECTS - Guardado Automático
+    // ========================================
+    
+    useEffect(() => {
+        if (Object.keys(seccionesVistas).length > 0 || etapasCompletadas.length > 0) {
+            const timeoutId = setTimeout(() => {
+                saveFlipCardProgress();
+            }, 150);
+
+            return () => clearTimeout(timeoutId);
+        }
+    }, [seccionesVistas, etapasCompletadas, etapaActiva, saveFlipCardProgress]);
+
+    useEffect(() => {
+        return () => {
+            console.log('🔄 Componente desmontándose - Guardando progreso final');
+            if (Object.keys(seccionesVistasRef.current).length > 0 || etapasCompletadasRef.current.length > 0) {
+                guardarProgresoDirecto(
+                    seccionesVistasRef.current,
+                    etapasCompletadasRef.current,
+                    etapaActivaRef.current
+                );
+            }
+        };
+    }, [guardarProgresoDirecto]);
+
+    // ========================================
+    // 🔷 EFFECTS - Voces y Audio
+    // ========================================
+    
+    useEffect(() => {
+        cargarVoces();
+
+        if (window.speechSynthesis.onvoiceschanged !== undefined) {
+            window.speechSynthesis.onvoiceschanged = cargarVoces;
+        }
+    }, [cargarVoces]);
+
+    useEffect(() => {
+        if (audioIntroReproducido || !mejorVoz) return;
+
+        const esMovil = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+
+        if (esMovil) {
+            setRequiereInteraccion(true);
+            setMostrarCards(false);
+            return;
+        }
+
+        iniciarAudioIntroduccion();
+    }, [mejorVoz, audioIntroReproducido, iniciarAudioIntroduccion]);
+
+    // ========================================
+    // 🔷 EFFECTS - Control de Audio en Cambio de Visibilidad
+    // ========================================
+    
     useEffect(() => {
         const handleVisibilityChange = () => {
             if (document.hidden) {
@@ -329,241 +577,33 @@ function FlipCard({ cards, onContentIsEnded, courseId, moduleId }) {
         };
     }, [mejorVoz]);
 
-    const abrirEtapa = (etapaId) => {
-        if (etapaId > etapaActiva) return;
+    // ========================================
+    // 🔷 EFFECTS - Verificación Automática de Etapa Completada
+    // ========================================
+    
+    useEffect(() => {
+        if (!etapaAbierta) return;
 
-        setEtapaAbierta(etapaId);
-        setSeccionActiva('objetivo');
-
-        const etapa = cards.find(e => e.id === etapaId);
-        const seccionKey = `${etapaId}-objetivo`;
-
-        const yaVista = seccionesVistas[seccionKey] === true;
-        if (yaVista) {
-            setAudioCompletado(true);
-        }
-
+        const etapa = cards.find(e => e.id === etapaAbierta);
         const todasLasSecciones = ['objetivo', ...etapa.secciones.map(s => s.id)];
-        const esUltimaSeccion = todasLasSecciones.length === 1;
 
-        reproducirAudio(etapa.audioObjetivo, () => {
-            setSeccionesVistas(prev => ({
-                ...prev,
-                [seccionKey]: true
-            }));
-        }, yaVista, esUltimaSeccion);
-    };
+        const todasVistas = todasLasSecciones.every(seccion =>
+            seccionesVistas[`${etapaAbierta}-${seccion}`]
+        );
 
-    const cerrarModal = () => {
-        window.speechSynthesis.cancel();
-        setIsPlaying(false);
-        setAudioEnReproduccion(false);
-        setAudioCompletado(false);
-
-        if (etapaAbierta) {
+        if (todasVistas && !etapasCompletadas.includes(etapaAbierta)) {
+            console.log('🎯 Etapa completada detectada automáticamente');
             verificarEtapaCompletada(etapaAbierta);
         }
+    }, [seccionesVistas, etapaAbierta, etapasCompletadas, cards, verificarEtapaCompletada]);
 
-        setEtapaAbierta(null);
-        setSeccionActiva(null);
-    };
-
-    const puedeAvanzarASeccion = (seccionActual, nuevaSeccion) => {
-        if (!etapaAbierta) return false;
-
-        const etapa = cards.find(e => e.id === etapaAbierta);
-        const secciones = ['objetivo', ...etapa.secciones.map(s => s.id)];
-        const indexActual = secciones.indexOf(seccionActual);
-        const indexNueva = secciones.indexOf(nuevaSeccion);
-
-        const currentKey = `${etapaAbierta}-${seccionActual}`;
-
-        if (indexNueva < indexActual) return true;
-        if (seccionesVistas[currentKey]) return true;
-
-        return false;
-    };
-
-    const cambiarSeccion = (nuevaSeccion) => {
-        if (!etapaAbierta) return;
-
-        const etapa = cards.find(e => e.id === etapaAbierta);
-        const seccionKey = `${etapaAbierta}-${nuevaSeccion}`;
-        const yaVista = seccionesVistas[seccionKey] === true;
-
-        const todasLasSecciones = ['objetivo', ...etapa.secciones.map(s => s.id)];
-        const esUltimaSeccion = nuevaSeccion === todasLasSecciones[todasLasSecciones.length - 1];
-
-        setSeccionActiva(nuevaSeccion);
-        setAudioCompletado(yaVista);
-
-        const reproducir = (texto) => {
-            reproducirAudio(texto, () => {
-                setSeccionesVistas(prev => ({ ...prev, [seccionKey]: true }));
-
-                if (!esUltimaSeccion) {
-                    setTimeout(() => {
-                        verificarEtapaCompletada(etapaAbierta);
-                    }, 100);
-                }
-
-                if (yaVista) setAudioCompletado(true);
-            }, yaVista, esUltimaSeccion);
-        };
-
-        if (nuevaSeccion === 'objetivo') {
-            reproducir(etapa.audioObjetivo);
-        } else {
-            const seccion = etapa.secciones.find(s => s.id === nuevaSeccion);
-            reproducir(seccion.audio);
-        }
-    };
-
-    const verificarEtapaCompletada = (etapaId) => {
-        const etapa = cards.find(e => e.id === etapaId);
-        const todasLasSecciones = ['objetivo', ...etapa.secciones.map(s => s.id)];
-
-        // 🟢 Usar setTimeout para asegurar que los estados estén actualizados
-        setTimeout(() => {
-            const seccionesActuales = seccionesVistasRef.current;
-            const etapasCompletadasActuales = etapasCompletadasRef.current;
-
-            const todasVistas = todasLasSecciones.every(seccion =>
-                seccionesActuales[`${etapaId}-${seccion}`] === true
-            );
-
-            console.log('🔍 Verificando etapa:', etapaId);
-            console.log('📋 Secciones actuales:', seccionesActuales);
-            console.log('✅ Todas vistas:', todasVistas);
-
-            if (todasVistas && !etapasCompletadasActuales.includes(etapaId)) {
-                console.log('✅ Etapa completada:', etapaId);
-
-                const nuevasEtapasCompletadas = [...etapasCompletadasActuales, etapaId];
-                const nuevaEtapaActiva = etapaId < cards.length ? etapaId + 1 : etapaId;
-
-                // 🟢 Actualizar estados
-                setEtapasCompletadas(nuevasEtapasCompletadas);
-                if (etapaId < cards.length) {
-                    setEtapaActiva(nuevaEtapaActiva);
-                }
-
-                // 🟢 Guardar INMEDIATAMENTE con los valores correctos
-                guardarProgresoDirecto(
-                    seccionesActuales,
-                    nuevasEtapasCompletadas,
-                    nuevaEtapaActiva
-                );
-
-              
-
-                if (etapaId === cards.length) {
-                    console.log("🎉 Última etapa completada, guardando definitivamente...");
-                    guardarProgresoDirecto(seccionesActuales, nuevasEtapasCompletadas, nuevaEtapaActiva);
-
-                    setTimeout(() => {
-                        console.log("🚀 Llamando a onContentIsEnded");
-                        if (onContentIsEnded) onContentIsEnded();
-                    }, 800);
-                }
-
-            }
-        }, 200);
-    };
-
-    const siguienteSeccion = () => {
-        if (!etapaAbierta) return;
-        const etapa = cards.find(e => e.id === etapaAbierta);
-        const secciones = ['objetivo', ...etapa.secciones.map(s => s.id)];
-        const currentIndex = secciones.indexOf(seccionActiva);
-
-        if (currentIndex < secciones.length - 1) {
-            const currentKey = `${etapaAbierta}-${seccionActiva}`;
-
-            if (seccionesVistas[currentKey]) {
-                cambiarSeccion(secciones[currentIndex + 1]);
-            }
-        }
-    };
-
-    const anteriorSeccion = () => {
-        if (!etapaAbierta) return;
-        const etapa = cards.find(e => e.id === etapaAbierta);
-        const secciones = ['objetivo', ...etapa.secciones.map(s => s.id)];
-        const currentIndex = secciones.indexOf(seccionActiva);
-
-        if (currentIndex > 0) {
-            const seccionAnterior = secciones[currentIndex - 1];
-            const keyAnterior = `${etapaAbierta}-${seccionAnterior}`;
-
-            const yaVista = seccionesVistas[keyAnterior] === true;
-            setAudioCompletado(yaVista);
-
-            cambiarSeccion(seccionAnterior);
-        }
-    };
-
-    useEffect(() => {
-        if (audioIntroReproducido || !mejorVoz) return;
-
-        const esMovil = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-
-        if (esMovil) {
-            setRequiereInteraccion(true);
-            setMostrarCards(false);
-            return;
-        }
-
-        iniciarAudioIntroduccion();
-    }, [mejorVoz, audioIntroReproducido]);
-
-    const iniciarAudioIntroduccion = () => {
-        setAudioIntroReproducido(true);
-        setAudioEnReproduccion(true);
-        setMostrarCards(false);
-        setRequiereInteraccion(false);
-
-        const textoIntro =
-            "Etapas del SARLAFT. El SARLAFT funciona como un ciclo de protección que nunca se detiene. Sus etapas son: identificación, medición, control y monitoreo. Haz clic sobre cada etapa para ver su información.";
-
-        const utterance = new SpeechSynthesisUtterance(textoIntro);
-        utterance.voice = mejorVoz;
-        utterance.lang = 'es-ES';
-        utterance.rate = 0.9;
-        utterance.pitch = 1;
-
-        const timeoutId = setTimeout(() => {
-            if (!window.speechSynthesis.speaking) {
-                console.warn('⚠️ Audio bloqueado o no se pudo reproducir, mostrando cards');
-                setAudioEnReproduccion(false);
-                setMostrarCards(true);
-            }
-        }, 2000);
-
-        utterance.onstart = () => {
-            clearTimeout(timeoutId);
-            console.log('✅ Audio de introducción iniciado correctamente');
-        };
-
-        utterance.onend = () => {
-            clearTimeout(timeoutId);
-            setAudioEnReproduccion(false);
-            setMostrarCards(true);
-        };
-
-        utterance.onerror = (error) => {
-            clearTimeout(timeoutId);
-            console.error('❌ Error en audio de introducción:', error);
-            setAudioEnReproduccion(false);
-            setMostrarCards(true);
-        };
-
-        window.speechSynthesis.cancel();
-        window.speechSynthesis.speak(utterance);
-    };
-
+    // ========================================
+    // 🔷 RENDER
+    // ========================================
+    
     return (
         <div className='w-full mx-auto pt-10 pb-14 lg:pb-0' data-aos="fade-up" data-aos-delay={300} data-aos-duration="600">
+            {/* Botón de interacción móvil */}
             {requiereInteraccion && (
                 <div
                     onClick={iniciarAudioIntroduccion}
@@ -577,6 +617,7 @@ function FlipCard({ cards, onContentIsEnded, courseId, moduleId }) {
                 </div>
             )}
 
+            {/* Texto introductorio */}
             {!audioCompletado && etapaAbierta === null && !requiereInteraccion && (
                 <div className="text-center px-6 py-10 max-w-3xl mx-auto animate-fadeIn" data-aos="fade-up">
                     <h1 className="text-2xl md:text-3xl font-bold text-white mb-0">
@@ -587,6 +628,8 @@ function FlipCard({ cards, onContentIsEnded, courseId, moduleId }) {
                     </p>
                 </div>
             )}
+
+            {/* Grid de cards de etapas */}
             {mostrarCards && (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6" data-aos="fade-up">
                     {cards.map((etapa) => {
@@ -635,9 +678,11 @@ function FlipCard({ cards, onContentIsEnded, courseId, moduleId }) {
                 </div>
             )}
 
+            {/* Modal de etapa */}
             {etapaAbierta && etapaActualData && (
                 <ModalFlipCard etapaActualData={etapaActualData} onClose={cerrarModal}>
                     <div className="p-2 md:p-4 space-y-2">
+                        {/* Sección Objetivo */}
                         {seccionActiva === 'objetivo' && (
                             <div className="space-y-2 animate-fadeIn">
                                 <div className="flex items-center gap-2 text-zinc-200 mb-1">
@@ -649,6 +694,7 @@ function FlipCard({ cards, onContentIsEnded, courseId, moduleId }) {
                             </div>
                         )}
 
+                        {/* Otras secciones */}
                         {seccionActiva && seccionActiva !== 'objetivo' && (
                             <div className="space-y-3 animate-fadeIn">
                                 {(() => {
@@ -680,8 +726,10 @@ function FlipCard({ cards, onContentIsEnded, courseId, moduleId }) {
                         )}
                     </div>
 
+                    {/* Controles de navegación */}
                     <div className="bg-[#151518] border-t-2 border-slate-700 p-4">
                         <div className="flex items-center justify-between gap-1 md:gap-4">
+                            {/* Botón Anterior */}
                             <button
                                 onClick={anteriorSeccion}
                                 disabled={seccionActiva === 'objetivo'}
@@ -694,6 +742,7 @@ function FlipCard({ cards, onContentIsEnded, courseId, moduleId }) {
                                 <span className='hidden md:block'>Anterior</span>
                             </button>
 
+                            {/* Botones de secciones */}
                             <div className="flex gap-2 flex-wrap justify-center">
                                 <button
                                     onClick={() => cambiarSeccion('objetivo')}
@@ -739,6 +788,7 @@ function FlipCard({ cards, onContentIsEnded, courseId, moduleId }) {
                                 })}
                             </div>
 
+                            {/* Botón Siguiente */}
                             <button
                                 onClick={siguienteSeccion}
                                 disabled={
