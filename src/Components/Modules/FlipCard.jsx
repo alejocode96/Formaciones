@@ -8,7 +8,7 @@ function FlipCard({ cards, onContentIsEnded, courseId, moduleId }) {
     // ========================================
     // 🔷 REFS
     // ========================================
-    
+
     // Refs para control de audio
     const currentUtteranceRef = useRef(null);
     const currentCharIndexRef = useRef(0);
@@ -23,14 +23,14 @@ function FlipCard({ cards, onContentIsEnded, courseId, moduleId }) {
     // ========================================
     // 🔷 CONTEXT & PROPS
     // ========================================
-    
+
     const { getUserProgressForCourse, completeModule } = React.useContext(TrainingLogiTransContext);
     const courseProgress = getUserProgressForCourse(parseInt(courseId));
 
     // ========================================
     // 🔷 ESTADOS
     // ========================================
-    
+
     // Estados de progreso
     const [etapaActiva, setEtapaActiva] = useState(1);
     const [etapasCompletadas, setEtapasCompletadas] = useState([]);
@@ -52,14 +52,14 @@ function FlipCard({ cards, onContentIsEnded, courseId, moduleId }) {
     const [introMostrada, setIntroMostrada] = useState(false);
     const [requiereInteraccion, setRequiereInteraccion] = useState(false);
     const [mostrarCards, setMostrarCards] = useState(false);
-
+    const [vocesCargadas, setVocesCargadas] = useState(false);
     // Datos de etapa actual
     const etapaActualData = etapaAbierta ? cards.find(e => e.id === etapaAbierta) : null;
 
     // ========================================
     // 🔷 FUNCIONES DE GUARDADO
     // ========================================
-    
+
     const guardarProgresoDirecto = useCallback((seccionesVistasActual, etapasCompletadasActual, etapaActivaActual) => {
         try {
             const storedProgress = localStorage.getItem("userProgress");
@@ -117,21 +117,25 @@ function FlipCard({ cards, onContentIsEnded, courseId, moduleId }) {
     // ========================================
     // 🔷 FUNCIONES DE AUDIO
     // ========================================
-    
+
     const cargarVoces = useCallback(() => {
         const voices = window.speechSynthesis.getVoices();
-        if (!voices.length) return;
+        if (!voices.length) {
+            // Si aún no hay voces, reintentar después de un delay
+            setTimeout(cargarVoces, 200); // Reintenta cada 200ms hasta cargarlas
+            return;
+        };
 
         const vocesEspanol = voices.filter(v => v.lang.toLowerCase().startsWith('es'));
 
         const prioridadMicrosoft = [
             'Microsoft Andrea Online (Natural) - Spanish (Ecuador)',
             'Microsoft Dalia Online (Natural) - Spanish (Mexico)',
-            'Microsoft Camila Online (Natural) - Spanish (Peru)',
-            'Microsoft Catalina Online (Natural) - Spanish (Chile)',
-            'Microsoft Paola Online (Natural) - Spanish (Venezuela)',
-            'Microsoft Yolanda Online (Natural) - Spanish (Nicaragua)',
-            'Microsoft Salome Online (Natural) - Spanish (Colombia)',
+            // 'Microsoft Camila Online (Natural) - Spanish (Peru)',
+            // 'Microsoft Catalina Online (Natural) - Spanish (Chile)',
+            // 'Microsoft Paola Online (Natural) - Spanish (Venezuela)',
+            // 'Microsoft Yolanda Online (Natural) - Spanish (Nicaragua)',
+            // 'Microsoft Salome Online (Natural) - Spanish (Colombia)',
         ];
 
         let mejorOpcion = null;
@@ -142,17 +146,28 @@ function FlipCard({ cards, onContentIsEnded, courseId, moduleId }) {
         }
 
         if (!mejorOpcion) {
+            const vocesFemeninas = vocesEspanol.filter(v =>
+                /(female|mujer|paulina|monica|soledad|camila|lucia|maría|carla|rosa|laura|catalina|dalia|salome|andrea|paola)/i.test(v.name)
+            );
+
             mejorOpcion =
-                vocesEspanol.find(v => v.name.toLowerCase().includes('google') && v.name.toLowerCase().includes('espa')) ||
-                vocesEspanol.find(v => v.name.toLowerCase().includes('monica')) ||
-                vocesEspanol.find(v => v.name.toLowerCase().includes('paulina')) ||
-                vocesEspanol.find(v => v.name.toLowerCase().includes('google')) ||
-                vocesEspanol.find(v => v.name.toLowerCase().includes('microsoft')) ||
+                vocesFemeninas.find(v => v.name.toLowerCase().includes('monica')) ||
+                vocesFemeninas.find(v => v.name.toLowerCase().includes('paulina')) ||
+                vocesFemeninas.find(v => v.name.toLowerCase().includes('camila')) ||
+                vocesFemeninas.find(v => v.name.toLowerCase().includes('catalina')) ||
+                vocesFemeninas.find(v => v.name.toLowerCase().includes('salome')) ||
+                vocesFemeninas.find(v => v.name.toLowerCase().includes('andrea')) ||
+                vocesFemeninas.find(v => v.name.toLowerCase().includes('dalia')) ||
+                vocesFemeninas.find(v => v.name.toLowerCase().includes('paola')) ||
+                vocesFemeninas.find(v => v.name.toLowerCase().includes('google')) ||
+                vocesFemeninas.find(v => v.name.toLowerCase().includes('microsoft')) ||
+                vocesFemeninas[0] ||
                 vocesEspanol[0];
         }
 
         if (mejorOpcion) {
             setMejorVoz(mejorOpcion);
+            setVocesCargadas(true);
             console.log(`✅ Voz seleccionada: ${mejorOpcion.name} [${mejorOpcion.lang}]`);
         } else {
             console.warn('⚠️ No se encontró ninguna voz en español.');
@@ -176,7 +191,7 @@ function FlipCard({ cards, onContentIsEnded, courseId, moduleId }) {
 
         setAudioEnReproduccion(true);
         currentCallbackRef.current = callback;
-        
+
         const utterance = new SpeechSynthesisUtterance(texto);
         utterance.voice = mejorVoz;
         utterance.lang = 'es-ES';
@@ -264,7 +279,7 @@ function FlipCard({ cards, onContentIsEnded, courseId, moduleId }) {
     // ========================================
     // 🔷 FUNCIONES DE NAVEGACIÓN Y CONTROL
     // ========================================
-    
+
     const verificarEtapaCompletada = useCallback((etapaId) => {
         const etapa = cards.find(e => e.id === etapaId);
         const todasLasSecciones = ['objetivo', ...etapa.secciones.map(s => s.id)];
@@ -436,7 +451,7 @@ function FlipCard({ cards, onContentIsEnded, courseId, moduleId }) {
     // ========================================
     // 🔷 EFFECTS - Sincronización de Refs
     // ========================================
-    
+
     useEffect(() => {
         seccionesVistasRef.current = seccionesVistas;
     }, [seccionesVistas]);
@@ -452,7 +467,7 @@ function FlipCard({ cards, onContentIsEnded, courseId, moduleId }) {
     // ========================================
     // 🔷 EFFECTS - Carga de Progreso
     // ========================================
-    
+
     useEffect(() => {
         if (courseProgress && courseProgress.flipCardProgress) {
             const flipCardData = courseProgress.flipCardProgress[moduleId];
@@ -470,7 +485,7 @@ function FlipCard({ cards, onContentIsEnded, courseId, moduleId }) {
     // ========================================
     // 🔷 EFFECTS - Guardado Automático
     // ========================================
-    
+
     useEffect(() => {
         if (Object.keys(seccionesVistas).length > 0 || etapasCompletadas.length > 0) {
             const timeoutId = setTimeout(() => {
@@ -497,17 +512,25 @@ function FlipCard({ cards, onContentIsEnded, courseId, moduleId }) {
     // ========================================
     // 🔷 EFFECTS - Voces y Audio
     // ========================================
-    
+
     useEffect(() => {
+        const handleVoicesChanged = () => {
+            cargarVoces();
+        };
+
+        // Escuchar cambios de voces
+        window.speechSynthesis.addEventListener('voiceschanged', handleVoicesChanged);
+
+        // Intentar cargar inmediatamente (por si ya están disponibles)
         cargarVoces();
 
-        if (window.speechSynthesis.onvoiceschanged !== undefined) {
-            window.speechSynthesis.onvoiceschanged = cargarVoces;
-        }
+        return () => {
+            window.speechSynthesis.removeEventListener('voiceschanged', handleVoicesChanged);
+        };
     }, [cargarVoces]);
 
     useEffect(() => {
-        if (audioIntroReproducido || !mejorVoz) return;
+        if (audioIntroReproducido) return;
 
         const esMovil = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 
@@ -517,13 +540,16 @@ function FlipCard({ cards, onContentIsEnded, courseId, moduleId }) {
             return;
         }
 
-        iniciarAudioIntroduccion();
+
+        if (vocesCargadas && mejorVoz) {
+            iniciarAudioIntroduccion();
+        }
     }, [mejorVoz, audioIntroReproducido, iniciarAudioIntroduccion]);
 
     // ========================================
     // 🔷 EFFECTS - Control de Audio en Cambio de Visibilidad
     // ========================================
-    
+
     useEffect(() => {
         const handleVisibilityChange = () => {
             if (document.hidden) {
@@ -580,7 +606,7 @@ function FlipCard({ cards, onContentIsEnded, courseId, moduleId }) {
     // ========================================
     // 🔷 EFFECTS - Verificación Automática de Etapa Completada
     // ========================================
-    
+
     useEffect(() => {
         if (!etapaAbierta) return;
 
@@ -597,24 +623,53 @@ function FlipCard({ cards, onContentIsEnded, courseId, moduleId }) {
         }
     }, [seccionesVistas, etapaAbierta, etapasCompletadas, cards, verificarEtapaCompletada]);
 
+
+    useEffect(() => {
+        const handleResize = () => {
+            const ancho = window.innerWidth;
+            if (ancho >= 768) {
+                setRequiereInteraccion(false); // ya no se requiere clic en desktop
+                setMostrarCards(true)
+            } else {
+                // Opcional: si quieres que vuelva a true en móvil
+                setRequiereInteraccion(false);
+                setMostrarCards(true)
+            }
+        };
+
+        // Ejecutar al montar
+        handleResize();
+
+        // Escuchar cambios de tamaño
+        window.addEventListener('resize', handleResize);
+
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
+
+
     // ========================================
     // 🔷 RENDER
     // ========================================
-    
+
     return (
         <div className='w-full mx-auto pt-10 pb-14 lg:pb-0' data-aos="fade-up" data-aos-delay={300} data-aos-duration="600">
             {/* Botón de interacción móvil */}
             {requiereInteraccion && (
                 <div
                     onClick={iniciarAudioIntroduccion}
-                    className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 rounded-xl flex items-center justify-center z-50 cursor-pointer"
+                    className="relative w-full h-full flex items-center justify-center   rounded-xl cursor-pointer min-h-[400px]"
                 >
-                    <div className="text-center animate-pulse py-2">
-                        <p className="text-white text-2xl md:text-3xl font-light">
+                    {/* Borde exterior */}
+                    <div className="absolute inset-0   rounded-xl scale-[1.03] pointer-events-none"></div>
+
+                    <div className="text-center py-2 z-10">
+                        <p className="text-white text-2xl md:text-3xl font-light animate-pulse">
                             Click para iniciar
                         </p>
                     </div>
                 </div>
+
+
             )}
 
             {/* Texto introductorio */}
