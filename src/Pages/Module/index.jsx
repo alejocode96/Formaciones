@@ -9,7 +9,7 @@ import MobileModal, { ResumenContent, ContenidoContent } from '../../Components/
 import VideoModule from '../../Components/Modules/videoModule';
 import QuestionModule from '../../Components/Modules/questionModule';
 import FlipCard from '../../Components/Modules/FlipCard';
-
+import FlipCardReverse from '../../Components/Modules/FlipCardReverse';
 function ModulePage() {
 
 
@@ -122,7 +122,16 @@ function ModulePage() {
                         {currentModule.type === 'FlipCard' && (
                             <FlipCard
                                 key={currentModuleId}
-                                cards={currentModule.cards}
+                                currentModule={currentModule}
+                                onContentIsEnded={handleContentFinished}
+                                courseId={courseId}
+                                moduleId={currentModuleId}
+                            />
+                        )}
+                        {currentModule.type === 'FlipCardReverse' && (
+                            <FlipCardReverse
+                                key={currentModuleId}
+                                currentModule={currentModule}
                                 onContentIsEnded={handleContentFinished}
                                 courseId={courseId}
                                 moduleId={currentModuleId}

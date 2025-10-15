@@ -2,6 +2,9 @@ import React, { useState, useEffect } from 'react';
 
 const TrainingLogiTransContext = React.createContext();
 import { BookOpen, Lightbulb, Wrench } from 'lucide-react';
+import { Volume2, VolumeX, Banknote, RefreshCw, FileWarning, UserX, TrendingUp, Lock } from 'lucide-react';
+
+
 //conetneidos
 import introSARLAFT from '../assets/introduccionSARLAFT.mp4';
 import queesSARLAFT from '../assets/queesSARLAFT.mp4';
@@ -36,6 +39,8 @@ function TrainingLogiTransProvider({ children }) {
                     { id: 3, lessons: "Fundamentos", name: "¿Qué es SARLAFT?", completed: false, type: "Video", path: queesSARLAFT, resumen: ["¿Qué es SARLAFT?", "es un sistema para prevenir y gestionar el riesgo de lavado de activos y financiación del terrorismo. Funciona como un filtro de seguridad: analiza clientes, operaciones y recursos para asegurar que todo sea legal y transparente. Va más allá de solo revisar listas sospechosas; es un mecanismo de prevención que protege a la empresa, sus empleados y su reputación.",], duration: "00:48", },
                     {
                         id: 4, lessons: "Fundamentos", name: "Etapas del SARLAFT", completed: false, type: "FlipCard",
+                        objetivo: "El SARLAFT funciona como un ciclo de protección que nunca se detiene. Sus etapas son:",
+                        audioObjetivo:"Etapas del SARLAFT. El SARLAFT funciona como un ciclo de protección que nunca se detiene. Sus etapas son: identificación, medición, control y monitoreo. Haz clic sobre cada etapa para ver su información.",
                         cards: [
                             {
                                 id: 1, numero: "Etapa 1", titulo: "Identificación del Riesgo", icono: "🔍", color: "from-blue-500 to-blue-600", colorSolido: "bg-blue-500",
@@ -216,12 +221,60 @@ function TrainingLogiTransProvider({ children }) {
                             }
                         ], duration: "01:26",
                     },
-                    { id: 5, lessons: "Fundamentos", name: "Factores de Riesgo en el Transporte de Carga", completed: false, type: "Video", duration: "01:26", },
-                    { id: 6, lessons: "Fundamentos", name: "Señales de Alerta", completed: false, type: "Video", duration: "01:26", },
-                    { id: 7, lessons: "Fundamentos", name: "Casos Reales en Colombia", completed: false, type: "Video", duration: "01:26", path: casosSARLAFT},
+                    {
+                        id: 5, lessons: "Fundamentos", name: "Señales de Alerta", completed: false, type: "FlipCardReverse",
+                        objetivo: 'Las señales de alerta son comportamientos o situaciones que nos indican que algo podría no estar bien y que existe un posible riesgo de lavado de activos o financiación del terrorismo. Identificarlas a tiempo ayuda a proteger a la organización y cumplir con la normativa.',
+                        audioObjetivo: 'Señales de Alerta, Las señales de alerta son comportamientos o situaciones que nos indican que algo podría no estar bien y que existe un posible riesgo de lavado de activos o financiación del terrorismo. Identificarlas a tiempo ayuda a proteger a la organización y cumplir con la normativa.',
+                        cards: [
+                            {
+                                id: 1,
+                                title: "Pagos inusuales o muy altos en efectivo",
+                                content: "Hoy la mayoría de pagos grandes se hacen por transferencia o tarjeta. Si un cliente insiste en pagar en efectivo cantidades muy altas, podría estar intentando ocultar el origen del dinero.",
+                                example: "Ejemplo: Una empresa que normalmente paga sus facturas por transferencia, de repente quiere cancelar un contrato de 50 millones en efectivo.",
+                                icon: Banknote,
+                                color: "from-emerald-500 to-teal-600"
+                            },
+                            {
+                                id: 2,
+                                title: "Cambios frecuentes en remitentes o destinatarios",
+                                content: "Si los pagos o cobros cambian constantemente de nombre, puede que se esté tratando de ocultar quién está realmente detrás de la operación.",
+                                example: "Ejemplo: Un proveedor diferente cada mes para el mismo servicio, sin razón clara.",
+                                icon: RefreshCw,
+                                color: "from-purple-500 to-indigo-600"
+                            },
+                            {
+                                id: 3,
+                                title: "Documentos incompletos o falsos",
+                                content: "Información faltante o documentos alterados son señales claras de intento de engaño.",
+                                example: "Ejemplo: Facturas sin número de identificación o con fechas que no coinciden con la operación.",
+                                icon: FileWarning,
+                                color: "from-red-500 to-pink-600"
+                            },
+                            {
+                                id: 4,
+                                title: "Clientes que no quieren dar información",
+                                content: "La falta de transparencia es un signo de riesgo, ya que impide evaluar correctamente al cliente.",
+                                example: "Ejemplo: Un cliente se niega a entregar estados financieros o datos de contacto completos.",
+                                icon: UserX,
+                                color: "from-orange-500 to-amber-600"
+                            },
+                            {
+                                id: 5,
+                                title: "Operaciones que no coinciden con el perfil del cliente",
+                                content: "Movimientos que difieren del comportamiento habitual pueden indicar actividad sospechosa.",
+                                example: "Ejemplo: Un cliente que normalmente hace transferencias pequeñas, de repente realiza pagos millonarios en sectores distintos a su negocio.",
+                                icon: TrendingUp,
+                                color: "from-blue-500 to-cyan-600"
+                            }
+                        ],
+                        duration: "01:26",
+                    },
+                    { id: 6, lessons: "Fundamentos", name: "Factores de Riesgo en el Transporte de Carga", completed: false, type: "Video", duration: "01:26", },
+
+                    { id: 7, lessons: "Fundamentos", name: "Casos Reales en Colombia", completed: false, type: "Video", duration: "01:26", path: casosSARLAFT },
                     { id: 8, lessons: "Fundamentos", name: "El Rol de los Empleados", completed: false, type: "Video", duration: "01:26", },
                     { id: 9, lessons: "Fundamentos", name: "Consecuencias de No Aplicar SARLAFT", completed: false, type: "Video", duration: "01:26", },
-                    { id: 10, lessons: "Fundamentos", name: "Canales internos de reporte", completed: false, type: "Video", duration: "01:26", path: finalSARLAFT},
+                    { id: 10, lessons: "Fundamentos", name: "Canales internos de reporte", completed: false, type: "Video", duration: "01:26", path: finalSARLAFT },
                     { id: 11, lessons: "Evaluación", name: "Evaluacion Final", completed: false, type: "Pregunta", duration: "01:26", },
 
                 ]

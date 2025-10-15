@@ -3,12 +3,13 @@ import { useLocation } from 'react-router-dom';
 import { TrainingLogiTransContext } from '../../Context';
 import ModalFlipCard from './modalFlipCard';
 import { Volume2, VolumeX, ChevronRight, ChevronLeft, BookOpen, Target, Lightbulb, Wrench, Lock, CheckCircle, X } from 'lucide-react';
-
-function FlipCard({ cards, onContentIsEnded, courseId, moduleId }) {
+import AOS from 'aos';
+import 'aos/dist/aos.css';
+function FlipCard({ currentModule, onContentIsEnded, courseId, moduleId }) {
     // ========================================
     // 🔷 REFS
     // ========================================
-
+    let cards = currentModule.cards;
     // Refs para control de audio
     const currentUtteranceRef = useRef(null);
     const currentCharIndexRef = useRef(0);
@@ -237,9 +238,7 @@ function FlipCard({ cards, onContentIsEnded, courseId, moduleId }) {
         setMostrarCards(false);
         setRequiereInteraccion(false);
 
-        const textoIntro =
-            "Etapas del SARLAFT. El SARLAFT funciona como un ciclo de protección que nunca se detiene. Sus etapas son: identificación, medición, control y monitoreo. Haz clic sobre cada etapa para ver su información.";
-
+        const textoIntro = currentModule.audioObjetivo;
         const utterance = new SpeechSynthesisUtterance(textoIntro);
         utterance.voice = mejorVoz;
         utterance.lang = 'es-ES';
@@ -624,28 +623,13 @@ function FlipCard({ cards, onContentIsEnded, courseId, moduleId }) {
     }, [seccionesVistas, etapaAbierta, etapasCompletadas, cards, verificarEtapaCompletada]);
 
 
+
+    // En tu FlipCard, después de mostrar las cards:
     useEffect(() => {
-        const handleResize = () => {
-            const ancho = window.innerWidth;
-            if (ancho >= 768) {
-                setRequiereInteraccion(false); // ya no se requiere clic en desktop
-                setMostrarCards(true)
-            } else {
-                // Opcional: si quieres que vuelva a true en móvil
-                setRequiereInteraccion(false);
-                setMostrarCards(true)
-            }
-        };
-
-        // Ejecutar al montar
-        handleResize();
-
-        // Escuchar cambios de tamaño
-        window.addEventListener('resize', handleResize);
-
-        return () => window.removeEventListener('resize', handleResize);
-    }, []);
-
+        if (mostrarCards) {
+            AOS.refresh(); // Actualiza AOS con los nuevos elementos
+        }
+    }, [mostrarCards]);
 
     // ========================================
     // 🔷 RENDER
@@ -673,13 +657,13 @@ function FlipCard({ cards, onContentIsEnded, courseId, moduleId }) {
             )}
 
             {/* Texto introductorio */}
-            {!audioCompletado && etapaAbierta === null && !requiereInteraccion && (
+            {!requiereInteraccion && (
                 <div className="text-center px-6 py-10 max-w-3xl mx-auto animate-fadeIn" data-aos="fade-up">
                     <h1 className="text-2xl md:text-3xl font-bold text-white mb-0">
-                        Etapas del SARLAFT
+                        {currentModule.name}
                     </h1>
                     <p className="text-slate-300 text-sm md:text-base leading-relaxed mb-6">
-                        El SARLAFT funciona como un ciclo de protección que nunca se detiene. Sus etapas son:
+                        {currentModule.objetivo}
                     </p>
                 </div>
             )}
@@ -721,7 +705,7 @@ function FlipCard({ cards, onContentIsEnded, courseId, moduleId }) {
                         const estaBloqueada = etapa.id > etapaActiva;
                         const estaCompletada = etapasCompletadas.includes(etapa.id);
 
-                       
+
 
                         return (
                             <button
