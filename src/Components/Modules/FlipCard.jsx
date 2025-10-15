@@ -683,6 +683,36 @@ function FlipCard({ cards, onContentIsEnded, courseId, moduleId }) {
                     </p>
                 </div>
             )}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6" data-aos="fade-up">
+                {cards.map((etapa) => {
+
+                    if (audioEnReproduccion && !etapaAbierta) {
+                        return (
+                            <div
+                                key={etapa.id}
+                                className="relative flex flex-col items-center justify-center p-6 rounded-2xl border-1 border-[#2c2c2f] bg-[#121214] overflow-hidden"
+                            >
+                                {/* Fondo con efecto radial pulse */}
+                                <div className="absolute inset-0 rounded-2xl bg-[#3a3a3f]/40 animate-pulse-radial"></div>
+
+                                {/* Skeleton del ícono */}
+                                <div className="relative w-16 h-16 mb-3 rounded-full bg-[#1f1f23] overflow-hidden">
+                                    <div className="absolute inset-0 bg-gradient-to-br from-[#2c2c2f] via-[#3a3a3f] to-[#2c2c2f] rounded-full animate-pulse-delay"></div>
+                                </div>
+
+                                {/* Skeleton del texto */}
+                                <div className="w-full space-y-2 mt-2">
+                                    <div className="h-3 bg-[#1f1f23] rounded w-1/3 mx-auto animate-pulse delay-75"></div>
+                                    <div className="h-5 bg-[#1f1f23] rounded w-2/3 mx-auto animate-pulse delay-150"></div>
+                                    <div className="h-4 bg-[#1f1f23] rounded w-4/5 mx-auto mt-4 animate-pulse delay-200"></div>
+                                </div>
+                            </div>
+
+                        );
+                    }
+                })}
+            </div>
+
 
             {/* Grid de cards de etapas */}
             {mostrarCards && (
@@ -690,6 +720,8 @@ function FlipCard({ cards, onContentIsEnded, courseId, moduleId }) {
                     {cards.map((etapa) => {
                         const estaBloqueada = etapa.id > etapaActiva;
                         const estaCompletada = etapasCompletadas.includes(etapa.id);
+
+                       
 
                         return (
                             <button

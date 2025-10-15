@@ -73,3 +73,22 @@ body {
 .animate-scaleIn {
   animation: scaleIn 0.3s ease-out;
 }
+
+@keyframes pulseRadial {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 0.3;
+  }
+  50% {
+    transform: scale(1.1);
+    opacity: 0.5;
+  }
+}
+
+.animate-pulse-radial {
+  animation: pulseRadial 1.5s ease-in-out infinite;
+}
+
+.animate-pulse-delay {
+  animation: pulse 1.5s ease-in-out infinite;
+}
