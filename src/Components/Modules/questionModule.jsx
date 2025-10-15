@@ -96,6 +96,7 @@ function QuestionModule({ question, answer, onContentIsEnded, onAttempt, onCorre
                 ${!isSubmitted && isSelected ? 'bg-blue-900/30 border-blue-500 shadow-lg shadow-blue-500/20' : ''}
                 ${showCorrect ? 'bg-green-900/30 border-green-500 shadow-lg shadow-green-500/20' : ''}
                 ${showIncorrect ? 'bg-red-900/30 border-red-500 shadow-lg shadow-red-500/20' : ''}
+                ${!showIncorrect && !showCorrect  &&  !isSelected? 'border-zinc-700/50':''}
                 ${isSubmitted ? 'cursor-not-allowed' : 'cursor-pointer'} group`}
             >
               <div className='flex items-center justify-between'>
