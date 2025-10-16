@@ -132,6 +132,7 @@ function FlipCardReverse({ currentModule, onContentIsEnded, courseId, moduleId }
 
     // 🎬 Reproducir introducción cuando todo esté listo
     useEffect(() => {
+
         if (!isMobile && vocesCargadas && !introStarted) {
             setIntroStarted(true);
             speak(currentModule.audioObjetivo, () => {
@@ -140,6 +141,21 @@ function FlipCardReverse({ currentModule, onContentIsEnded, courseId, moduleId }
             });
         }
     }, [isMobile, vocesCargadas]);
+
+    //Efecto  que identifica si es mobile
+    useEffect(() => {
+        const checkMobile = () => {
+            const mobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || window.innerWidth < 768;
+            setIsMobile(mobile);
+        };
+
+        checkMobile();
+        window.addEventListener('resize', checkMobile);
+
+        return () => window.removeEventListener('resize', checkMobile);
+    }, []);
+
+    
 
     if (!vocesCargadas) {
         return (
@@ -153,14 +169,33 @@ function FlipCardReverse({ currentModule, onContentIsEnded, courseId, moduleId }
 
     return (
         <div className="w-full mx-auto pt-10 pb-14 lg:pb-0" data-aos="fade-up" data-aos-delay={300} data-aos-duration="600">
-            <div className="text-center px-6 py-10 max-w-5xl mx-auto animate-fadeIn" data-aos="fade-up">
-                <h1 className="text-2xl md:text-3xl font-bold text-white mb-0">
-                    {currentModule.name}
-                </h1>
-                <p className="text-slate-300 text-sm md:text-base leading-relaxed mb-6">
-                    {currentModule.objetivo}
-                </p>
-            </div>
+            {isMobile && !introStarted &&(
+                <div
+                    //onClick={iniciarAudioIntroduccion}
+                    className="relative w-full h-full flex items-center justify-center   rounded-xl cursor-pointer min-h-[400px]"
+                >
+                    {/* Borde exterior */}
+                    <div className="absolute inset-0   rounded-xl scale-[1.03] pointer-events-none"></div>
+
+                    <div className="text-center py-2 z-10">
+                        <p className="text-white text-2xl md:text-3xl font-light animate-pulse">
+                            Click para iniciar
+                        </p>
+                    </div>
+                </div>
+
+
+            )}
+            {introStarted  && (
+                <div className="text-center px-6 py-10 max-w-5xl mx-auto animate-fadeIn" data-aos="fade-up">
+                    <h1 className="text-2xl md:text-3xl font-bold text-white mb-0">
+                        {currentModule.name}
+                    </h1>
+                    <p className="text-slate-300 text-sm md:text-base leading-relaxed mb-6">
+                        {currentModule.objetivo}
+                    </p>
+                </div>
+            )}
         </div>
     );
 }
