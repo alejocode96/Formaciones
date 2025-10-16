@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useLocation } from 'react-router-dom';
 import { TrainingLogiTransContext } from '../../Context';
+import AOS from 'aos';
+import 'aos/dist/aos.css';
 
 function FlipCardReverse({ currentModule, onContentIsEnded, courseId, moduleId }) {
 
@@ -140,22 +142,21 @@ function FlipCardReverse({ currentModule, onContentIsEnded, courseId, moduleId }
                 setUnlockedCards([1]);
             });
         }
-    }, [isMobile, vocesCargadas]);
+    }, [isMobile, vocesCargadas, introStarted]);
 
     //Efecto  que identifica si es mobile
     useEffect(() => {
         const checkMobile = () => {
-            const mobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || window.innerWidth < 768;
-            setIsMobile(mobile);
+            const isMobileDevice = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || window.innerWidth < 768;
+            setIsMobile(isMobileDevice);
         };
 
         checkMobile();
         window.addEventListener('resize', checkMobile);
-
         return () => window.removeEventListener('resize', checkMobile);
     }, []);
 
-    
+
 
     if (!vocesCargadas) {
         return (
@@ -167,14 +168,29 @@ function FlipCardReverse({ currentModule, onContentIsEnded, courseId, moduleId }
         );
     }
 
+
+    const iniciarIntroMovil = () => {
+        if (!introStarted && vocesCargadas) {
+            setIntroStarted(true);
+            speak(currentModule.audioObjetivo, () => {
+                setIntroPlayed(true);
+                setUnlockedCards([1]);
+            });
+        }
+    };
+
+
+  
+
     return (
-        <div className="w-full mx-auto pt-10 pb-14 lg:pb-0" data-aos="fade-up" data-aos-delay={300} data-aos-duration="600">
-            {isMobile && !introStarted &&(
+        <div className="w-full mx-auto pt-10 pb-14 lg:pb-0">
+            {isMobile && !introStarted && (
                 <div
-                    //onClick={iniciarAudioIntroduccion}
-                    className="relative w-full h-full flex items-center justify-center   rounded-xl cursor-pointer min-h-[400px]"
+                    onClick={iniciarIntroMovil}
+                    className="relative w-full flex items-center justify-center   rounded-xl cursor-pointer min-h-[400px] " data-aos="fade-up"
                 >
                     {/* Borde exterior */}
+
                     <div className="absolute inset-0   rounded-xl scale-[1.03] pointer-events-none"></div>
 
                     <div className="text-center py-2 z-10">
@@ -186,7 +202,7 @@ function FlipCardReverse({ currentModule, onContentIsEnded, courseId, moduleId }
 
 
             )}
-            {introStarted  && (
+            {introStarted && (
                 <div className="text-center px-6 py-10 max-w-5xl mx-auto animate-fadeIn" data-aos="fade-up">
                     <h1 className="text-2xl md:text-3xl font-bold text-white mb-0">
                         {currentModule.name}

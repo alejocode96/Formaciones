@@ -663,12 +663,12 @@ function FlipCard({ currentModule, onContentIsEnded, courseId, moduleId }) {
     }
 
     return (
-        <div className='w-full mx-auto pt-10 pb-14 lg:pb-0' data-aos="fade-up" data-aos-delay={300} data-aos-duration="600">
+        <div className='w-full mx-auto pt-10 pb-14 lg:pb-0' >
             {/* Botón de interacción móvil */}
             {requiereInteraccion && (
                 <div
                     onClick={iniciarAudioIntroduccion}
-                    className="relative w-full h-full flex items-center justify-center   rounded-xl cursor-pointer min-h-[400px]"
+                    className="relative w-full flex items-center justify-center   rounded-xl cursor-pointer min-h-[400px]" data-aos="fade-up"
                 >
                     {/* Borde exterior */}
                     <div className="absolute inset-0   rounded-xl scale-[1.03] pointer-events-none"></div>
