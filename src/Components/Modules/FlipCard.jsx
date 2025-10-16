@@ -6,6 +6,8 @@ import { Volume2, VolumeX, ChevronRight, ChevronLeft, BookOpen, Target, Lightbul
 import AOS from 'aos';
 import 'aos/dist/aos.css';
 function FlipCard({ currentModule, onContentIsEnded, courseId, moduleId }) {
+
+
     // ========================================
     // 🔷 REFS
     // ========================================
@@ -44,7 +46,8 @@ function FlipCard({ currentModule, onContentIsEnded, courseId, moduleId }) {
     // Estados de audio
     const [audioCompletado, setAudioCompletado] = useState(false);
     const [audioEnReproduccion, setAudioEnReproduccion] = useState(false);
-    const [audioIntroReproducido, setAudioIntroReproducido] = useState(false);
+    // const [audioIntroReproducido, setAudioIntroReproducido] = useState(false);
+    const [audioIntroIniciado, setAudioIntroIniciado] = useState(false); // Solo controla si ya se intentó iniciar EN ESTA SESIÓN
     const [audioEnabled, setAudioEnabled] = useState(true);
     const [isPlaying, setIsPlaying] = useState(false);
     const [mejorVoz, setMejorVoz] = useState(null);
@@ -56,6 +59,7 @@ function FlipCard({ currentModule, onContentIsEnded, courseId, moduleId }) {
     const [vocesCargadas, setVocesCargadas] = useState(false);
     // Datos de etapa actual
     const etapaActualData = etapaAbierta ? cards.find(e => e.id === etapaAbierta) : null;
+
 
     // ========================================
     // 🔷 FUNCIONES DE GUARDADO
@@ -119,63 +123,71 @@ function FlipCard({ currentModule, onContentIsEnded, courseId, moduleId }) {
     // 🔷 FUNCIONES DE AUDIO
     // ========================================
 
-    const cargarVoces = useCallback(() => {
-        const voices = window.speechSynthesis.getVoices();
-        if (!voices.length) {
-            // Si aún no hay voces, reintentar después de un delay
-            setTimeout(cargarVoces, 200); // Reintenta cada 200ms hasta cargarlas
-            return;
+    // 🎯 useEffect ÚNICO para cargar voces (debe estar después de los estados)
+    useEffect(() => {
+        const synth = window.speechSynthesis;
+
+        const cargarVoces = () => {
+            const voices = synth.getVoices();
+
+            if (!voices.length) {
+                console.log('🔄 Reintentando cargar voces...');
+                setTimeout(cargarVoces, 300);
+                return;
+            }
+
+            const vocesEspanol = voices.filter(v => v.lang.toLowerCase().startsWith('es'));
+            const prioridadMicrosoft = [
+                'Microsoft Andrea Online (Natural) - Spanish (Ecuador)',
+                'Microsoft Dalia Online (Natural) - Spanish (Mexico)',
+                'Microsoft Salome Online (Natural) - Spanish (Colombia)',
+            ];
+
+            let mejorOpcion = null;
+
+            for (const nombre of prioridadMicrosoft) {
+                mejorOpcion = vocesEspanol.find(v => v.name.toLowerCase().includes(nombre.toLowerCase()));
+                if (mejorOpcion) break;
+            }
+
+            if (!mejorOpcion) {
+                const vocesFemeninas = vocesEspanol.filter(v =>
+                    /(female|mujer|monica|camila|andrea|salome|google|microsoft)/i.test(v.name)
+                );
+                mejorOpcion = vocesFemeninas[0] || vocesEspanol[0];
+            }
+
+            if (mejorOpcion) {
+                setMejorVoz(mejorOpcion);
+                setVocesCargadas(true);
+                console.log(`✅ Voz seleccionada: ${mejorOpcion.name}`);
+            } else {
+                console.warn('⚠️ No se encontró ninguna voz en español.');
+                setVocesCargadas(true); // Marcar como cargadas aunque no haya voz
+            }
         };
 
-        const vocesEspanol = voices.filter(v => v.lang.toLowerCase().startsWith('es'));
+        // Intentar carga inmediata
+        cargarVoces();
 
-        const prioridadMicrosoft = [
-            'Microsoft Andrea Online (Natural) - Spanish (Ecuador)',
-            'Microsoft Dalia Online (Natural) - Spanish (Mexico)',
-            // 'Microsoft Camila Online (Natural) - Spanish (Peru)',
-            // 'Microsoft Catalina Online (Natural) - Spanish (Chile)',
-            // 'Microsoft Paola Online (Natural) - Spanish (Venezuela)',
-            // 'Microsoft Yolanda Online (Natural) - Spanish (Nicaragua)',
-            // 'Microsoft Salome Online (Natural) - Spanish (Colombia)',
-        ];
+        // Escuchar cambios de voces
+        synth.onvoiceschanged = cargarVoces;
 
-        let mejorOpcion = null;
+        // Fallback para móviles
+        const handleUserInteraction = () => {
+            console.log('👆 Interacción detectada');
+            cargarVoces();
+            document.removeEventListener('click', handleUserInteraction);
+        };
+        document.addEventListener('click', handleUserInteraction);
 
-        for (const nombre of prioridadMicrosoft) {
-            mejorOpcion = vocesEspanol.find(v => v.name.toLowerCase().includes(nombre.toLowerCase()));
-            if (mejorOpcion) break;
-        }
+        return () => {
+            synth.onvoiceschanged = null;
+            document.removeEventListener('click', handleUserInteraction);
+        };
+    }, []); // ✅ Sin dependencias - solo se ejecuta una vez
 
-        if (!mejorOpcion) {
-            const vocesFemeninas = vocesEspanol.filter(v =>
-                /(female|mujer|paulina|monica|soledad|camila|lucia|maría|carla|rosa|laura|catalina|dalia|salome|andrea|paola)/i.test(v.name)
-            );
-
-            mejorOpcion =
-                vocesFemeninas.find(v => v.name.toLowerCase().includes('monica')) ||
-                vocesFemeninas.find(v => v.name.toLowerCase().includes('paulina')) ||
-                vocesFemeninas.find(v => v.name.toLowerCase().includes('camila')) ||
-                vocesFemeninas.find(v => v.name.toLowerCase().includes('catalina')) ||
-                vocesFemeninas.find(v => v.name.toLowerCase().includes('salome')) ||
-                vocesFemeninas.find(v => v.name.toLowerCase().includes('andrea')) ||
-                vocesFemeninas.find(v => v.name.toLowerCase().includes('dalia')) ||
-                vocesFemeninas.find(v => v.name.toLowerCase().includes('paola')) ||
-                vocesFemeninas.find(v => v.name.toLowerCase().includes('google')) ||
-                vocesFemeninas.find(v => v.name.toLowerCase().includes('microsoft')) ||
-                vocesFemeninas[0] ||
-                vocesEspanol[0];
-        }
-
-        if (mejorOpcion) {
-            setMejorVoz(mejorOpcion);
-            setVocesCargadas(true);
-            console.log(`✅ Voz seleccionada: ${mejorOpcion.name} [${mejorOpcion.lang}]`);
-        } else {
-            console.warn('⚠️ No se encontró ninguna voz en español.');
-        }
-    }, []);
-
-    const reproducirAudio = useCallback((texto, callback, yaVista = false, esUltimaSeccion = false) => {
+    const reproducirAudio = useCallback((texto, callback, yaVista = false, esUltimaSeccion = false,intento = 1, maxIntentos = 4) => {
         window.speechSynthesis.cancel();
         setIsPlaying(false);
         setAudioEnReproduccion(false);
@@ -224,6 +236,8 @@ function FlipCard({ currentModule, onContentIsEnded, courseId, moduleId }) {
             setAudioEnReproduccion(false);
         };
 
+
+        
         utterance.onboundary = (event) => {
             currentCharIndexRef.current = event.charIndex;
         };
@@ -232,8 +246,18 @@ function FlipCard({ currentModule, onContentIsEnded, courseId, moduleId }) {
         window.speechSynthesis.speak(utterance);
     }, [audioEnabled, mejorVoz, etapaAbierta]);
 
-    const iniciarAudioIntroduccion = useCallback(() => {
-        setAudioIntroReproducido(true);
+    const iniciarAudioIntroduccion = (intento = 1, maxIntentos = 7) => {
+        // setAudioIntroReproducido(true);
+        console.log(audioIntroIniciado)
+        if (audioIntroIniciado) {
+            return;
+        }
+        if (!vocesCargadas || !mejorVoz) {
+            console.warn('⚠️ Voces aún no cargadas, no se puede reproducir.');
+            setMostrarCards(true);
+            return;
+        }
+        setAudioIntroIniciado(true); // Solo marca que ya se inició EN ESTA CARGA
         setAudioEnReproduccion(true);
         setMostrarCards(false);
         setRequiereInteraccion(false);
@@ -266,14 +290,21 @@ function FlipCard({ currentModule, onContentIsEnded, courseId, moduleId }) {
 
         utterance.onerror = (error) => {
             clearTimeout(timeoutId);
-            console.error('❌ Error en audio de introducción:', error);
-            setAudioEnReproduccion(false);
-            setMostrarCards(true);
+            console.error(`❌ Error en audio de introducción (intento ${intento}):`, error);
+            if (intento < maxIntentos) {
+                console.log(`🔁 Reintentando audio (${intento + 1}/${maxIntentos})...`);
+                // Espera un poco antes de reintentar
+                setTimeout(() => iniciarAudioIntroduccion(intento + 1, maxIntentos), 500);
+            } else {
+                console.warn('⚠️ Se alcanzó el máximo de intentos, mostrando cards');
+                setAudioEnReproduccion(false);
+                setMostrarCards(true);
+            }
         };
 
         window.speechSynthesis.cancel();
         window.speechSynthesis.speak(utterance);
-    }, [mejorVoz]);
+    };
 
     // ========================================
     // 🔷 FUNCIONES DE NAVEGACIÓN Y CONTROL
@@ -512,24 +543,12 @@ function FlipCard({ currentModule, onContentIsEnded, courseId, moduleId }) {
     // 🔷 EFFECTS - Voces y Audio
     // ========================================
 
-    useEffect(() => {
-        const handleVoicesChanged = () => {
-            cargarVoces();
-        };
-
-        // Escuchar cambios de voces
-        window.speechSynthesis.addEventListener('voiceschanged', handleVoicesChanged);
-
-        // Intentar cargar inmediatamente (por si ya están disponibles)
-        cargarVoces();
-
-        return () => {
-            window.speechSynthesis.removeEventListener('voiceschanged', handleVoicesChanged);
-        };
-    }, [cargarVoces]);
 
     useEffect(() => {
-        if (audioIntroReproducido) return;
+        // 🎯 Solo ejecutar UNA vez cuando todo esté listo
+        //if (audioIntroReproducido) return;
+        if (audioIntroIniciado) return;
+        if (!vocesCargadas || !mejorVoz) return; // ✅ Esperar a que las voces estén 100% cargadas
 
         const esMovil = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 
@@ -539,11 +558,10 @@ function FlipCard({ currentModule, onContentIsEnded, courseId, moduleId }) {
             return;
         }
 
-
-        if (vocesCargadas && mejorVoz) {
-            iniciarAudioIntroduccion();
-        }
-    }, [mejorVoz, audioIntroReproducido, iniciarAudioIntroduccion]);
+        // ✅ Solo reproducir cuando TODO esté listo
+        console.log('✅ Voces cargadas, reproduciendo introducción');
+        iniciarAudioIntroduccion();
+    }, [vocesCargadas, mejorVoz, audioIntroIniciado]); // ✅ Dependencias correctas
 
     // ========================================
     // 🔷 EFFECTS - Control de Audio en Cambio de Visibilidad
@@ -634,6 +652,15 @@ function FlipCard({ currentModule, onContentIsEnded, courseId, moduleId }) {
     // ========================================
     // 🔷 RENDER
     // ========================================
+    if (!vocesCargadas) {
+        return (
+            <div className="flex justify-center items-center h-64">
+                <p className="text-slate-400 text-lg animate-pulse">
+                    Cargando voces en español...
+                </p>
+            </div>
+        );
+    }
 
     return (
         <div className='w-full mx-auto pt-10 pb-14 lg:pb-0' data-aos="fade-up" data-aos-delay={300} data-aos-duration="600">
