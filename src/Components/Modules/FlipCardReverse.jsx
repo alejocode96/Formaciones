@@ -212,15 +212,17 @@ function FlipCardReverse({ currentModule, onContentIsEnded, courseId, moduleId }
                     </p>
                 </div>
             )}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6" data-aos="fade-up">
-                {cards.map((etapa) => {
+            <div className="grid grid-cols-1 md:grid-cols-1 lg:grid-cols-2 gap-6 mb-6 " data-aos="fade-up">
+                {cards.map((etapa,index) => {
 
-                    if (!showCards  && introStarted ) {
+                    if (!showCards && introStarted) {
+                        // Verifica si es la última card
+                        const isLast = index === cards.length - 1
                         return (
                             <div
                                 key={etapa.id}
-                                className="relative flex flex-col items-center justify-center p-6 rounded-2xl border-1 border-[#2c2c2f] bg-[#121214] overflow-hidden"
-                            >
+                                className={`relative flex flex-col items-center justify-center p-6 rounded-2xl border-1 border-[#2c2c2f] bg-[#121214] overflow-hidden 
+                                ${isLast ? "col-span-1 lg:col-span-2" : ""}`} >
                                 {/* Fondo con efecto radial pulse */}
                                 <div className="absolute inset-0 rounded-2xl bg-[#3a3a3f]/40 animate-pulse-radial"></div>
 
