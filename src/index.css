@@ -43,7 +43,10 @@ body {
   background: rgba(75, 85, 99, 0.7);
 }
 
-/*flip cards*/
+/* ========================================
+   🎴 FLIP CARDS - Sistema de tarjetas 3D
+   ======================================== */
+
 @keyframes fadeIn {
   from {
     opacity: 0;
@@ -96,40 +99,198 @@ body {
   animation: pulse 1.5s ease-in-out infinite;
 }
 
+/* ========================================
+   🔧 FIX CRÍTICO: Flip Cards en Móviles
+   
+   Problema: En dispositivos móviles (especialmente iOS Safari),
+   backface-visibility: hidden no funciona correctamente y se ven
+   ambas caras de la tarjeta al mismo tiempo.
+   
+   Solución: Forzar hardware acceleration y estilos adicionales
+   ======================================== */
+
 .perspective-1000 {
   perspective: 1000px;
+  /* Forzar hardware acceleration en móviles */
+  -webkit-perspective: 1000px;
+  /* Safari/iOS */
 }
 
 .transform-style-3d {
   transform-style: preserve-3d;
+  -webkit-transform-style: preserve-3d;
+  /* Safari/iOS */
+  /* Forzar creación de un nuevo stacking context */
+  position: relative;
+  /* Activar hardware acceleration */
+  -webkit-transform: translateZ(0);
+  transform: translateZ(0);
 }
 
 .backface-hidden {
   backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  /* Safari/iOS */
+  /* Forzar ocultamiento en móviles */
+  -moz-backface-visibility: hidden;
+  /* Firefox */
+  -ms-backface-visibility: hidden;
+  /* IE */
+  /* Prevenir bleeding (sangrado) de elementos */
+  transform: translateZ(1px);
+  -webkit-transform: translateZ(1px);
 }
 
 .rotate-y-180 {
   transform: rotateY(180deg);
+  -webkit-transform: rotateY(180deg);
+  /* Safari/iOS */
+  /* Forzar hardware acceleration durante la rotación */
+  transform: rotateY(180deg) translateZ(0);
+  -webkit-transform: rotateY(180deg) translateZ(0);
 }
 
-@keyframes pulseRadial {
+/* ========================================
+   🎯 ESTILOS ADICIONALES PARA MÓVILES
+   
+   Estos estilos aseguran que las tarjetas funcionen
+   correctamente en todos los dispositivos móviles
+   ======================================== */
 
-  0%,
-  100% {
-    transform: scale(1);
-    opacity: 0.3;
+/* Prevenir parpadeo durante la animación en móviles */
+.transform-style-3d * {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Optimización específica para WebKit (Safari/iOS) */
+@supports (-webkit-appearance: none) {
+  .backface-hidden {
+    /* Forzar renderizado por GPU */
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
+    /* Prevenir artifacts visuales */
+    -webkit-perspective: 1000px;
+    perspective: 1000px;
+    /* Asegurar z-index correcto */
+    z-index: 1;
   }
 
-  50% {
-    transform: scale(1.1);
-    opacity: 0.5;
+  .rotate-y-180 {
+    /* Asegurar que la rotación sea suave en iOS */
+    -webkit-transform: rotateY(180deg) translateZ(0.1px);
+    transform: rotateY(180deg) translateZ(0.1px);
   }
 }
 
-.animate-pulse-radial {
-  animation: pulseRadial 1.5s ease-in-out infinite;
+/* Fix específico para dispositivos táctiles */
+@media (hover: none) and (pointer: coarse) {
+  .transform-style-3d {
+    /* Forzar aceleración de hardware en móviles */
+    -webkit-transform: translate3d(0, 0, 0);
+    transform: translate3d(0, 0, 0);
+    will-change: transform;
+  }
+
+  .backface-hidden {
+    /* Asegurar ocultamiento en dispositivos táctiles */
+    visibility: visible;
+    opacity: 1;
+  }
+
+  /* Cuando NO está rotada, ocultar el back */
+  .transform-style-3d:not(.rotate-y-180) .backface-hidden:last-child {
+    visibility: hidden;
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  /* Cuando SÍ está rotada, ocultar el front */
+  .transform-style-3d.rotate-y-180 .backface-hidden:first-child {
+    visibility: hidden;
+    opacity: 0;
+    pointer-events: none;
+  }
 }
 
-.animate-pulse-delay {
-  animation: pulse 1.5s ease-in-out infinite;
+/* ========================================
+   📱 MEDIA QUERIES ESPECÍFICAS PARA MÓVILES
+   ======================================== */
+
+@media (max-width: 768px) {
+  .perspective-1000 {
+    /* Aumentar perspectiva en pantallas pequeñas para mejor efecto */
+    perspective: 1200px;
+    -webkit-perspective: 1200px;
+  }
+
+  .transform-style-3d {
+    /* Asegurar que las animaciones sean suaves */
+    transition: transform 0.7s cubic-bezier(0.4, 0, 0.2, 1);
+    -webkit-transition: -webkit-transform 0.7s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .backface-hidden {
+    /* Forzar Z-index para correcta superposición */
+    isolation: isolate;
+  }
 }
+
+/* ========================================
+   🍎 FIX ESPECÍFICO PARA iOS/SAFARI
+   
+   Safari tiene problemas conocidos con preserve-3d
+   y backface-visibility. Estos estilos los solucionan.
+   ======================================== */
+
+@supports (-webkit-touch-callout: none) {
+
+  /* Solo iOS Safari */
+  .transform-style-3d {
+    /* Forzar nuevo contexto de apilamiento */
+    isolation: isolate;
+    /* Activar aceleración por hardware */
+    will-change: transform;
+    -webkit-transform: translateZ(0);
+    transform: translateZ(0);
+  }
+
+  .backface-hidden {
+    /* Forzar ocultamiento en iOS */
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
+    /* Pequeño desplazamiento Z para evitar glitches */
+    -webkit-transform: translateZ(0.1px);
+    transform: translateZ(0.1px);
+  }
+
+  /* Asegurar que solo una cara sea visible a la vez */
+  .transform-style-3d:not(.rotate-y-180)>div:nth-child(2) {
+    display: none;
+  }
+
+  .transform-style-3d.rotate-y-180>div:first-child {
+    display: none;
+  }
+}
+
+/* ========================================
+   🔍 DEBUG (Descomenta para depurar)
+   
+   Si necesitas ver qué está pasando con las tarjetas,
+   descomenta estas líneas temporalmente
+   ======================================== */
+
+/*
+.backface-hidden {
+  border: 2px solid red !important;
+}
+
+.rotate-y-180 {
+  border: 2px solid green !important;
+}
+
+.transform-style-3d {
+  border: 2px solid blue !important;
+}
+*/
