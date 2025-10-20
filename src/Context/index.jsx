@@ -282,14 +282,15 @@ function TrainingLogiTransProvider({ children }) {
                         ],
                         duration: "01:26",
                     },
+                    { id: 6, lessons: "Fundamentos", name: "Casos Reales en Colombia", completed: false, type: "Video", duration: "01:26", path: casosSARLAFT, resumen: [] },
+                    { id: 7, lessons: "Fundamentos", name: "Canales internos de reporte", completed: false, type: "Video", duration: "01:26", path: finalSARLAFT, resumen: [] },
+                    { id: 8, lessons: "Fundamentos", name: "Factores de Riesgo en el Transporte de Carga", completed: false, type: "Video", duration: "01:26", },
 
-                    { id: 6, lessons: "Fundamentos", name: "Factores de Riesgo en el Transporte de Carga", completed: false, type: "Video", duration: "01:26", },
 
-                    { id: 7, lessons: "Fundamentos", name: "Casos Reales en Colombia", completed: false, type: "Video", duration: "01:26", path: casosSARLAFT },
-                    { id: 8, lessons: "Fundamentos", name: "El Rol de los Empleados", completed: false, type: "Video", duration: "01:26", },
-                    { id: 9, lessons: "Fundamentos", name: "Consecuencias de No Aplicar SARLAFT", completed: false, type: "Video", duration: "01:26", },
-                    { id: 10, lessons: "Fundamentos", name: "Canales internos de reporte", completed: false, type: "Video", duration: "01:26", path: finalSARLAFT },
-                    { id: 11, lessons: "Evaluación", name: "Evaluacion Final", completed: false, type: "Pregunta", duration: "01:26", },
+                    { id: 9, lessons: "Fundamentos", name: "El Rol de los Empleados", completed: false, type: "Video", duration: "01:26", },
+                    { id: 10, lessons: "Fundamentos", name: "Consecuencias de No Aplicar SARLAFT", completed: false, type: "Video", duration: "01:26", },
+                    { id: 11, lessons: "Fundamentos", name: "Canales internos de reporte", completed: false, type: "Video", duration: "01:26", path: finalSARLAFT },
+                    { id: 12, lessons: "Evaluación", name: "Evaluacion Final", completed: false, type: "Pregunta", duration: "01:26", },
 
                 ]
             }
