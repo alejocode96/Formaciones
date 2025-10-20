@@ -451,7 +451,7 @@ function FlipCard({ currentModule, onContentIsEnded, courseId, moduleId }) {
      * Cierra el modal de etapa y detiene el audio
      */
     const cerrarEtapa = () => {
-        stopAudio();
+        stopAudio(true);
         setEtapaAbierta(null);
         setSeccionActiva('objetivo');
         setAudioCompletado(false);
