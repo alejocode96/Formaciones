@@ -225,20 +225,57 @@ function FlipCard({ currentModule, onContentIsEnded, courseId, moduleId }) {
     /**
      * Detiene completamente la reproducción de audio actual
      */
-    const stopAudio = () => {
+    const stopAudio = (force = false) => {
         const synth = synthRef.current;
-        if (synth.speaking) {
-            try {
-                synth.cancel();
-                console.log('🛑 Audio detenido');
-            } catch (error) {
-                console.error('Error deteniendo audio:', error);
+        try {
+            if (synth && (synth.speaking || force)) {
+                console.log('🛑 Forzando detención total de audio...');
+
+                // 1️⃣ Pausar primero (necesario en móviles)
+                try {
+                    synth.pause();
+                } catch (e) {
+                    console.warn('⚠️ No se pudo pausar:', e);
+                }
+
+                // 2️⃣ Cancelar después de un breve retardo
+                setTimeout(() => {
+                    try {
+                        synth.cancel();
+                        console.log('✅ Audio cancelado (primera vez)');
+                    } catch (error) {
+                        console.error('❌ Error al cancelar:', error);
+                    }
+                }, 80);
+
+                // 3️⃣ Cancelar nuevamente después (Safari/iOS necesita doble cancel)
+                setTimeout(() => {
+                    try {
+                        synth.cancel();
+                        console.log('✅ Audio cancelado (segunda vez)');
+                    } catch (error) {
+                        console.error('❌ Error en segunda cancelación:', error);
+                    }
+                }, 300);
+
+                // 4️⃣ Limpieza total de referencias
+                if (currentUtteranceRef.current) {
+                    currentUtteranceRef.current.onend = null;
+                    currentUtteranceRef.current.onerror = null;
+                    currentUtteranceRef.current = null;
+                }
+
+                audioStateRef.current.isPlaying = false;
+                audioStateRef.current.wasPaused = false;
+                audioRetryRef.current = 0;
+                setIsPlayingAudio(false);
+                setIsPaused(false);
             }
+        } catch (error) {
+            console.error('Error deteniendo audio:', error);
         }
-        setIsPlayingAudio(false);
-        setIsPaused(false);
-        audioStateRef.current.isPlaying = false;
     };
+
 
     /**
      * Reproduce texto usando síntesis de voz con reintentos automáticos
@@ -451,7 +488,7 @@ function FlipCard({ currentModule, onContentIsEnded, courseId, moduleId }) {
      * Cierra el modal de etapa y detiene el audio
      */
     const cerrarEtapa = () => {
-        stopAudio(true);
+        stopAudio();
         setEtapaAbierta(null);
         setSeccionActiva('objetivo');
         setAudioCompletado(false);
