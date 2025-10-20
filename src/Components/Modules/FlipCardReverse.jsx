@@ -25,36 +25,38 @@ import 'aos/dist/aos.css';
 function FlipCardReverse({ currentModule, onContentIsEnded, courseId, moduleId }) {
     // 📦 DATOS: Array de tarjetas del módulo actual
     let cards = currentModule.cards;
-    
+    const maxRetries = 10;
     // 📱 ESTADO: Detección de dispositivo móvil
     const [isMobile, setIsMobile] = useState(false);
-    
+    const [showAudioPopup, setShowAudioPopup] = useState(false);
+
     // 🎬 ESTADO: Control de la introducción (audio inicial)
     const [introStarted, setIntroStarted] = useState(false); // Si ya se inició la intro
     const [introPlayed, setIntroPlayed] = useState(false);   // Si ya terminó la intro
-    
+
     // 🔓 ESTADO: Control de tarjetas desbloqueadas
     const [unlockedCards, setUnlockedCards] = useState([]);
-    
+
     // 🎤 ESTADO: Control de voces del navegador
     const [mejorVoz, setMejorVoz] = useState(null);         // Voz seleccionada para usar
     const [vocesCargadas, setVocesCargadas] = useState(false); // Si las voces ya están disponibles
     const [audioFailed, setAudioFailed] = useState(false);  // Si hubo error con el audio
-    
+
     // 🔊 ESTADO: Control de reproducción de audio
     const [isPlayingAudio, setIsPlayingAudio] = useState(false);
     const [isPaused, setIsPaused] = useState(false);
-    
+
     // 🎴 ESTADO: Control de tarjetas volteadas y completadas
     const [flippedCards, setFlippedCards] = useState([]);    // Tarjetas actualmente volteadas (mostrando reverso)
     const [activeCard, setActiveCard] = useState(null);      // ID de la tarjeta con audio reproduciéndose
     const [completedCards, setCompletedCards] = useState([]); // Tarjetas que ya fueron completadas
-    
+
     // 🔗 REFERENCIAS: Objetos que persisten entre re-renders
     const synthRef = useRef(window.speechSynthesis);         // API de síntesis de voz
     const pausedTextRef = useRef({ text: "" });              // Texto que se estaba reproduciendo
-    const currentUtteranceRef = useRef(null);                // Utterance actual (objeto de audio)
-    const audioStateRef = useRef({ 
+    const currentUtteranceRef = useRef(null);
+    const audioRetryRef = useRef(0);               // Utterance actual (objeto de audio)
+    const audioStateRef = useRef({
         isPlaying: false,  // Si hay audio reproduciéndose
         wasPaused: false   // Si el audio fue pausado por pérdida de foco
     });
@@ -96,7 +98,7 @@ function FlipCardReverse({ currentModule, onContentIsEnded, courseId, moduleId }
     const updateFlipCardReverseProgress = (cardId) => {
         const key = getProgressKey();
         const existingProgress = localStorage.getItem(key);
-        
+
         // Crear clave única para la tarjeta: "ID-Título"
         const cardTitle = cards.find(c => c.id === cardId)?.title || "";
         const cardKey = `${cardId}-${cardTitle}`;
@@ -266,7 +268,7 @@ function FlipCardReverse({ currentModule, onContentIsEnded, courseId, moduleId }
 
             // Filtrar solo voces en español
             const vocesEspanol = voices.filter(v => v.lang.toLowerCase().startsWith('es'));
-            
+
             // Lista de voces priorizadas (Microsoft Natural - mejor calidad)
             const prioridadMicrosoft = [
                 'Microsoft Andrea Online (Natural) - Spanish (Ecuador)',
@@ -311,7 +313,7 @@ function FlipCardReverse({ currentModule, onContentIsEnded, courseId, moduleId }
         };
 
         cargarVoces();
-        
+
         // Evento que se dispara cuando las voces están disponibles
         synth.onvoiceschanged = cargarVoces;
 
@@ -347,13 +349,14 @@ function FlipCardReverse({ currentModule, onContentIsEnded, courseId, moduleId }
      * @param {String} text - Texto a reproducir
      * @param {Function} onEnd - Callback que se ejecuta al terminar (solo si no fue cancelado)
      */
-    const speak = (text, onEnd) => {
+    const speak = (text, onEnd, onError) => {
         // Validar que las voces estén cargadas
         if (!vocesCargadas || !mejorVoz) {
+            setShowAudioPopup(true);
             console.warn('⚠️ Voces aún no cargadas, no se puede reproducir.');
             return;
         }
-
+        const synth = synthRef.current;
         // Cancelar cualquier audio previo
         if (synthRef.current.speaking) {
             synthRef.current.cancel();
@@ -365,7 +368,7 @@ function FlipCardReverse({ currentModule, onContentIsEnded, courseId, moduleId }
         utterance.lang = mejorVoz.lang || 'es-ES';
         utterance.rate = 0.9;  // Velocidad de habla (0.1 - 10)
         utterance.pitch = 1;   // Tono de voz (0 - 2)
-        
+
         // 🚩 CRÍTICO: Bandera para controlar si el audio fue cancelado
         utterance.wasCancelled = false;
 
@@ -379,7 +382,9 @@ function FlipCardReverse({ currentModule, onContentIsEnded, courseId, moduleId }
             setIsPaused(false);
             audioStateRef.current.isPlaying = true;
             audioStateRef.current.wasPaused = false;
+            audioRetryRef.current = 0;
             console.log('▶️ Audio iniciado');
+            setShowAudioPopup(false);
         };
 
         // 🏁 Evento: Cuando el audio termina
@@ -389,7 +394,7 @@ function FlipCardReverse({ currentModule, onContentIsEnded, courseId, moduleId }
             currentUtteranceRef.current = null;
             audioStateRef.current.isPlaying = false;
             audioStateRef.current.wasPaused = false;
-
+            setShowAudioPopup(false);
             // 🎯 CRÍTICO: Solo ejecutar callback si NO fue cancelado
             if (!utterance.wasCancelled) {
                 console.log('✅ Audio finalizado naturalmente');
@@ -400,14 +405,32 @@ function FlipCardReverse({ currentModule, onContentIsEnded, courseId, moduleId }
         };
 
         // ❌ Evento: Error en la reproducción
+        // Evento: error en reproducción (LÓGICA DE REINTENTOS)
         utterance.onerror = (e) => {
-            console.error('❌ Speech synthesis error:', e);
-            setIsPlayingAudio(false);
-            setIsPaused(false);
-            setAudioFailed(true);
-            currentUtteranceRef.current = null;
-            audioStateRef.current.isPlaying = false;
-            audioStateRef.current.wasPaused = false;
+            const isInterrupted = e.error === 'interrupted';
+            console.error('❌ Error de síntesis:', e.error);
+
+            // Solo reintentar si NO fue interrumpido y aún quedan reintentos
+            if (!isInterrupted && audioRetryRef.current < maxRetries) {
+                audioRetryRef.current++;
+                setShowAudioPopup(true); // Mostrar popup durante reintentos
+                console.log(`🔄 Reintentando audio (${audioRetryRef.current}/${maxRetries})...`);
+
+                // Reintentar después de un delay
+                setTimeout(() => {
+                    if (audioRetryRef.current <= maxRetries) {
+                        try {
+                            synth.speak(utterance);
+                        } catch (error) {
+                            console.error('Error en reintento:', error);
+                        }
+                    }
+                }, 800); // Delay de 800ms entre reintentos
+            } else if (audioRetryRef.current >= maxRetries) {
+                // Se agotaron los reintentos
+                handleAudioFailed(onError);
+            }
+            // Si fue interrumpido, no hacer nada (comportamiento normal)
         };
 
         // ⏸️ Evento: Audio pausado
@@ -426,10 +449,26 @@ function FlipCardReverse({ currentModule, onContentIsEnded, courseId, moduleId }
         try {
             synthRef.current.speak(utterance);
         } catch (error) {
+            setShowAudioPopup(true);
             console.error('Error speaking:', error);
             setAudioFailed(true);
             currentUtteranceRef.current = null;
         }
+    };
+
+    /**
+     * Maneja el fallo definitivo de audio después de agotar reintentos
+     * @param {Function} onError - Callback de error
+     */
+    const handleAudioFailed = (onError) => {
+        setIsPlayingAudio(false);
+        setIsPaused(false);
+        setAudioFailed(true);
+        audioStateRef.current.isPlaying = false;
+        audioRetryRef.current = 0;
+        setShowAudioPopup(true); // Mantener popup visible para informar al usuario
+
+        if (onError) onError();
     };
 
     // ==============================================================
@@ -588,18 +627,24 @@ function FlipCardReverse({ currentModule, onContentIsEnded, courseId, moduleId }
     useEffect(() => {
         if (!isMobile && vocesCargadas && introStarted && !introPlayed) {
             console.log('🎬 Reproduciendo intro...');
-            speak(currentModule.audioObjetivo, () => {
-                console.log('✅ Intro terminada');
-                setIntroPlayed(true);
-                
-                // Desbloquear primera tarjeta solo si no hay progreso previo
-                setUnlockedCards(prev => {
-                    if (prev && prev.length > 1) {
-                        return prev; // Ya hay progreso cargado, no sobrescribir
-                    }
-                    return [1]; // Sin progreso, desbloquear solo la primera
-                });
-            });
+            speak(
+                currentModule.audioObjetivo,
+                // onEnd
+                () => {
+                    console.log('✅ Intro terminada');
+                    setIntroPlayed(true);
+                    setUnlockedCards(prev => {
+                        if (prev && prev.length > 1) return prev;
+                        return [1];
+                    });
+                },
+                // onError
+                () => {
+                    console.log('❌ Intro falló después de reintentos');
+                    setIntroPlayed(true);
+                    setUnlockedCards([1]);
+                }
+            );
         }
     }, [isMobile, vocesCargadas, introStarted, introPlayed]);
 
@@ -652,10 +697,10 @@ function FlipCardReverse({ currentModule, onContentIsEnded, courseId, moduleId }
     const handleCardClick = (cardId) => {
         // Validación 1: Intro debe haber terminado o fallado
         if (!introPlayed && !audioFailed) return;
-        
+
         // Validación 2: Tarjeta debe estar desbloqueada
         if (!unlockedCards.includes(cardId)) return;
-        
+
         // Validación 3: No debe haber otro audio reproduciéndose
         if (isPlayingAudio) return;
 
@@ -677,13 +722,13 @@ function FlipCardReverse({ currentModule, onContentIsEnded, courseId, moduleId }
         // Reproducir audio de la tarjeta
         speak(fullText, () => {
             // ✅ Callback ejecutado solo si el audio terminó naturalmente
-            
+
             // 1. Guardar progreso en localStorage
             updateFlipCardReverseProgress(cardId);
-            
+
             // 2. Actualizar estado local de tarjetas completadas
             setCompletedCards(prev => [...new Set([...prev, cardId])]);
-            
+
             const nextCardId = cardId + 1;
             const isLastCard = cardId === cards.length;
 
@@ -700,7 +745,13 @@ function FlipCardReverse({ currentModule, onContentIsEnded, courseId, moduleId }
 
             // 5. Limpiar tarjeta activa
             setActiveCard(null);
-        });
+        },
+            // onError: Callback de error definitivo
+            () => {
+                console.log('❌ Audio falló definitivamente después de reintentos');
+                setActiveCard(null);
+            }
+        );
     };
 
     // ==============================================================
@@ -734,17 +785,23 @@ function FlipCardReverse({ currentModule, onContentIsEnded, courseId, moduleId }
     const iniciarIntroMovil = () => {
         if (!introStarted && vocesCargadas) {
             setIntroStarted(true);
-            speak(currentModule.audioObjetivo, () => {
-                setIntroPlayed(true);
-                
-                // Desbloquear primera tarjeta solo si no hay progreso previo
-                setUnlockedCards(prev => {
-                    if (prev && prev.length > 1) {
-                        return prev; // Ya hay progreso cargado, no sobrescribir
-                    }
-                    return [1]; // Sin progreso, desbloquear solo la primera
-                });
-            });
+            speak(
+                currentModule.audioObjetivo,
+                // onEnd
+                () => {
+                    setIntroPlayed(true);
+                    setUnlockedCards(prev => {
+                        if (prev && prev.length > 1) return prev;
+                        return [1];
+                    });
+                },
+                // onError
+                () => {
+                    console.log('❌ Intro falló después de reintentos');
+                    setIntroPlayed(true);
+                    setUnlockedCards([1]);
+                }
+            );
         }
     };
 
@@ -757,7 +814,7 @@ function FlipCardReverse({ currentModule, onContentIsEnded, courseId, moduleId }
      * - Usado para mostrar skeleton loading mientras suena la intro
      */
     const isPlayingIntro = introStarted && !introPlayed && isPlayingAudio;
-    
+
     /**
      * showCards: Indica si se deben mostrar las tarjetas
      * - Se muestran después de que la intro terminó O si hubo error de audio
@@ -770,7 +827,7 @@ function FlipCardReverse({ currentModule, onContentIsEnded, courseId, moduleId }
 
     return (
         <div className="w-full mx-auto pt-10 pb-14 lg:pb-0">
-            
+
             {/* ========================================
                 📱 MÓVIL: Botón para iniciar intro
                 ======================================== */}
@@ -852,7 +909,7 @@ function FlipCardReverse({ currentModule, onContentIsEnded, courseId, moduleId }
                 - Back: Contenido completo con título, descripción y ejemplo
                 ======================================== */}
             {showCards && (
-                <div className="grid grid-cols-1 md:grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                <div className="grid grid-cols-1 md:grid-cols-1 lg:grid-cols-2 gap-6 mb-6" data-aos="fade-up">
                     {cards.map((card, index) => {
                         // Estados de la tarjeta
                         const isUnlocked = unlockedCards.includes(Number(card.id)) || audioFailed;
@@ -860,8 +917,8 @@ function FlipCardReverse({ currentModule, onContentIsEnded, courseId, moduleId }
                         const isLast = index === cards.length - 1;
 
                         return (
-                            <div 
-                                key={card.id} 
+                            <div
+                                key={card.id}
                                 className={`h-95 md:h-96 perspective-1000 ${isLast ? "col-span-1 lg:col-span-2" : ""}`}
                             >
                                 {/* Contenedor con efecto 3D flip */}
@@ -881,11 +938,10 @@ function FlipCardReverse({ currentModule, onContentIsEnded, courseId, moduleId }
                                         ======================================== */}
                                     <div className="absolute w-full h-full backface-hidden">
                                         <div
-                                            className={`w-full h-full ${
-                                                isUnlocked
-                                                    ? `bg-gradient-to-br ${card.color}` // Degradado de color si está desbloqueada
-                                                    : 'bg-zinc-950' // Gris oscuro si está bloqueada
-                                            } rounded-2xl shadow-2xl flex flex-col items-center justify-center p-6 relative overflow-hidden transition-all duration-500`}
+                                            className={`w-full h-full ${isUnlocked
+                                                ? `bg-gradient-to-br ${card.color}` // Degradado de color si está desbloqueada
+                                                : 'bg-zinc-950' // Gris oscuro si está bloqueada
+                                                } rounded-2xl shadow-2xl flex flex-col items-center justify-center p-6 relative overflow-hidden transition-all duration-500`}
                                         >
                                             {/* Overlay de tarjeta bloqueada */}
                                             {!isUnlocked && (
@@ -915,24 +971,21 @@ function FlipCardReverse({ currentModule, onContentIsEnded, courseId, moduleId }
                                             <div className="relative z-10 flex flex-col items-center text-center">
                                                 {/* Ícono emoji grande */}
                                                 <div className="mb-6 p-4 rounded-full transition-all duration-500">
-                                                    <span className={`text-7xl md:text-8xl ${
-                                                        isUnlocked ? 'grayscale-0' : 'grayscale opacity-40'
-                                                    } transition-all duration-500`}>
+                                                    <span className={`text-7xl md:text-8xl ${isUnlocked ? 'grayscale-0' : 'grayscale opacity-40'
+                                                        } transition-all duration-500`}>
                                                         {card.icon}
                                                     </span>
                                                 </div>
 
                                                 {/* Número de tarjeta */}
-                                                <div className={`text-xs md:text-xl font-bold transition-all duration-500 ${
-                                                    isUnlocked ? 'text-white' : 'text-white/40'
-                                                }`}>
+                                                <div className={`text-xs md:text-xl font-bold transition-all duration-500 ${isUnlocked ? 'text-white' : 'text-white/40'
+                                                    }`}>
                                                     carda #{card.id}
                                                 </div>
 
                                                 {/* Título de la tarjeta */}
-                                                <div className={`text-md md:text-3xl font-bold transition-all duration-500 ${
-                                                    isUnlocked ? 'text-white' : 'text-white/40'
-                                                }`}>
+                                                <div className={`text-md md:text-3xl font-bold transition-all duration-500 ${isUnlocked ? 'text-white' : 'text-white/40'
+                                                    }`}>
                                                     {card.title}
                                                 </div>
 
@@ -1011,6 +1064,15 @@ function FlipCardReverse({ currentModule, onContentIsEnded, courseId, moduleId }
                             </div>
                         );
                     })}
+                </div>
+            )}
+
+            {showAudioPopup && (
+                <div
+                    className="fixed bottom-4 right-4 bg-gray-800 text-white px-6 py-3 rounded-xl shadow-lg text-sm text-center animate-pulse z-[9999]"
+                >
+                    🔊 <strong>Estamos intentando reproducir el audio...</strong><br />
+                    Si el problema persiste, cierra esta etapa y vuelve a cargarla.
                 </div>
             )}
         </div>
