@@ -20,7 +20,7 @@ function VideoModule({ src, resumen, onContentIsEnded }) {
                     await video.play();
                 } catch (error) {
                     // Si falla la reproducción automática (políticas del navegador)
-                    
+
                 }
             }, 2000); // 2000ms = 2 segundos
 
@@ -91,7 +91,7 @@ function VideoModule({ src, resumen, onContentIsEnded }) {
         if (video) {
             // Si intenta ir más adelante de lo permitido
             if (video.currentTime > lastTimeRef.current + 0.1) {
-                
+
                 video.currentTime = lastTimeRef.current;
             }
         }
@@ -151,9 +151,26 @@ function VideoModule({ src, resumen, onContentIsEnded }) {
                                     <div>
                                         <h3 className='font-semibold text-zinc-100 mb-2'>Resumen del Módulo</h3>
                                         <div className='text-zinc-300 text-sm leading-relaxed space-y-2'>
-                                            {resumen.map((text, index) => (
-                                                <p key={index}>{text}</p>
-                                            ))}
+                                            {resumen.map((text, index) => {
+                                                // 1️⃣ Reemplazar **texto** por <strong> con una clase blanca diferenciada
+                                                const boldText = text.replace(
+                                                    /\*\*(.*?)\*\*/g,
+                                                    '<strong class="text-white font-semibold tracking-wide">$1</strong>'
+                                                );
+
+                                                // 2️⃣ Si el texto termina con punto, agregar un <br /> al final
+                                                const formattedText = boldText.endsWith('.')
+                                                    ? `${boldText}<br /> <br />`
+                                                    : boldText;
+
+                                                return (
+                                                    <p
+                                                        key={index}
+                                                        className="text-gray-300 leading-relaxed"
+                                                        dangerouslySetInnerHTML={{ __html: formattedText }}
+                                                    />
+                                                );
+                                            })}
                                         </div>
                                     </div>
                                 </div>

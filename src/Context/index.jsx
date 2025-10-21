@@ -25,7 +25,7 @@ function TrainingLogiTransProvider({ children }) {
                     "A lo largo de la formación, los participantes adquirirán **herramientas prácticas** para identificar, reportar y controlar operaciones sospechosas, contribuyendo a la **protección de la organización, sus empleados y la sociedad** frente a riesgos **legales, financieros y reputacionales.**"
                 ],
                 modules: [
-                    { id: 1, lessons: "Fundamentos", name: "Introducción al SARLAFT", completed: false, type: "Video", path: introSARLAFT, resumen: ["¿Por qué no debemos ignorarlo? ", "Por que somos una pieza clave para proteger la organización y el sistema financiero  no es solo cumplir la norma es  asumir compromiso con seguridad, transparencia y sostenibilidad"], duration: "00:23", },
+                    { id: 1, lessons: "Fundamentos", name: "Introducción al SARLAFT", completed: false, type: "Video", path: introSARLAFT, resumen: ["**¿Por qué no debemos ignorarlo?** ", "Por que somos una pieza clave para proteger la organización y el sistema financiero  no es solo cumplir la norma es  asumir compromiso con seguridad, transparencia y sostenibilidad."], duration: "00:23", },
                     {
                         id: 2, lessons: "Fundamentos", name: "¿Crees que una empresa de transporte puede ser usada para actividades ilegales?",
                         respuestas: [
@@ -35,7 +35,7 @@ function TrainingLogiTransProvider({ children }) {
                             { opcion: "No, ya que las regulaciones y controles hacen imposible que sean usadas con otros propósitos.", rsp: false }
                         ], completed: false, type: "Pregunta", duration: "01:00",
                     },
-                    { id: 3, lessons: "Fundamentos", name: "¿Qué es SARLAFT?", completed: false, type: "Video", path: queesSARLAFT, resumen: ["¿Qué es SARLAFT?", "es un sistema para prevenir y gestionar el riesgo de lavado de activos y financiación del terrorismo. Funciona como un filtro de seguridad: analiza clientes, operaciones y recursos para asegurar que todo sea legal y transparente. Va más allá de solo revisar listas sospechosas; es un mecanismo de prevención que protege a la empresa, sus empleados y su reputación.",], duration: "00:48", },
+                    { id: 3, lessons: "Fundamentos", name: "¿Qué es SARLAFT?", completed: false, type: "Video", path: queesSARLAFT, resumen: ["**¿Qué es SARLAFT?**", "es un sistema para prevenir y gestionar el riesgo de lavado de activos y financiación del terrorismo. Funciona como un filtro de seguridad: analiza clientes, operaciones y recursos para asegurar que todo sea legal y transparente. Va más allá de solo revisar listas sospechosas; es un mecanismo de prevención que protege a la empresa, sus empleados y su reputación.",], duration: "00:48", },
 
 
 
@@ -222,6 +222,35 @@ function TrainingLogiTransProvider({ children }) {
                                 ]
                             }
                         ], duration: "01:26",
+                        resumen: [
+                            "**Etapas del SARLAFT**",
+                            "El Sistema de Administración del Riesgo de Lavado de Activos, Financiación del Terrorismo y Proliferación de Armas de Destrucción Masiva (SARLAFT) se fundamenta en un ciclo continuo de gestión compuesto por cuatro etapas interrelacionadas: Identificación, Medición, Control y Monitoreo del Riesgo. Este ciclo busca prevenir y mitigar los riesgos asociados a actividades ilícitas dentro del sector transporte, garantizando la integridad y legalidad de las operaciones.",
+                            "**1. Identificación del Riesgo**",
+                            "Esta etapa tiene como propósito reconocer y documentar las situaciones o factores que puedan representar un riesgo de lavado de activos, financiación del terrorismo o proliferación de armas dentro de las operaciones del transporte.",
+                            "Se analizan actividades vulnerables como la recepción de pagos en efectivo, el transporte de mercancías sin documentación adecuada o las relaciones con clientes de alto riesgo. A través de la clasificación de factores de riesgo, se segmentan las exposiciones según el tipo de cliente, la ubicación geográfica y el tipo de operación.",
+                            "El proceso se apoya en herramientas como cuestionarios de riesgo, entrevistas, matrices de evaluación y software de gestión, permitiendo obtener una visión integral de los riesgos.",
+                            "**Ejemplo:** Una empresa de transporte identifica que ciertos clientes ubicados en zonas de conflicto representan un mayor riesgo, por lo que aplica medidas de debida diligencia reforzada.",
+                            "**2. Medición o Evaluación del Riesgo**",
+                            "En esta fase se determina la probabilidad de ocurrencia y el impacto potencial de los riesgos identificados, con el fin de establecer prioridades de atención.",
+                            "Se asignan puntuaciones o calificaciones a cada factor de riesgo para calcular el riesgo inherente (antes de aplicar controles) y el riesgo residual (después de aplicar medidas de mitigación).",
+                            "Se utilizan escalas cualitativas y cuantitativas, análisis de escenarios y simulaciones que facilitan una comprensión precisa del nivel de exposición.",
+                            "Además, se evalúan los riesgos al ingresar en nuevos mercados o servicios, asegurando decisiones informadas y preventivas.",
+                            "**Ejemplo:** Antes de habilitar una ruta que atraviesa zonas con presencia de grupos armados, una empresa determina que la operación es de alto riesgo y decide implementar controles adicionales de seguridad y monitoreo.",
+                            "**3. Control del Riesgo**",
+                            "El objetivo de esta etapa es implementar medidas proporcionales que mitiguen los riesgos identificados, reduciendo su probabilidad e impacto.",
+                            "Se desarrollan políticas internas y procedimientos operativos, como la validación de clientes y proveedores, la capacitación del personal, y la realización de auditorías periódicas.",
+                            "Los controles se integran en los sistemas operativos de la organización mediante plataformas de monitoreo y software de cumplimiento, garantizando la trazabilidad y eficacia del sistema.",
+                            "**Ejemplo:** Una empresa implementa un sistema de verificación de antecedentes para clientes y proveedores, y establece revisiones documentales y de rutas con el fin de detectar operaciones sospechosas y prevenir su uso indebido.",
+                            "**4. Monitoreo del Riesgo**",
+                            "Esta etapa cierra el ciclo del SARLAFT mediante la vigilancia continua de los controles implementados. El monitoreo permite evaluar la efectividad de las medidas adoptadas, detectar operaciones inusuales o sospechosas y aplicar acciones correctivas oportunas.",
+                            "Se utilizan indicadores clave de desempeño (KPI), auditorías internas y externas, y herramientas tecnológicas que facilitan el análisis de alertas y el seguimiento en tiempo real.",
+                            "**Ejemplo:** Si un sistema de monitoreo detecta una transacción inusual en una zona de alto riesgo, la empresa activa una investigación interna y reporta el caso a la UIAF, cumpliendo con las obligaciones legales y fortaleciendo su control interno.",
+                            "**Conclusión**",
+                            "**El SARLAFT** es un proceso dinámico y preventivo, diseñado para proteger a las empresas del sector transporte frente a actividades ilícitas.",
+                            "Su efectividad depende de la aplicación coordinada de las cuatro etapas —identificación, medición, control y monitoreo— y del compromiso de todos los actores involucrados.",
+                            "La implementación adecuada de este sistema no solo asegura el cumplimiento normativo, sino que también fortalece la reputación, sostenibilidad y confianza institucional en las operaciones del sector.",
+
+                        ]
                     },
 
                     {
@@ -280,17 +309,67 @@ function TrainingLogiTransProvider({ children }) {
                                 colorBorde: "border-rose-600"
                             }
                         ],
+                        resumen: [
+                            "**Señales de Alerta**",
+                            "Las señales de alerta son indicadores tempranos que permiten identificar comportamientos, transacciones o situaciones atípicas que podrían estar relacionadas con el lavado de activos o la financiación del terrorismo.",
+                            "Reconocer estas señales a tiempo es esencial para proteger la organización, evitar su utilización en actividades ilícitas y cumplir con la normativa nacional e internacional en materia de prevención del riesgo.",
+                            "Estas señales no necesariamente confirman la existencia de un delito, pero sí exigen una revisión más profunda, la activación de los protocolos internos y, en caso de ser necesario, la comunicación con las autoridades competentes.",
+                            "A continuación, se presentan las principales señales de alerta que deben tenerse en cuenta en el sector transporte y en cualquier operación comercial:",
+                            "**1. Pagos inusuales o muy altos en efectivo**",
+                            "En la actualidad, las transacciones de alto valor suelen realizarse por medios electrónicos como transferencias bancarias o pagos con tarjeta.",
+                            "Cuando un cliente insiste en efectuar pagos en efectivo de montos elevados, podría estar intentando ocultar el origen ilícito de los fondos.",
+                            "Esto representa un riesgo significativo de lavado de activos y debe reportarse para análisis adicional.",
+                            "**Ejemplo:** Una empresa que normalmente paga sus facturas por transferencia solicita cancelar un contrato de 50 millones de pesos en efectivo.",
+                            "**2. Cambios frecuentes en remitentes o destinatarios**",
+                            "Las operaciones en las que los pagos o cobros cambian constantemente de nombre sin una justificación válida pueden indicar un intento de encubrir la identidad real del beneficiario o del origen del dinero. Este tipo de comportamiento busca crear confusión en la trazabilidad de las operaciones financieras.",
+                            "**Ejemplo:** Un mismo servicio es facturado cada mes por un proveedor distinto, sin explicación clara ni relación comercial establecida.",
+                            "**3. Documentos incompletos o falsos**",
+                            "La falta de documentación, la presentación de información inconsistente o la alteración de documentos son alertas directas de posible fraude o manipulación.",
+                            "Estos casos pueden reflejar intentos de simular operaciones legales o de ocultar el verdadero propósito de una transacción.",
+                            "**Ejemplo:** Facturas sin número de identificación, con datos inconsistentes o con fechas que no coinciden con la prestación real del servicio.",
+                            "**4. Clientes que no quieren suministrar información**",
+                            "Cuando un cliente se niega a entregar información básica, como estados financieros, referencias o datos de contacto verificables, se debe considerar una alerta relevante.",
+                            "La resistencia a la transparencia impide realizar una evaluación adecuada del riesgo y podría ser una señal de que la persona busca ocultar su identidad o sus actividades económicas reales.",
+                            "**Ejemplo:** Un cliente se rehúsa a entregar sus estados financieros o evita brindar información sobre su estructura empresarial.",
+                            "**5. Operaciones que no coinciden con el perfil del cliente**",
+                            "Toda empresa debe contar con un perfil transaccional de sus clientes, basado en su actividad económica, montos y comportamiento habitual.",
+                            "Cuando una operación se desvía de ese patrón esperado, puede tratarse de una maniobra para canalizar recursos ilícitos o realizar movimientos fuera del propósito legítimo del negocio.",
+                            "**Ejemplo:** Un cliente que usualmente realiza transferencias pequeñas comienza a efectuar pagos millonarios en sectores distintos a los de su actividad económica.",
+                            "**Conclusión**",
+                            "Detectar y reportar las señales de alerta es una responsabilidad compartida por todos los colaboradores de la organización.",
+                            "Cada empleado, sin importar su cargo, debe estar atento a identificar comportamientos inusuales y comunicar oportunamente cualquier situación sospechosa al oficial de cumplimiento o al área encargada del SARLAFT.",
+                            "La aplicación adecuada de estos controles contribuye a:",
+                            " - Prevenir la vinculación de la empresa con actividades delictivas",
+                            " - Fortalecer la cultura de cumplimiento y ética corporativa",
+                            " - Proteger la reputación y sostenibilidad del negocio.",
+                            "En conjunto, las señales de alerta constituyen una herramienta clave para la gestión integral del riesgo, reforzando el compromiso institucional con la transparencia, la legalidad y la responsabilidad empresarial.",
+                           
+                        ],
                         duration: "01:26",
                     },
-                    { id: 6, lessons: "Fundamentos", name: "Casos Reales en Colombia", completed: false, type: "Video", duration: "01:26", path: casosSARLAFT, resumen: [] },
-                    { id: 7, lessons: "Fundamentos", name: "Canales internos de reporte", completed: false, type: "Video", duration: "01:26", path: finalSARLAFT, resumen: [] },
+                    { id: 6, lessons: "Fundamentos", name: "Casos Reales en Colombia", completed: false, type: "Video", duration: "01:26", path: casosSARLAFT, 
+                        resumen: [
+                            "**Casos Reales en Colombia**",
+                            "En Colombia, múltiples casos recientes han evidenciado la relevancia del Sistema de Administración del Riesgo de Lavado de Activos y Financiación del Terrorismo (SARLAFT) como herramienta clave para prevenir delitos financieros.",
+                            "Algunos esquemas detectados incluyen el envío de dinero oculto en encomiendas declaradas como ropa usada, la creación de empresas fachada sin operaciones reales para mover recursos ilícitos y el transporte de mercancía contaminada con drogas, donde se comprometen tanto transportadores como empresas que no verifican adecuadamente a sus clientes.",
+                            "Asimismo, se han identificado constructoras e inmobiliarias utilizadas para lavar dinero mediante sobrevaloración de inmuebles o pagos en efectivo injustificados. Incluso cooperativas y entidades financieras han sido sancionadas por no reportar oportunamente operaciones inusuales o sospechosas.",
+                            "Estos casos reflejan que ningún sector está exento del riesgo de ser usado con fines ilícitos, y que el cumplimiento riguroso del SARLAFT es una responsabilidad compartida. Detectar señales de alerta, reportar irregularidades y actuar con transparencia no solo fortalece la integridad de las organizaciones, sino que también protege a cada persona involucrada en la cadena de valor.",
+
+                        ] },
+                    { id: 7, lessons: "Fundamentos", name: "Canales internos de reporte", completed: false, type: "Video", duration: "01:26", path: finalSARLAFT, 
+                        resumen: [
+                            "**llegamos al final**",
+                            "El curso sobre el Sistema de Administración del Riesgo de Lavado de Activos y Financiación del Terrorismo (SARLAFT) concluye destacando la importancia de comprender sus componentes, su impacto en la organización y el rol esencial que cumple cada colaborador en la prevención y detección de operaciones inusuales o sospechosas.",
+                            "Se enfatiza que el cumplimiento del SARLAFT trasciende la obligación legal: representa un compromiso ético con la transparencia, la legalidad y la reputación institucional. Ante cualquier situación que genere duda o parezca irregular, los empleados deben reportarla mediante los canales internos establecidos, como el correo institucional de cumplimiento, el Oficial de Cumplimiento o los canales confidenciales de reporte disponibles en la intranet o en el área correspondiente.",
+                            "El propósito del reporte no es acusar, sino alertar para que los expertos evalúen y gestionen adecuadamente el riesgo. La participación activa de cada miembro de la organización fortalece el sistema, garantiza el cumplimiento normativo y consolida una cultura organizacional basada en la integridad, la transparencia y la confianza.",
+                            "En conclusión, el SARLAFT no solo protege a la empresa frente a riesgos legales y reputacionales, sino que también promueve una cultura de responsabilidad compartida en la prevención del lavado de activos y la financiación del terrorismo.",
+                        ] },
                     { id: 8, lessons: "Fundamentos", name: "Factores de Riesgo en el Transporte de Carga", completed: false, type: "Video", duration: "01:26", },
 
 
                     { id: 9, lessons: "Fundamentos", name: "El Rol de los Empleados", completed: false, type: "Video", duration: "01:26", },
                     { id: 10, lessons: "Fundamentos", name: "Consecuencias de No Aplicar SARLAFT", completed: false, type: "Video", duration: "01:26", },
-                    { id: 11, lessons: "Fundamentos", name: "Canales internos de reporte", completed: false, type: "Video", duration: "01:26", path: finalSARLAFT },
-                    { id: 12, lessons: "Evaluación", name: "Evaluacion Final", completed: false, type: "Pregunta", duration: "01:26", },
+                    { id: 11, lessons: "Evaluación", name: "Evaluacion Final", completed: false, type: "Pregunta", duration: "01:26", },
 
                 ]
             }

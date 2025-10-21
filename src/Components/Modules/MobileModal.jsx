@@ -12,15 +12,14 @@ function MobileModal({ isOpen, onClose, type, children }) {
     return (
         <div className="lg:hidden fixed inset-0 z-50">
             {/* Overlay */}
-            <div  className="absolute inset-0 bg-black/80 backdrop-blur-sm"  onClick={onClose} />
+            <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={onClose} />
 
             {/* Modal content */}
-            <div  className={`absolute bottom-0 left-0 right-0 bg-zinc-900 rounded-t-2xl shadow-2xl transform transition-transform duration-300 ease-out ${
-                    isOpen ? 'translate-y-0' : 'translate-y-full' }`}  style={{ height: '70vh' }}  >
+            <div className={`absolute bottom-0 left-0 right-0 bg-zinc-900 rounded-t-2xl shadow-2xl transform transition-transform duration-300 ease-out ${isOpen ? 'translate-y-0' : 'translate-y-full'}`} style={{ height: '70vh' }}  >
                 {/* Header del modal */}
                 <div className="flex items-center justify-between p-4 border-b border-zinc-700">
                     <div className="w-12 h-1 bg-zinc-600 rounded-full mx-auto" />
-                    <button   onClick={onClose}  className="absolute right-4 p-2 hover:bg-zinc-800 rounded-full transition">
+                    <button onClick={onClose} className="absolute right-4 p-2 hover:bg-zinc-800 rounded-full transition">
                         <X size={20} />
                     </button>
                 </div>
@@ -42,9 +41,27 @@ export function ResumenContent({ resumen }) {
         <div className="p-6">
             <h3 className='font-semibold text-zinc-100 mb-2'>Resumen del Módulo</h3>
             <div className='text-zinc-300 text-sm leading-relaxed whitespace-pre-line'>
-                {resumen.map((text, index) => (
-                    <p key={index}>{text}</p>
-                ))}
+                {resumen.map((text, index) => {
+                    // 1️⃣ Reemplazar **texto** por <strong> con una clase blanca diferenciada
+                    const boldText = text.replace(
+                        /\*\*(.*?)\*\*/g,
+                        '<strong class="text-white font-semibold tracking-wide">$1</strong>'
+                    );
+
+                    // 2️⃣ Si el texto termina con punto, agregar un <br /> al final
+                    const formattedText = boldText.endsWith('.')
+                        ? `${boldText}<br /> <br />`
+                        : boldText;
+
+                    return (
+                        <p
+                            key={index}
+                            className="text-gray-300 leading-relaxed"
+                            dangerouslySetInnerHTML={{ __html: formattedText }}
+                        />
+                    );
+                })}
+
             </div>
         </div>
     );
@@ -53,7 +70,7 @@ export function ResumenContent({ resumen }) {
 /**
  * ContenidoContent - Contenido del modal de contenido del curso
  */
-export function ContenidoContent({ 
+export function ContenidoContent({
     course,
     currentModuleId,
     userProgress,
@@ -122,13 +139,12 @@ export function ContenidoContent({
                                             {/* Espacio para la línea */}
                                             <div className="w-8 flex-shrink-0 flex justify-center">
                                                 <div className="mr-6 relative z-10 mt-7">
-                                                    <div className={`w-6 h-6 flex items-center justify-center rounded-full text-xs font-bold border-2 transition-all duration-300 ${
-                                                        isCurrentLesson 
-                                                            ? 'bg-blue-500 text-black border-blue-400 shadow-lg shadow-blue-500/30' 
-                                                            : isCompleted 
-                                                            ? 'bg-blue-500 text-black border-blue-400' 
+                                                    <div className={`w-6 h-6 flex items-center justify-center rounded-full text-xs font-bold border-2 transition-all duration-300 ${isCurrentLesson
+                                                        ? 'bg-blue-500 text-black border-blue-400 shadow-lg shadow-blue-500/30'
+                                                        : isCompleted
+                                                            ? 'bg-blue-500 text-black border-blue-400'
                                                             : 'bg-zinc-600 text-white border-zinc-500'
-                                                    }`}>
+                                                        }`}>
                                                         {isQuiz ? <Zap className="w-3 h-3" /> : lesson.id}
                                                     </div>
                                                 </div>
@@ -136,13 +152,12 @@ export function ContenidoContent({
 
                                             {/* Contenido de la lección */}
                                             <div className="flex-1">
-                                                <div 
-                                                    onClick={() => canNavigate && onModuleClick(lesson.id)} 
-                                                    className={`rounded-lg p-4 transition-all duration-300 ${
-                                                        canNavigate 
-                                                            ? 'cursor-pointer hover:bg-zinc-800/70' 
-                                                            : 'cursor-not-allowed opacity-50'
-                                                    } ${isCurrentLesson ? 'bg-zinc-800/30' : ''}`}
+                                                <div
+                                                    onClick={() => canNavigate && onModuleClick(lesson.id)}
+                                                    className={`rounded-lg p-4 transition-all duration-300 ${canNavigate
+                                                        ? 'cursor-pointer hover:bg-zinc-800/70'
+                                                        : 'cursor-not-allowed opacity-50'
+                                                        } ${isCurrentLesson ? 'bg-zinc-800/30' : ''}`}
                                                 >
                                                     <div className="flex items-start gap-3">
                                                         {/* Icono de video/contenido */}
@@ -152,9 +167,8 @@ export function ContenidoContent({
 
                                                         {/* Información del contenido */}
                                                         <div className="flex-1 min-w-0 pt-1">
-                                                            <h4 className={`text-sm font-medium mb-1 line-clamp-2 ${
-                                                                isCurrentLesson ? 'text-blue-200' : 'text-zinc-200'
-                                                            }`}>
+                                                            <h4 className={`text-sm font-medium mb-1 line-clamp-2 ${isCurrentLesson ? 'text-blue-200' : 'text-zinc-200'
+                                                                }`}>
                                                                 {lesson.name}
                                                             </h4>
 
