@@ -1,0 +1,984 @@
+import React, { useState, useEffect, useRef } from 'react';
+import { Volume2, CheckCircle, X, Target, AlertCircle } from 'lucide-react';
+import AOS from 'aos';
+import 'aos/dist/aos.css';
+import { motion, AnimatePresence } from "framer-motion";
+
+function DragDropOrder({ currentModule, onContentIsEnded, courseId, moduleId }) {
+  // 📦 DATOS
+  let cards = currentModule.cards;
+  const maxRetries = 10;
+  const correctOrder = cards.map(card => card.id);
+
+  // Función para mezclar array (Fisher-Yates shuffle)
+  const shuffleArray = (array) => {
+    const shuffled = [...array];
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+    return shuffled;
+  };
+
+  // 📱 ESTADO
+  const [isMobile, setIsMobile] = useState(false);
+  const [showAudioPopup, setShowAudioPopup] = useState(false);
+  const [introStarted, setIntroStarted] = useState(false);
+  const [introPlayed, setIntroPlayed] = useState(false);
+  const [mejorVoz, setMejorVoz] = useState(null);
+  const [vocesCargadas, setVocesCargadas] = useState(false);
+  const [audioFailed, setAudioFailed] = useState(false);
+  const [isPlayingAudio, setIsPlayingAudio] = useState(false);
+  const [isPaused, setIsPaused] = useState(false);
+  const [draggableItems, setDraggableItems] = useState(() => shuffleArray(cards));
+  const [dropZones, setDropZones] = useState(() =>
+    cards.map((_, index) => ({ zone: null, originalIndex: index }))
+  );
+  const [draggedItem, setDraggedItem] = useState(null);
+  const [showError, setShowError] = useState(false);
+  const [showModal, setShowModal] = useState(false);
+  const [currentItem, setCurrentItem] = useState(null);
+  const [completedItems, setCompletedItems] = useState([]);
+  const [audioProgress, setAudioProgress] = useState(0);
+  const [touchDragItem, setTouchDragItem] = useState(null);
+  const [touchPosition, setTouchPosition] = useState({ x: 0, y: 0 });
+  const [isDraggingTouch, setIsDraggingTouch] = useState(false);
+  const [isReorganizing, setIsReorganizing] = useState(false);
+  // 🔗 REFERENCIAS
+  const synthRef = useRef(window.speechSynthesis);
+  const pausedTextRef = useRef({ text: "" });
+  const currentUtteranceRef = useRef(null);
+  const audioRetryRef = useRef(0);
+  const progressIntervalRef = useRef(null);
+  const pausedByVisibilityRef = useRef(false);
+  const audioCompletedRef = useRef(false);
+  const audioStateRef = useRef({ isPlaying: false, wasPaused: false });
+  const dropZoneRefs = useRef({});
+
+  // 💾 LOCALSTORAGE
+  const getProgressKey = () => `userProgress`;
+
+  const loadProgress = () => {
+    const key = getProgressKey();
+    const existingProgress = localStorage.getItem(key);
+    if (existingProgress) {
+      try {
+        const allProgress = JSON.parse(existingProgress);
+        const userProgress = allProgress[courseId];
+        if (!userProgress?.dropDragOrder) return [];
+        const courseProgress = userProgress.dropDragOrder[`course_${courseId}`] || {};
+        const moduleProgress = courseProgress[`module_${moduleId}`] || [];
+        console.log('📖 Progreso cargado:', moduleProgress);
+        return moduleProgress;
+      } catch (error) {
+        console.error('❌ Error cargando progreso:', error);
+        return [];
+      }
+    }
+    return [];
+  };
+
+  const saveProgress = (itemId) => {
+    const key = getProgressKey();
+    const existingProgress = localStorage.getItem(key);
+    const itemTitle = cards.find(i => i.id === itemId)?.title || "";
+    const itemKey = `${itemId}-${itemTitle}`;
+    let allProgress = existingProgress ? JSON.parse(existingProgress) : {};
+
+    if (!allProgress[courseId]) {
+      allProgress[courseId] = {
+        id: courseId,
+        title: "SARLAFT - Factores de Riesgo",
+        cumplimiento: 0,
+        startedAt: new Date().toISOString(),
+        lastAccessAt: new Date().toISOString(),
+        currentModule: moduleId,
+        completedModules: [],
+        dropDragOrder: {}
+      };
+    }
+
+    const userProgress = allProgress[courseId];
+    if (!userProgress.dropDragOrder[`course_${courseId}`]) {
+      userProgress.dropDragOrder[`course_${courseId}`] = {};
+    }
+    if (!userProgress.dropDragOrder[`course_${courseId}`][`module_${moduleId}`]) {
+      userProgress.dropDragOrder[`course_${courseId}`][`module_${moduleId}`] = [];
+    }
+
+    const moduleProgress = userProgress.dropDragOrder[`course_${courseId}`][`module_${moduleId}`];
+    if (!moduleProgress.includes(itemKey)) {
+      moduleProgress.push(itemKey);
+    }
+
+    userProgress.lastAccessAt = new Date().toISOString();
+    localStorage.setItem(key, JSON.stringify(allProgress));
+    console.log(`✅ Progreso guardado: ${itemKey}`);
+  };
+
+  // 🧠 EFFECTS: Inicialización
+  useEffect(() => {
+    const savedProgress = loadProgress();
+    const completedIds = savedProgress.map(item => item.split('-')[0]);
+    setCompletedItems(completedIds);
+  }, []);
+
+  useEffect(() => {
+    if (vocesCargadas && !introStarted) {
+      if (!isMobile) {
+        setIntroStarted(true);
+      }
+    }
+  }, [vocesCargadas, isMobile]);
+
+  useEffect(() => {
+    const synth = window.speechSynthesis;
+    const cargarVoces = () => {
+      const voices = synth.getVoices();
+      if (!voices.length) {
+        console.log('🔄 Reintentando cargar voces...');
+        setTimeout(cargarVoces, 300);
+        return;
+      }
+      const vocesEspanol = voices.filter(v => v.lang.toLowerCase().startsWith('es'));
+      const prioridadMicrosoft = [
+        'Microsoft Andrea Online (Natural) - Spanish (Ecuador)',
+        'Microsoft Dalia Online (Natural) - Spanish (Mexico)',
+        'Microsoft Salome Online (Natural) - Spanish (Colombia)',
+      ];
+      let mejorOpcion = null;
+      for (const nombre of prioridadMicrosoft) {
+        mejorOpcion = vocesEspanol.find(v => v.name.toLowerCase().includes(nombre.toLowerCase()));
+        if (mejorOpcion) break;
+      }
+      if (!mejorOpcion) {
+        const vocesFemeninas = vocesEspanol.filter(v =>
+          /(female|mujer|monica|camila|andrea|salome)/i.test(v.name)
+        );
+        mejorOpcion = vocesFemeninas[0] || vocesEspanol[0];
+      }
+      if (mejorOpcion) {
+        setMejorVoz(mejorOpcion);
+        setVocesCargadas(true);
+        console.log(`✅ Voz seleccionada: ${mejorOpcion.name} [${mejorOpcion.lang}]`);
+      }
+    };
+    cargarVoces();
+    synth.onvoiceschanged = cargarVoces;
+    const handleUserInteraction = () => {
+      cargarVoces();
+      document.removeEventListener('click', handleUserInteraction);
+    };
+    document.addEventListener('click', handleUserInteraction);
+    return () => {
+      synth.onvoiceschanged = null;
+      document.removeEventListener('click', handleUserInteraction);
+    };
+  }, []);
+
+  // 🎧 FUNCIÓN DE REPRODUCCIÓN
+  const speak = (text, onEnd, onError) => {
+    if (!vocesCargadas || !mejorVoz) {
+      setShowAudioPopup(true);
+      return;
+    }
+    const synth = synthRef.current;
+    if (synthRef.current.speaking) {
+      synthRef.current.cancel();
+
+      // Si fue pausa temporal (por pérdida de foco o pausa)
+      if (pausedByVisibilityRef.current) {
+        if (progressIntervalRef.current) {
+          clearInterval(progressIntervalRef.current);
+          progressIntervalRef.current = null;
+        }
+        // No reinicia progreso
+      } else {
+        // Si fue cierre definitivo (como cerrar modal)
+        if (progressIntervalRef.current) {
+          clearInterval(progressIntervalRef.current);
+          progressIntervalRef.current = null;
+        }
+        setAudioProgress(0); // reinicia barra
+      }
+
+    }
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.voice = mejorVoz;
+    utterance.lang = mejorVoz.lang || 'es-ES';
+    utterance.rate = 0.9;
+    utterance.pitch = 1;
+    utterance.wasCancelled = false;
+    pausedTextRef.current.text = text;
+    currentUtteranceRef.current = utterance;
+    let startTime = Date.now();
+    const estimatedDuration = (text.length / 15) * 1000;
+
+    utterance.onstart = () => {
+      setIsPlayingAudio(true);
+      setIsPaused(false);
+      setAudioProgress(0);
+      audioStateRef.current.isPlaying = true;
+      audioStateRef.current.wasPaused = false;
+      audioRetryRef.current = 0;
+      audioCompletedRef.current = false;
+      startTime = Date.now();
+      progressIntervalRef.current = setInterval(() => {
+        const elapsed = Date.now() - startTime;
+        const progress = Math.min((elapsed / estimatedDuration) * 100, 100);
+        setAudioProgress(progress);
+      }, 100);
+      setShowAudioPopup(false);
+    };
+
+    utterance.onend = () => {
+      if (progressIntervalRef.current) clearInterval(progressIntervalRef.current);
+      setAudioProgress(100);
+      setIsPlayingAudio(false);
+      setIsPaused(false);
+      currentUtteranceRef.current = null;
+      audioStateRef.current.isPlaying = false;
+      audioStateRef.current.wasPaused = false;
+      setShowAudioPopup(false);
+      if (!utterance.wasCancelled) {
+        audioCompletedRef.current = true;
+        if (onEnd) onEnd();
+      }
+    };
+
+    utterance.onerror = (e) => {
+      const isInterrupted = e.error === 'interrupted';
+      if (!isInterrupted && audioRetryRef.current < maxRetries) {
+        audioRetryRef.current++;
+        setShowAudioPopup(true);
+        setTimeout(() => {
+          if (audioRetryRef.current <= maxRetries) {
+            try { synth.speak(utterance); } catch (error) { }
+          }
+        }, 800);
+      } else if (audioRetryRef.current >= maxRetries) {
+        setIsPlayingAudio(false);
+        setIsPaused(false);
+        setAudioFailed(true);
+        audioStateRef.current.isPlaying = false;
+        audioRetryRef.current = 0;
+        setShowAudioPopup(true);
+        if (onError) onError();
+      }
+    };
+
+    utterance.onpause = () => { };
+    utterance.onresume = () => {
+      setIsPaused(false);
+      audioStateRef.current.wasPaused = false;
+    };
+
+    try {
+      synthRef.current.speak(utterance);
+    } catch (error) {
+      setShowAudioPopup(true);
+      setAudioFailed(true);
+      currentUtteranceRef.current = null;
+    }
+  };
+
+  // 👁️ EFFECTS: Visibilidad
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      const synth = synthRef.current;
+      if (document.hidden) {
+        if (synth.speaking && !synth.paused) {
+          synth.pause();
+          setIsPaused(true);
+          audioStateRef.current.wasPaused = true;
+          if (progressIntervalRef.current) clearInterval(progressIntervalRef.current);
+        }
+      } else {
+        if (audioStateRef.current.wasPaused && audioStateRef.current.isPlaying) {
+          setTimeout(() => {
+            try {
+              synth.resume();
+              setIsPaused(false);
+              audioStateRef.current.wasPaused = false;
+              if (currentItem) {
+                const estimatedDuration = (currentItem.audioText.length / 15) * 1000;
+                let startTime = Date.now() - (audioProgress / 100 * estimatedDuration);
+                progressIntervalRef.current = setInterval(() => {
+                  const elapsed = Date.now() - startTime;
+                  const progress = Math.min((elapsed / estimatedDuration) * 100, 99);
+                  setAudioProgress(progress);
+                }, 100);
+              }
+            } catch (error) { }
+          }, 100);
+        }
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+  }, [currentItem, audioProgress]);
+
+  useEffect(() => {
+    const handleBlur = () => {
+      const synth = synthRef.current;
+      if (synth.speaking && !synth.paused) {
+        synth.pause();
+        setIsPaused(true);
+        audioStateRef.current.wasPaused = true;
+        pausedByVisibilityRef.current = true;
+        if (progressIntervalRef.current) clearInterval(progressIntervalRef.current);
+      }
+    };
+
+    const handleFocus = () => {
+      const synth = synthRef.current;
+      if (pausedByVisibilityRef.current && audioStateRef.current.isPlaying) {
+        setTimeout(() => {
+          try {
+            synth.resume();
+            setIsPaused(false);
+            audioStateRef.current.wasPaused = false;
+            pausedByVisibilityRef.current = false;
+            if (currentItem) {
+              const estimatedDuration = (currentItem.audioText.length / 15) * 1000;
+              let startTime = Date.now() - (audioProgress / 100 * estimatedDuration);
+              progressIntervalRef.current = setInterval(() => {
+                const elapsed = Date.now() - startTime;
+                const progress = Math.min((elapsed / estimatedDuration) * 100, 99);
+                setAudioProgress(progress);
+              }, 100);
+            }
+          } catch (error) { }
+        }, 100);
+      }
+    };
+
+    window.addEventListener('blur', handleBlur);
+    window.addEventListener('focus', handleFocus);
+    return () => {
+      window.removeEventListener('blur', handleBlur);
+      window.removeEventListener('focus', handleFocus);
+    };
+  }, [currentItem, audioProgress]);
+
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      const synth = synthRef.current;
+      if (synth.speaking) {
+        if (currentUtteranceRef.current) currentUtteranceRef.current.wasCancelled = true;
+        synth.cancel();
+      }
+    };
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => {
+      const synth = synthRef.current;
+      if (synth.speaking) synth.cancel();
+      if (progressIntervalRef.current) clearInterval(progressIntervalRef.current);
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!isMobile && vocesCargadas && introStarted && !introPlayed) {
+      speak(
+        currentModule.audioObjetivo,
+        () => setIntroPlayed(true),
+        () => setIntroPlayed(true)
+      );
+    }
+  }, [isMobile, vocesCargadas, introStarted, introPlayed]);
+
+  useEffect(() => {
+    const checkMobile = () => {
+      const isMobileDevice = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || window.innerWidth < 768;
+      setIsMobile(isMobileDevice);
+    };
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
+  // 🎯 DRAG & DROP
+  const handleDragStart = (e, item) => {
+    setDraggedItem(item);
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/html', e.target);
+  };
+
+  const handleDragOver = (e) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+  };
+
+  const handleDrop = (e, index) => {
+    e.preventDefault();
+    if (!draggedItem) return;
+
+    const currentSlot = dropZones[index];
+    const expectedItem = correctOrder[currentSlot.originalIndex];
+
+    if (draggedItem.id === expectedItem && !currentSlot.zone) {
+      const newDropZones = [...dropZones];
+      newDropZones[index] = { ...currentSlot, zone: draggedItem };
+      setDropZones(newDropZones);
+      const newDraggableItems = draggableItems.filter(item => item.id !== draggedItem.id);
+      setDraggableItems(newDraggableItems);
+      setCurrentItem(draggedItem);
+
+      setAudioProgress(0);           // Progreso a 0%
+      setIsPlayingAudio(false);      // No está reproduciendo
+      setIsPaused(false);            // No está pausado
+      audioCompletedRef.current = false; // No completado
+
+      setShowModal(true);
+      audioCompletedRef.current = false;
+      setTimeout(() => {
+        speak(
+          draggedItem.audioText,
+          () => handleAudioComplete(draggedItem.id),
+          () => console.error('Error reproduciendo audio')
+        );
+      }, 500);
+    } else {
+      setShowError(true);
+      setTimeout(() => setShowError(false), 3000);
+    }
+    setDraggedItem(null);
+  };
+
+  const handleTouchStart = (e, item) => {
+    const touch = e.touches[0];
+    setTouchDragItem(item);
+    setDraggedItem(item);
+    setIsDraggingTouch(true);
+    setTouchPosition({ x: touch.clientX, y: touch.clientY });
+  };
+
+  const handleTouchMove = (e) => {
+    if (!isDraggingTouch) return;
+    e.preventDefault();
+    const touch = e.touches[0];
+    setTouchPosition({ x: touch.clientX, y: touch.clientY });
+  };
+
+  const handleTouchEnd = (e) => {
+    if (!isDraggingTouch || !touchDragItem) return;
+    const touch = e.changedTouches[0];
+    const dropElement = document.elementFromPoint(touch.clientX, touch.clientY);
+    const dropZone = dropElement?.closest('[data-drop-zone]');
+    if (dropZone) {
+      const index = parseInt(dropZone.dataset.dropZone);
+      const currentSlot = dropZones[index];
+      const expectedItem = correctOrder[currentSlot.originalIndex];
+
+      if (touchDragItem.id === expectedItem && !currentSlot.zone) {
+        const newDropZones = [...dropZones];
+        newDropZones[index] = { ...currentSlot, zone: touchDragItem };
+        setDropZones(newDropZones);
+        const newDraggableItems = draggableItems.filter(item => item.id !== touchDragItem.id);
+        setDraggableItems(newDraggableItems);
+        setCurrentItem(touchDragItem);
+
+        setAudioProgress(0);
+        setIsPlayingAudio(false);
+        setIsPaused(false);
+        audioCompletedRef.current = false;
+
+        setShowModal(true);
+
+        setTimeout(() => {
+          speak(
+            touchDragItem.audioText,
+            () => handleAudioComplete(touchDragItem.id),
+            () => console.error('Error reproduciendo audio')
+          );
+        }, 500);
+      } else {
+        setShowError(true);
+        setTimeout(() => setShowError(false), 3000);
+      }
+    }
+    setIsDraggingTouch(false);
+    setTouchDragItem(null);
+    setDraggedItem(null);
+  };
+
+  const handleAudioComplete = (itemId) => {
+    // 1. Actualiza el estado de elementos completados
+    setCompletedItems(prev => {
+      // 2. Crea un nuevo array: si el item ya existe, usa el anterior; si no, agrégalo
+      const newCompleted = prev.includes(itemId) ? prev : [...prev, itemId];
+
+      // 3. VERIFICACIÓN CRÍTICA: ¿Es el último elemento?
+      if (newCompleted.length === cards.length) {
+        // 4. Espera 1 segundo (para mejor UX) y llama a onContentIsEnded
+        setTimeout(() => {
+          if (onContentIsEnded) {
+            onContentIsEnded(); // ← AQUÍ SE LLAMA cuando TODO está completo
+          }
+        }, 1000);
+      }
+
+      // 5. Retorna el nuevo array de completados
+      return newCompleted;
+    });
+
+    // 6. Guarda el progreso en localStorage
+    saveProgress(itemId);
+  };
+
+
+  const handleCloseModal = () => {
+    const synth = synthRef.current;
+
+    setShowModal(false);
+
+    if (synth.speaking) {
+      if (currentUtteranceRef.current) currentUtteranceRef.current.wasCancelled = true;
+      synth.cancel();
+      setIsPlayingAudio(false);
+      setIsPaused(false);
+    }
+    if (progressIntervalRef.current) clearInterval(progressIntervalRef.current);
+
+    if (!audioCompletedRef.current && currentItem) {
+      const isAlreadyCompleted = completedItems.includes(currentItem.id);
+      if (!isAlreadyCompleted) {
+        const zoneIndex = dropZones.findIndex(slot => slot.zone?.id === currentItem.id);
+        if (zoneIndex !== -1) {
+          const newDropZones = [...dropZones];
+          newDropZones[zoneIndex] = { ...newDropZones[zoneIndex], zone: null };
+          setDropZones(newDropZones);
+          setDraggableItems(prev => shuffleArray([...prev, currentItem]));
+        }
+      } else {
+        setTimeout(() => {
+          reorganizeDropZones();
+        }, 50);
+      }
+    } else if (audioCompletedRef.current && currentItem) {
+      setTimeout(() => {
+        reorganizeDropZones();
+      }, 50);
+    }
+
+    setTimeout(() => {
+      setCurrentItem(null);
+      setAudioProgress(0);
+      audioCompletedRef.current = false;
+      pausedByVisibilityRef.current = false;
+    }, 100);
+  };
+
+
+  const reorganizeDropZones = () => {
+    const allCompleted = dropZones.every(slot =>
+      slot.zone && completedItems.includes(slot.zone.id)
+    );
+
+    if (allCompleted) {
+      setIsReorganizing(true);
+      setTimeout(() => {
+        setDropZones(prev =>
+          [...prev].sort((a, b) => a.originalIndex - b.originalIndex)
+        );
+        setTimeout(() => setIsReorganizing(false), 800);
+      }, 50);
+      return;
+    }
+
+    setIsReorganizing(true);
+    setTimeout(() => {
+      setDropZones(prev => {
+        const incomplete = [];
+        const completed = [];
+
+        prev.forEach(slot => {
+          if (slot.zone && completedItems.includes(slot.zone.id)) {
+            completed.push(slot);
+          } else {
+            incomplete.push(slot);
+          }
+        });
+
+        return [...incomplete, ...completed];
+      });
+      setTimeout(() => setIsReorganizing(false), 800);
+    }, 50);
+  };
+
+  const iniciarIntroMovil = () => {
+    if (!introStarted && vocesCargadas) {
+      setIntroStarted(true);
+      speak(
+        currentModule.audioObjetivo,
+        () => setIntroPlayed(true),
+        () => setIntroPlayed(true)
+      );
+    }
+  };
+
+  const getPreviewText = (content) => {
+    const cleaned = content.replace(/\n/g, ' ').replace(/\s+/g, ' ').trim();
+    if (cleaned.length <= 80) return cleaned;
+    return cleaned.substring(0, 80) + '...';
+  };
+
+  const getGridClass = () => {
+    const count = draggableItems.length;
+    if (count === 1) return 'grid-cols-1';
+    if (count === 2) return 'grid-cols-2';
+    if (count === 3) return 'grid-cols-3';
+    if (count === 4) return 'grid-cols-2 md:grid-cols-4';
+    if (count === 5) return 'grid-cols-2 md:grid-cols-3 lg:grid-cols-5';
+    return 'grid-cols-2 md:grid-cols-3 lg:grid-cols-6';
+  };
+
+  if (!vocesCargadas) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <p className="text-slate-400 text-lg animate-pulse">Cargando voces en español...</p>
+      </div>
+    );
+  }
+
+  const allCompleted = completedItems.length === cards.length;
+  const isPlayingIntro = introStarted && !introPlayed && isPlayingAudio;
+
+  return (
+    <div className="w-full mx-auto pt-10 pb-14 lg:pb-0">
+      {isMobile && !introStarted && (
+        <div
+          onClick={iniciarIntroMovil}
+          className="relative w-full flex items-center justify-center rounded-xl cursor-pointer min-h-[400px]"
+          data-aos="fade-up"
+        >
+          <div className="absolute inset-0 rounded-xl scale-[1.03] pointer-events-none"></div>
+          <div className="text-center py-2 z-10">
+            <p className="text-white text-2xl md:text-3xl font-light animate-pulse">
+              Click para iniciar
+            </p>
+          </div>
+        </div>
+      )}
+
+      {introStarted && (
+        <div className="text-center px-6 py-2 max-w-5xl mx-auto animate-fadeIn" data-aos="fade-up">
+          <h1 className="text-2xl md:text-3xl font-bold text-white mb-0">
+            {currentModule.name}
+          </h1>
+          <p className="text-slate-300 text-sm md:text-base leading-relaxed mb-6">
+            {currentModule.objetivo}
+          </p>
+        </div>
+      )}
+
+      {isPlayingIntro && (
+        <div className="max-w-4xl mx-auto" data-aos="fade-up">
+          <div className={`grid ${getGridClass()} gap-3`} style={{ minHeight: '180px' }}>
+            {cards.map((_, i) => (
+              <div key={i} className="h-32 bg-zinc-900/50 rounded-xl animate-pulse"></div>
+            ))}
+          </div>
+          <div className="space-y-4">
+            {cards.map((_, i) => (
+              <div key={i} className="flex items-center gap-4">
+                <div className="w-20 h-20 bg-zinc-900/50 rounded-xl flex-shrink-0 animate-pulse"></div>
+                <div className="flex-1 h-24 bg-zinc-900/50 rounded-xl animate-pulse"></div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {introPlayed && (
+        <div className="max-w-6xl mx-auto px-4" >
+          {draggableItems.length > 0 && (
+            <div className="mb-10 transition-all duration-500" data-aos="fade-up">
+              <div className="flex items-center gap-2 mb-4">
+                <Target className="w-5 h-5 text-blue-400" />
+                <span className="text-white font-semibold text-sm">Factores</span>
+                <span className="text-slate-500 text-xs ml-auto">{draggableItems.length} disponibles</span>
+              </div>
+
+              <div className={`grid ${getGridClass()} gap-4`} style={{ minHeight: '120px' }}>
+                {draggableItems.map((item) => (
+                  <div
+                    className="bg-gradient-to-br from-[#0a1a3a]/80 to-[#071D49]/70 backdrop-blur-md border border-[#071D49]/30 shadow-md shadow-[#071D49]/40 hover:border-[#1a4fff] hover:shadow-xl hover:shadow-[#1a4fff]/40 transition-all duration-300 hover:-translate-y-2 hover:scale-105 rounded-2xl cursor-move select-none"
+                    key={item.id}
+                    draggable
+                    onDragStart={(e) => handleDragStart(e, item)}
+                    onTouchStart={(e) => handleTouchStart(e, item)}
+                    onTouchMove={handleTouchMove}
+                    onTouchEnd={handleTouchEnd}
+                    style={isDraggingTouch && touchDragItem?.id === item.id ? {
+                      position: 'fixed',
+                      left: `${touchPosition.x - 80}px`,
+                      top: `${touchPosition.y - 50}px`,
+                      zIndex: 1000,
+                      opacity: 0.9,
+                      pointerEvents: 'none'
+                    } : {}}
+                  >
+                    <div className="text-center pointer-events-none h-full flex flex-col items-center justify-center p-3">
+                      <div className="w-14 h-14 mx-auto mb-2 bg-gradient-to-br from-[#071D49] to-[#1a4fff] rounded-xl flex items-center justify-center shadow-inner shadow-black/50">
+                        <span className="text-2xl text-[#C4D600] drop-shadow-lg">{item.icon}</span>
+                      </div>
+                      <p className="text-white/90 text-sm font-medium leading-tight tracking-wide">
+                        {item.title}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          <div className="relative mb-6" data-aos="fade-up">
+            <div className="absolute left-8 md:left-10 top-0 bottom-0 w-0.5 bg-gradient-to-b from-blue-500 via-purple-500 to-pink-500"></div>
+            <AnimatePresence mode="popLayout">
+              <motion.div
+                className="space-y-5"
+                layout
+                transition={{ duration: 0.6, ease: [0.4, 0, 0.2, 1] }}
+              >
+                {dropZones.map((slot, index) => {
+                  if (!slot) return null;
+
+                  const isCompleted = slot.zone && completedItems.includes(slot.zone.id);
+                  const stepNumber = slot.originalIndex + 1;
+
+                  return (
+                    <motion.div
+                      key={`${slot.originalIndex}-${slot.zone?.id || 'empty'}`}
+                      ref={(el) => (dropZoneRefs.current[index] = el)}
+                      layout
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -20 }}
+                      transition={{
+                        duration: 0.7,
+                        ease: [0.4, 0, 0.2, 1],
+                      }}
+                      className="relative flex items-center gap-4"
+                    >
+                      {/* Ícono o número */}
+                      <div
+                        data-drop-zone={index}
+                        draggable={!!slot.zone}
+                        onDragStart={(e) => slot.zone && handleDragStart(e, slot.zone)}
+                        onDragOver={handleDragOver}
+                        onDrop={(e) => handleDrop(e, index)}
+                        onTouchStart={(e) => slot.zone && handleTouchStart(e, slot.zone)}
+                        onTouchMove={handleTouchMove}
+                        onTouchEnd={handleTouchEnd}
+                        className={`relative z-10 w-16 h-16 md:w-20 md:h-20 rounded-xl flex items-center justify-center flex-shrink-0 transition-all duration-300 shadow-lg
+              ${slot.zone
+                            ? isCompleted
+                              ? 'bg-gradient-to-br from-[#071D49] to-[#1a4fff] shadow-blue-500/50 cursor-move'
+                              : 'bg-gradient-to-br from-orange-500 to-red-600 shadow-orange-500/50 cursor-move'
+                            : 'bg-slate-800 border-2 border-dashed border-slate-600 hover:border-blue-500/50 hover:bg-slate-700'
+                          }`}
+                      >
+                        {slot.zone ? (
+                          isCompleted ? (
+                            <CheckCircle className="w-8 h-8 md:w-10 md:h-10 text-white" />
+                          ) : (
+                            <span className="text-2xl md:text-3xl">{slot.zone.icon}</span>
+                          )
+                        ) : (
+                          <span className="text-slate-500 font-bold text-base md:text-lg">{stepNumber}</span>
+                        )}
+                      </div>
+
+                      {/* Contenido del paso */}
+                      <div
+                        data-drop-zone={index}
+                        draggable={!!slot.zone}
+                        onDragStart={(e) => slot.zone && handleDragStart(e, slot.zone)}
+                        onDragOver={handleDragOver}
+                        onDrop={(e) => handleDrop(e, index)}
+                        onTouchStart={(e) => slot.zone && handleTouchStart(e, slot.zone)}
+                        onTouchMove={handleTouchMove}
+                        onTouchEnd={handleTouchEnd}
+                        className={`flex-1 rounded-xl p-3 border-2 transition-all duration-500 
+              ${slot.zone
+                            ? isCompleted
+                              ? 'bg-blue-500/10 border-blue-500/50 shadow-md shadow-green-500/10 cursor-move'
+                              : 'bg-orange-500/10 border-orange-500/50 cursor-move'
+                            : 'bg-slate-900/40 border-slate-700 border-dashed hover:border-blue-500/50 hover:bg-slate-900/60'
+                          }`}
+                      >
+                        {slot.zone ? (
+                          <div>
+                            <div className="flex items-start justify-between gap-3 mb-2">
+                              <div className="flex items-center gap-2 flex-1 min-w-0">
+                                <div className="w-8 h-8 bg-gradient-to-br from-[#071D49] to-[#1a4fff] rounded-lg flex items-center justify-center shadow-md flex-shrink-0">
+                                  <span className="text-lg">{slot.zone.icon}</span>
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                  <h4 className="text-white font-bold text-sm truncate">{slot.zone.title}</h4>
+                                </div>
+                              </div>
+                              <div className="text-right flex-shrink-0">
+                                <p className="text-slate-500 text-xs whitespace-nowrap">
+                                  Paso {stepNumber}/{dropZones.length}
+                                </p>
+                              </div>
+                            </div>
+                            <p className="text-slate-400 text-xs leading-relaxed">
+                              {getPreviewText(slot.zone.content)}
+                            </p>
+                          </div>
+                        ) : (
+                          <div className="py-2 text-center">
+                            <p className="text-slate-500 text-xs">Suelta aquí el paso {stepNumber}</p>
+                          </div>
+                        )}
+                      </div>
+                    </motion.div>
+                  );
+                })}
+              </motion.div>
+            </AnimatePresence>
+
+          </div>
+
+          {showModal && currentItem && (
+            <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 z-[9999]">
+              <div className="bg-gradient-to-br bg-zinc-900 rounded-xl max-w-2xl w-full max-h-[90vh] overflow-hidden border border-zinc-700 shadow-2xl">
+                <div className="bg-gradient-to-r from-[#071D49] to-[#1a4fff] p-4 flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    {currentItem.icon && (
+                      <div className="w-10 h-10 bg-white/40 backdrop-blur-sm rounded-lg flex items-center justify-center">
+                        <span className="text-xl">{currentItem.icon}</span>
+                      </div>
+                    )}
+                    <div>
+                      <h3 className="text-lg font-bold text-white">
+                        {currentItem.title || "Introducción"}
+                      </h3>
+                      <p className="text-blue-100 text-xs">Escucha atentamente el contenido</p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={handleCloseModal}
+                    className="p-2 hover:bg-white/20 rounded-lg transition-colors"
+                  >
+                    <X className="w-5 h-5 text-white" />
+                  </button>
+                </div>
+
+                <div className="p-4 overflow-y-auto max-h-[calc(90vh-180px)]">
+                  <div className="prose prose-invert max-w-none mb-4">
+                    <div className="whitespace-pre-line text-slate-300 text-sm leading-relaxed">
+                      {currentItem.content}
+                    </div>
+                  </div>
+
+                  <div className="bg-zinc-800 backdrop-blur-sm rounded-lg p-3 border border-zinc-700">
+                    <div className="flex items-center gap-3 mb-3">
+                      <button
+                        onClick={() => {
+                          if (isPlayingAudio) {
+                            synthRef.current.pause();
+                            setIsPaused(true);
+                          } else if (isPaused) {
+                            synthRef.current.resume();
+                            setIsPaused(false);
+                          }
+                        }}
+                        className={`bg-gradient-to-br from-[#071D49] to-[#1a4fff] w-10 h-10 rounded-full transition-all duration-300 flex items-center justify-center flex-shrink-0
+                          ${completedItems.includes(currentItem.id)
+                            ? 'cursor-not-allowed'
+                            : 'hover:shadow-lg hover:shadow-blue-500/30 active:scale-95'
+                          }`}
+                        disabled={completedItems.includes(currentItem.id)}
+                      >
+                        <Volume2 className={`w-5 h-5 text-white ${isPlayingAudio ? 'animate-pulse' : ''}`} />
+                      </button>
+                      <div className="flex-1">
+                        <div className="flex justify-between items-center mb-1">
+                          <span className="text-xs text-slate-300">Progreso</span>
+                          <span className="text-xs font-bold text-blue-400">
+                            {Math.round(audioProgress)}%
+                          </span>
+                        </div>
+                        <div className="h-2 bg-zinc-700 rounded-full overflow-hidden">
+                          <div
+                            className="h-full bg-gradient-to-r from-[#071D49] via-[#0e2e80] to-[#1a4fff] transition-all duration-200 rounded-full"
+                            style={{ width: `${audioProgress}%` }}
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      {isPlayingAudio && (
+                        <div className="flex items-center gap-2 text-blue-400 bg-blue-500/10 rounded-lg p-2">
+                          <div className="flex gap-1">
+                            <span className="inline-block w-1 h-3 bg-blue-400 rounded-full animate-pulse"></span>
+                            <span className="inline-block w-1 h-3 bg-blue-400 rounded-full animate-pulse" style={{ animationDelay: '0.2s' }}></span>
+                            <span className="inline-block w-1 h-3 bg-blue-400 rounded-full animate-pulse" style={{ animationDelay: '0.4s' }}></span>
+                          </div>
+                          <span className="text-xs font-medium">Reproduciendo audio...</span>
+                        </div>
+                      )}
+
+                      {completedItems.includes(currentItem.id) && (
+                        <div className="flex items-center gap-2 text-blue-400 bg-blue-400/10 rounded-lg p-2">
+                          <div className="w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center flex-shrink-0">
+                            <CheckCircle className="w-4 h-4 text-white" />
+                          </div>
+                          <div className="flex-1">
+                            <p className="font-bold text-xs">¡Audio completado!</p>
+                            <p className="text-xs text-blue-300">Puedes cerrar esta ventana</p>
+                          </div>
+                        </div>
+                      )}
+
+                      {!completedItems.includes(currentItem.id) && !isPlayingAudio && audioProgress === 0 && (
+                        <div className="text-center p-2 text-slate-400 text-xs">
+                          El audio se reproducirá automáticamente
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {isPlayingIntro && (
+        <div data-aos="fade-up" className="fixed bottom-4 right-4 bg-zinc-800/90 backdrop-blur-sm px-4 py-3 rounded-lg border border-zinc-700 shadow-xl z-50 animate-pulse">
+          <div className="flex items-center gap-3">
+            <div className="flex gap-1">
+              <span className="w-1 h-4 bg-blue-400 rounded-full animate-pulse"></span>
+              <span className="w-1 h-4 bg-blue-400 rounded-full animate-pulse" style={{ animationDelay: '0.2s' }}></span>
+              <span className="w-1 h-4 bg-blue-400 rounded-full animate-pulse" style={{ animationDelay: '0.4s' }}></span>
+            </div>
+            <span className="text-white text-sm">Reproduciendo introducción...</span>
+          </div>
+        </div>
+      )}
+
+      {showError && (
+        <div data-aos="fade-up" className="fixed bottom-4 right-4 px-6 py-3 bg-red-500/50 border border-red-500/50 rounded-lg flex items-center gap-2 animate-pulse">
+          <AlertCircle className="w-4 h-4 text-red-400 flex-shrink-0" />
+          <p className="text-red-200 text-xs">Orden incorrecto. Sigue la secuencia correcta.</p>
+        </div>
+      )}
+
+      {showAudioPopup && (
+        <div data-aos="fade-up" className="fixed bottom-4 right-4 bg-gray-800 text-white px-6 py-3 rounded-xl shadow-lg text-sm text-center animate-pulse z-[9999] ">
+          🔊 <strong>Estamos intentando reproducir el audio...</strong><br />
+          Si el problema persiste, cierra esta etapa y vuelve a cargarla.
+        </div>
+      )}
+    </div>
+  );
+}
+
+export default DragDropOrder;

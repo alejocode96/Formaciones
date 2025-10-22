@@ -225,36 +225,160 @@ function TrainingLogiTransProvider({ children }) {
                         resumen: [
                             "**Etapas del SARLAFT**",
                             "El Sistema de Administración del Riesgo de Lavado de Activos, Financiación del Terrorismo y Proliferación de Armas de Destrucción Masiva (SARLAFT) se fundamenta en un ciclo continuo de gestión compuesto por cuatro etapas interrelacionadas: Identificación, Medición, Control y Monitoreo del Riesgo. Este ciclo busca prevenir y mitigar los riesgos asociados a actividades ilícitas dentro del sector transporte, garantizando la integridad y legalidad de las operaciones.",
-                            "**1. Identificación del Riesgo**",
+                            "** 🔹 1. Identificación del Riesgo**",
                             "Esta etapa tiene como propósito reconocer y documentar las situaciones o factores que puedan representar un riesgo de lavado de activos, financiación del terrorismo o proliferación de armas dentro de las operaciones del transporte.",
                             "Se analizan actividades vulnerables como la recepción de pagos en efectivo, el transporte de mercancías sin documentación adecuada o las relaciones con clientes de alto riesgo. A través de la clasificación de factores de riesgo, se segmentan las exposiciones según el tipo de cliente, la ubicación geográfica y el tipo de operación.",
                             "El proceso se apoya en herramientas como cuestionarios de riesgo, entrevistas, matrices de evaluación y software de gestión, permitiendo obtener una visión integral de los riesgos.",
                             "**Ejemplo:** Una empresa de transporte identifica que ciertos clientes ubicados en zonas de conflicto representan un mayor riesgo, por lo que aplica medidas de debida diligencia reforzada.",
-                            "**2. Medición o Evaluación del Riesgo**",
+                            "** 🔹 2. Medición o Evaluación del Riesgo**",
                             "En esta fase se determina la probabilidad de ocurrencia y el impacto potencial de los riesgos identificados, con el fin de establecer prioridades de atención.",
                             "Se asignan puntuaciones o calificaciones a cada factor de riesgo para calcular el riesgo inherente (antes de aplicar controles) y el riesgo residual (después de aplicar medidas de mitigación).",
                             "Se utilizan escalas cualitativas y cuantitativas, análisis de escenarios y simulaciones que facilitan una comprensión precisa del nivel de exposición.",
                             "Además, se evalúan los riesgos al ingresar en nuevos mercados o servicios, asegurando decisiones informadas y preventivas.",
                             "**Ejemplo:** Antes de habilitar una ruta que atraviesa zonas con presencia de grupos armados, una empresa determina que la operación es de alto riesgo y decide implementar controles adicionales de seguridad y monitoreo.",
-                            "**3. Control del Riesgo**",
+                            "**🔹 3. Control del Riesgo**",
                             "El objetivo de esta etapa es implementar medidas proporcionales que mitiguen los riesgos identificados, reduciendo su probabilidad e impacto.",
                             "Se desarrollan políticas internas y procedimientos operativos, como la validación de clientes y proveedores, la capacitación del personal, y la realización de auditorías periódicas.",
                             "Los controles se integran en los sistemas operativos de la organización mediante plataformas de monitoreo y software de cumplimiento, garantizando la trazabilidad y eficacia del sistema.",
                             "**Ejemplo:** Una empresa implementa un sistema de verificación de antecedentes para clientes y proveedores, y establece revisiones documentales y de rutas con el fin de detectar operaciones sospechosas y prevenir su uso indebido.",
-                            "**4. Monitoreo del Riesgo**",
+                            "** 🔹 4. Monitoreo del Riesgo**",
                             "Esta etapa cierra el ciclo del SARLAFT mediante la vigilancia continua de los controles implementados. El monitoreo permite evaluar la efectividad de las medidas adoptadas, detectar operaciones inusuales o sospechosas y aplicar acciones correctivas oportunas.",
                             "Se utilizan indicadores clave de desempeño (KPI), auditorías internas y externas, y herramientas tecnológicas que facilitan el análisis de alertas y el seguimiento en tiempo real.",
                             "**Ejemplo:** Si un sistema de monitoreo detecta una transacción inusual en una zona de alto riesgo, la empresa activa una investigación interna y reporta el caso a la UIAF, cumpliendo con las obligaciones legales y fortaleciendo su control interno.",
-                            "**Conclusión**",
+                            "** 🔹 Conclusión**",
                             "**El SARLAFT** es un proceso dinámico y preventivo, diseñado para proteger a las empresas del sector transporte frente a actividades ilícitas.",
                             "Su efectividad depende de la aplicación coordinada de las cuatro etapas —identificación, medición, control y monitoreo— y del compromiso de todos los actores involucrados.",
                             "La implementación adecuada de este sistema no solo asegura el cumplimiento normativo, sino que también fortalece la reputación, sostenibilidad y confianza institucional en las operaciones del sector.",
 
                         ]
                     },
-
                     {
-                        id: 5, lessons: "Fundamentos", name: "Señales de Alerta", completed: false, type: "FlipCardReverse",
+                        id: 5, lessons: "Fundamentos", name: "Factores de Riesgo en el Transporte de Carga", completed: false, type: "dragDropOrder",
+                        objetivo: 'Es fundamental comprender los cuatro factores de riesgo del SARLAFT y cómo pueden presentarse en las operaciones de transporte de carga.  Explora y aprende de qué manera los factores del SARLAFT se manifiestan en el contexto logístico, fortaleciendo tu capacidad para prevenir, detectar y mitigar riesgos operativos y financieros dentro de la cadena de transporte.',
+                        audioObjetivo: 'Es fundamental comprender los cuatro factores de riesgo del SARLAFT y cómo pueden presentarse en las operaciones de transporte de carga. Para afianzar este conocimiento, arrastra los elementos en el orden correcto y descubre información detallada sobre cada uno. Explora y aprende de qué manera los factores del SARLAFT se manifiestan en el contexto logístico, fortaleciendo tu capacidad para prevenir, detectar y mitigar riesgos operativos y financieros dentro de la cadena de transporte.',
+                        cards: [
+                            {
+                                id: "intro",
+                                title: "Introducción",
+                                icon: "📋",
+                                order: 1,
+                                content: `El Sistema de Administración del Riesgo de Lavado de Activos y Financiación del Terrorismo (SARLAFT) nos exige identificar, prevenir y controlar los posibles riesgos que puedan afectar nuestras operaciones.
+
+                                         Aunque nuestro cliente principal es Cementos Argos, nuestras actividades logísticas también pueden ser utilizadas de manera indebida por terceros. Por eso debemos conocer los cuatro factores de riesgo del SARLAFT y cómo se manifiestan en el transporte de carga.`,
+                                audioText: 'El Sistema de Administración del Riesgo de Lavado de Activos y Financiación del Terrorismo, conocido como SARLAFT, nos exige identificar, prevenir y controlar los posibles riesgos que puedan afectar nuestras operaciones. Aunque nuestro cliente principal es Cementos Argos, nuestras actividades logísticas también pueden ser utilizadas de manera indebida por terceros. Por eso debemos conocer los cuatro factores de riesgo del SARLAFT y cómo se manifiestan en el transporte de carga.'
+
+                            },
+                            {
+                                id: "factor1",
+                                title: "Cliente o Contraparte",
+                                icon: "👥",
+                                order: 2,
+                                content: `🔹 Quiénes son:
+                                         Nuestro cliente directo es Cementos Argos o Concretos Argos, pero en la operación también interactuamos con conductores, contratistas, aliados logísticos, proveedores y destinatarios de la carga.
+
+                                        🔹 Riesgo:
+                                        Que alguno de estos actores intente utilizar la operación de transporte para actividades ilícitas, como desvío de carga, manipulación de información o colaboración con redes criminales.
+
+                                        🔹 Ejemplo:
+                                        Un conductor que altera su ruta para entregar la carga en un sitio no autorizado o filtra información sobre el movimiento de producto a terceros.`,
+                                audioText: 'Factor uno: Cliente o Contraparte. Quiénes son: Nuestro cliente directo es Cementos Argos o Concretos Argos, pero en la operación también interactuamos con conductores, contratistas, aliados logísticos, proveedores y destinatarios de la carga. Riesgo: Que alguno de estos actores intente utilizar la operación de transporte para actividades ilícitas, como desvío de carga, manipulación de información o colaboración con redes criminales. Ejemplo: Un conductor que altera su ruta para entregar la carga en un sitio no autorizado o filtra información sobre el movimiento de producto a terceros.'
+                            },
+                            {
+                                id: "factor2",
+                                title: "Producto o Servicio",
+                                icon: "📦",
+                                order: 3,
+                                content: `🔹 Qué ofrecemos:
+                                            Prestamos el servicio de transporte de cemento y de materias primas utilizadas en su producción.
+
+                                          🔹 Riesgo:
+                                            Que este servicio sea usado como fachada para encubrir mercancías ilegales o justificar movimientos financieros irregulares.
+
+                                          🔹 Ejemplo:
+                                            Un despacho de cemento que se aprovecha para transportar mercancía contaminada (por ejemplo, sustancias ilícitas ocultas entre los sacos o dentro del vehículo).`,
+                                audioText: 'Factor dos: Producto o Servicio. Qué ofrecemos: Prestamos el servicio de transporte de cemento y de materias primas utilizadas en su producción. Riesgo: Que este servicio sea usado como fachada para encubrir mercancías ilegales o justificar movimientos financieros irregulares. Ejemplo: Un despacho de cemento que se aprovecha para transportar mercancía contaminada, por ejemplo, sustancias ilícitas ocultas entre los sacos o dentro del vehículo.'
+
+                            }, {
+                                id: "factor3",
+                                title: "Canal de Distribución",
+                                icon: "🚚",
+                                order: 4,
+                                content: `🔹 Qué implica:
+                                            El canal es la movilización física de la carga por carretera, junto con toda la documentación que respalda la operación (remesas, manifiestos, facturas, guías de despacho, etc.).
+
+                                          🔹 Riesgo:
+                                            Que el canal de transporte sea utilizado para introducir actividades irregulares, ya sea mediante falsificación documental o alteración de la carga.
+
+                                          🔹 Ejemplo:
+                                            Un tercero intenta incluir mercancía no autorizada junto al cemento o presenta documentos de transporte adulterados para cubrir desvíos o entregas falsas.`,
+                                audioText: 'Factor tres: Canal de Distribución. Qué implica: El canal es la movilización física de la carga por carretera, junto con toda la documentación que respalda la operación, como remesas, manifiestos, facturas, guías de despacho, etcétera. Riesgo: Que el canal de transporte sea utilizado para introducir actividades irregulares, ya sea mediante falsificación documental o alteración de la carga. Ejemplo: Un tercero intenta incluir mercancía no autorizada junto al cemento o presenta documentos de transporte adulterados para cubrir desvíos o entregas falsas.'
+
+                            },
+                            {
+                                id: "factor4",
+                                title: "Jurisdicción o Zona Geográfica",
+                                icon: "🗺️",
+                                order: 5,
+                                content: `🔹 Qué abarca:
+                                            Nuestras rutas atraviesan diversas regiones del país, algunas con presencia de economías informales, grupos ilegales o puntos de control limitados.
+
+                                          🔹 Riesgo:
+                                            Que ciertas zonas se conviertan en corredores de riesgo donde se facilite el contrabando, la contaminación de mercancía o el lavado de activos mediante operaciones simuladas.
+
+                                          🔹 Ejemplo:
+                                            Durante un trayecto, una persona intenta aprovechar una parada o zona de baja supervisión para introducir carga ilícita al vehículo.`,
+                                audioText: 'Factor cuatro: Jurisdicción o Zona Geográfica. Qué abarca: Nuestras rutas atraviesan diversas regiones del país, algunas con presencia de economías informales, grupos ilegales o puntos de control limitados. Riesgo: Que ciertas zonas se conviertan en corredores de riesgo donde se facilite el contrabando, la contaminación de mercancía o el lavado de activos mediante operaciones simuladas. Ejemplo: Durante un trayecto, una persona intenta aprovechar una parada o zona de baja supervisión para introducir carga ilícita al vehículo.'
+
+                            },
+                            {
+                                id: "conclusion",
+                                title: "Conclusión",
+                                icon: "✅",
+                                order: 6,
+                                content: `🔍 En resumen:
+
+                                            Aunque trabajamos con un cliente formal y de alta reputación, el riesgo no desaparece.
+                                            Como empresa transportadora, debemos estar alertas y comprometidos con el control de cada etapa de la operación:
+
+                                            ✅ Conocer a los actores involucrados (clientes, conductores, aliados).
+                                            ✅ Verificar el servicio que prestamos y el tipo de carga movilizada.
+                                            ✅ Revisar la documentación asociada al transporte.
+                                            ✅ Evaluar las rutas y zonas donde operamos.
+
+                                            👉 La prevención del riesgo es tarea de todos.
+                                            Cada colaborador tiene un papel clave en garantizar que nuestras operaciones sean transparentes, seguras y alineadas con las políticas SARLAFT.`,
+                                audioText: 'Conclusión. En resumen: Aunque trabajamos con un cliente formal y de alta reputación, el riesgo no desaparece. Como empresa transportadora, debemos estar alertas y comprometidos con el control de cada etapa de la operación: Conocer a los actores involucrados, como clientes, conductores y aliados. Verificar el servicio que prestamos y el tipo de carga movilizada. Revisar la documentación asociada al transporte. Evaluar las rutas y zonas donde operamos. La prevención del riesgo es tarea de todos. Cada colaborador tiene un papel clave en garantizar que nuestras operaciones sean transparentes, seguras y alineadas con las políticas SARLAFT.'
+                            }
+                        ],
+                        duration: "01:26",
+                        resumen: [
+                            "El Sistema de Administración del Riesgo de Lavado de Activos y Financiación del Terrorismo (SARLAFT) busca que las empresas identifiquen, prevengan y controlen los riesgos que puedan afectar sus operaciones frente al uso indebido de recursos o actividades ilegales.",
+                            "Aunque Cementos Argos es un cliente formal y de gran reputación, nuestras operaciones logísticas pueden verse expuestas a amenazas si terceros intentan aprovecharlas con fines ilícitos.",
+                            "Por eso, es clave conocer los cuatro factores de riesgo del SARLAFT y cómo se manifiestan específicamente en el transporte de carga.",
+                            "**🔹 Cliente o Contraparte**",
+                            "Nuestro cliente principal es Cementos Argos (o Concretos Argos), pero en la operación intervienen muchos otros actores: conductores, contratistas, aliados logísticos, proveedores y destinatarios de carga. El riesgo surge cuando alguno de ellos intenta utilizar la operación de transporte para actividades ilícitas, como alterar rutas, filtrar información o colaborar con redes criminales.",
+                            "**Ejemplo:** un conductor modifica su ruta para entregar la carga en un sitio no autorizado o comparte datos sobre los movimientos del producto.",
+                            "** 🔹 Producto o Servicio**",
+                            "Prestamos el servicio de transporte de cemento y materias primas usadas en su producción. El riesgo está en que este servicio sea utilizado como fachada para transportar mercancía ilegal o justificar movimientos financieros sospechosos.",
+                            "**Ejemplo:** un despacho de cemento contaminado con sustancias ilícitas ocultas entre los sacos o dentro del vehículo.",
+                            "** 🔹 Canal de Distribución**",
+                            "El canal de distribución es la movilización física de la carga y toda la documentación que respalda el proceso: remesas, manifiestos, facturas, guías de despacho, etc. Existe riesgo de que el canal sea usado para falsificar documentos o alterar la carga, generando desvíos o entregas falsas.",
+                            "**Ejemplo:** un tercero intenta incluir mercancía no autorizada junto al cemento o presenta documentos adulterados para justificar un desvío.",
+                            "** 🔹 Jurisdicción o Zona Geográfica**",
+                            "Las rutas de transporte atraviesan diferentes regiones del país, algunas con presencia de economías informales o grupos ilegales. Esto genera riesgo de que ciertas zonas se conviertan en corredores vulnerables al contrabando, contaminación de mercancía o lavado de activos mediante operaciones simuladas.",
+                            "**Ejemplo:** durante una parada en una zona de baja supervisión, alguien aprovecha para introducir carga ilícita al vehículo.",
+                            "** 🔹 Conclusión — La prevención es tarea de todos**",
+                            "Aunque trabajemos con un cliente confiable, el riesgo nunca desaparece completamente. Como empresa transportadora, debemos mantener una actitud preventiva y comprometida con el control en cada etapa de la operación:",
+                            "🔸Conocer a los actores involucrados (clientes, conductores, aliados)",
+                            "🔸Verificar el servicio prestado y la carga movilizada",
+                            "🔸Revisar la documentación del transporte",
+                            "🔸Evaluar las rutas y zonas de operación",
+                            "La prevención del riesgo es responsabilidad de todos. Cada colaborador cumple un papel clave para garantizar operaciones transparentes, seguras y alineadas con las políticas del SARLAFT.",
+
+                        ]
+                    },
+                    {
+                        id: 6, lessons: "Fundamentos", name: "Señales de Alerta", completed: false, type: "FlipCardReverse",
                         objetivo: 'Las señales de alerta son comportamientos o situaciones que nos indican que algo podría no estar bien y que existe un posible riesgo de lavado de activos o financiación del terrorismo. Identificarlas a tiempo ayuda a proteger a la organización y cumplir con la normativa.',
                         audioObjetivo: 'Señales de Alerta, Las señales de alerta son comportamientos o situaciones que nos indican que algo podría no estar bien y que existe un posible riesgo de lavado de activos o financiación del terrorismo. Identificarlas a tiempo ayuda a proteger a la organización y cumplir con la normativa.',
                         cards: [
@@ -315,23 +439,23 @@ function TrainingLogiTransProvider({ children }) {
                             "Reconocer estas señales a tiempo es esencial para proteger la organización, evitar su utilización en actividades ilícitas y cumplir con la normativa nacional e internacional en materia de prevención del riesgo.",
                             "Estas señales no necesariamente confirman la existencia de un delito, pero sí exigen una revisión más profunda, la activación de los protocolos internos y, en caso de ser necesario, la comunicación con las autoridades competentes.",
                             "A continuación, se presentan las principales señales de alerta que deben tenerse en cuenta en el sector transporte y en cualquier operación comercial:",
-                            "**1. Pagos inusuales o muy altos en efectivo**",
+                            "**🔹 1. Pagos inusuales o muy altos en efectivo**",
                             "En la actualidad, las transacciones de alto valor suelen realizarse por medios electrónicos como transferencias bancarias o pagos con tarjeta.",
                             "Cuando un cliente insiste en efectuar pagos en efectivo de montos elevados, podría estar intentando ocultar el origen ilícito de los fondos.",
                             "Esto representa un riesgo significativo de lavado de activos y debe reportarse para análisis adicional.",
                             "**Ejemplo:** Una empresa que normalmente paga sus facturas por transferencia solicita cancelar un contrato de 50 millones de pesos en efectivo.",
-                            "**2. Cambios frecuentes en remitentes o destinatarios**",
+                            "**🔹 2. Cambios frecuentes en remitentes o destinatarios**",
                             "Las operaciones en las que los pagos o cobros cambian constantemente de nombre sin una justificación válida pueden indicar un intento de encubrir la identidad real del beneficiario o del origen del dinero. Este tipo de comportamiento busca crear confusión en la trazabilidad de las operaciones financieras.",
                             "**Ejemplo:** Un mismo servicio es facturado cada mes por un proveedor distinto, sin explicación clara ni relación comercial establecida.",
-                            "**3. Documentos incompletos o falsos**",
+                            "** 🔹 3. Documentos incompletos o falsos**",
                             "La falta de documentación, la presentación de información inconsistente o la alteración de documentos son alertas directas de posible fraude o manipulación.",
                             "Estos casos pueden reflejar intentos de simular operaciones legales o de ocultar el verdadero propósito de una transacción.",
                             "**Ejemplo:** Facturas sin número de identificación, con datos inconsistentes o con fechas que no coinciden con la prestación real del servicio.",
-                            "**4. Clientes que no quieren suministrar información**",
+                            "** 🔹 4. Clientes que no quieren suministrar información**",
                             "Cuando un cliente se niega a entregar información básica, como estados financieros, referencias o datos de contacto verificables, se debe considerar una alerta relevante.",
                             "La resistencia a la transparencia impide realizar una evaluación adecuada del riesgo y podría ser una señal de que la persona busca ocultar su identidad o sus actividades económicas reales.",
                             "**Ejemplo:** Un cliente se rehúsa a entregar sus estados financieros o evita brindar información sobre su estructura empresarial.",
-                            "**5. Operaciones que no coinciden con el perfil del cliente**",
+                            "** 🔹 5. Operaciones que no coinciden con el perfil del cliente**",
                             "Toda empresa debe contar con un perfil transaccional de sus clientes, basado en su actividad económica, montos y comportamiento habitual.",
                             "Cuando una operación se desvía de ese patrón esperado, puede tratarse de una maniobra para canalizar recursos ilícitos o realizar movimientos fuera del propósito legítimo del negocio.",
                             "**Ejemplo:** Un cliente que usualmente realiza transferencias pequeñas comienza a efectuar pagos millonarios en sectores distintos a los de su actividad económica.",
@@ -339,15 +463,16 @@ function TrainingLogiTransProvider({ children }) {
                             "Detectar y reportar las señales de alerta es una responsabilidad compartida por todos los colaboradores de la organización.",
                             "Cada empleado, sin importar su cargo, debe estar atento a identificar comportamientos inusuales y comunicar oportunamente cualquier situación sospechosa al oficial de cumplimiento o al área encargada del SARLAFT.",
                             "La aplicación adecuada de estos controles contribuye a:",
-                            " - Prevenir la vinculación de la empresa con actividades delictivas",
-                            " - Fortalecer la cultura de cumplimiento y ética corporativa",
-                            " - Proteger la reputación y sostenibilidad del negocio.",
+                            " 🔸 Prevenir la vinculación de la empresa con actividades delictivas",
+                            " 🔸 Fortalecer la cultura de cumplimiento y ética corporativa",
+                            " 🔸 Proteger la reputación y sostenibilidad del negocio.",
                             "En conjunto, las señales de alerta constituyen una herramienta clave para la gestión integral del riesgo, reforzando el compromiso institucional con la transparencia, la legalidad y la responsabilidad empresarial.",
-                           
+
                         ],
                         duration: "01:26",
                     },
-                    { id: 6, lessons: "Fundamentos", name: "Casos Reales en Colombia", completed: false, type: "Video", duration: "01:26", path: casosSARLAFT, 
+                    {
+                        id: 7, lessons: "Fundamentos", name: "Casos Reales en Colombia", completed: false, type: "Video", duration: "01:26", path: casosSARLAFT,
                         resumen: [
                             "**Casos Reales en Colombia**",
                             "En Colombia, múltiples casos recientes han evidenciado la relevancia del Sistema de Administración del Riesgo de Lavado de Activos y Financiación del Terrorismo (SARLAFT) como herramienta clave para prevenir delitos financieros.",
@@ -355,20 +480,24 @@ function TrainingLogiTransProvider({ children }) {
                             "Asimismo, se han identificado constructoras e inmobiliarias utilizadas para lavar dinero mediante sobrevaloración de inmuebles o pagos en efectivo injustificados. Incluso cooperativas y entidades financieras han sido sancionadas por no reportar oportunamente operaciones inusuales o sospechosas.",
                             "Estos casos reflejan que ningún sector está exento del riesgo de ser usado con fines ilícitos, y que el cumplimiento riguroso del SARLAFT es una responsabilidad compartida. Detectar señales de alerta, reportar irregularidades y actuar con transparencia no solo fortalece la integridad de las organizaciones, sino que también protege a cada persona involucrada en la cadena de valor.",
 
-                        ] },
-                    { id: 7, lessons: "Fundamentos", name: "Canales internos de reporte", completed: false, type: "Video", duration: "01:26", path: finalSARLAFT, 
+                        ]
+                    },
+                    { id: 8, lessons: "Fundamentos", name: "El Rol de los Empleados", completed: false, type: "Video", duration: "01:26", },
+                    { id: 9, lessons: "Fundamentos", name: "Consecuencias de No Aplicar SARLAFT", completed: false, type: "Video", duration: "01:26", },
+
+                    {
+                        id: 10, lessons: "Fundamentos", name: "Canales internos de reporte", completed: false, type: "Video", duration: "01:26", path: finalSARLAFT,
                         resumen: [
                             "**llegamos al final**",
                             "El curso sobre el Sistema de Administración del Riesgo de Lavado de Activos y Financiación del Terrorismo (SARLAFT) concluye destacando la importancia de comprender sus componentes, su impacto en la organización y el rol esencial que cumple cada colaborador en la prevención y detección de operaciones inusuales o sospechosas.",
                             "Se enfatiza que el cumplimiento del SARLAFT trasciende la obligación legal: representa un compromiso ético con la transparencia, la legalidad y la reputación institucional. Ante cualquier situación que genere duda o parezca irregular, los empleados deben reportarla mediante los canales internos establecidos, como el correo institucional de cumplimiento, el Oficial de Cumplimiento o los canales confidenciales de reporte disponibles en la intranet o en el área correspondiente.",
                             "El propósito del reporte no es acusar, sino alertar para que los expertos evalúen y gestionen adecuadamente el riesgo. La participación activa de cada miembro de la organización fortalece el sistema, garantiza el cumplimiento normativo y consolida una cultura organizacional basada en la integridad, la transparencia y la confianza.",
                             "En conclusión, el SARLAFT no solo protege a la empresa frente a riesgos legales y reputacionales, sino que también promueve una cultura de responsabilidad compartida en la prevención del lavado de activos y la financiación del terrorismo.",
-                        ] },
-                    { id: 8, lessons: "Fundamentos", name: "Factores de Riesgo en el Transporte de Carga", completed: false, type: "Video", duration: "01:26", },
+                        ]
+                    },
 
 
-                    { id: 9, lessons: "Fundamentos", name: "El Rol de los Empleados", completed: false, type: "Video", duration: "01:26", },
-                    { id: 10, lessons: "Fundamentos", name: "Consecuencias de No Aplicar SARLAFT", completed: false, type: "Video", duration: "01:26", },
+
                     { id: 11, lessons: "Evaluación", name: "Evaluacion Final", completed: false, type: "Pregunta", duration: "01:26", },
 
                 ]
@@ -467,7 +596,9 @@ function TrainingLogiTransProvider({ children }) {
             currentModule: 1,
             completedModules: [],
             flipCardProgress: {},
-            flipCardReverseProgress: {}
+            flipCardReverseProgress: {},
+            dragDropProgress: {},
+            dragDropOrderProgress: {}
         };
 
         const newProgress = {

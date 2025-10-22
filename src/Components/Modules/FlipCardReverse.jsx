@@ -117,7 +117,9 @@ function FlipCardReverse({ currentModule, onContentIsEnded, courseId, moduleId }
                 currentModule: moduleId,
                 completedModules: [],
                 flipCardProgress: {},
-                flipCardReverseProgress: {}
+                flipCardReverseProgress: {},
+                dragDropProgress: {},
+                dragDropOrderProgress: {},
             };
         }
 
@@ -1068,7 +1070,7 @@ function FlipCardReverse({ currentModule, onContentIsEnded, courseId, moduleId }
             )}
 
             {showAudioPopup && (
-                <div
+                <div data-aos="fade-up"
                     className="fixed bottom-4 right-4 bg-gray-800 text-white px-6 py-3 rounded-xl shadow-lg text-sm text-center animate-pulse z-[9999]"
                 >
                     🔊 <strong>Estamos intentando reproducir el audio...</strong><br />
