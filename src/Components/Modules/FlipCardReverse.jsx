@@ -972,10 +972,10 @@ function FlipCardReverse({ currentModule, onContentIsEnded, courseId, moduleId }
                                             {/* Contenido principal del front */}
                                             <div className="relative z-10 flex flex-col items-center text-center">
                                                 {/* Ícono emoji grande */}
-                                               
+
 
                                                 <div className={` mb-6 p-4 w-34 h-34 mx-auto  bg-gradient-to-br ${!isUnlocked ? 'grayscale-0' : 'from-[#071D49] to-[#1a4fff] '
-                                                        } rounded-xl flex items-center justify-center shadow-inner shadow-black/50`}>
+                                                    } rounded-xl flex items-center justify-center shadow-inner shadow-black/50`}>
                                                     <span className={`text-7xl md:text-8xl drop-shadow-lg ${isUnlocked ? 'grayscale-0' : 'grayscale opacity-40'} `}>{card.icon}</span>
                                                 </div>
 
@@ -1084,6 +1084,20 @@ function FlipCardReverse({ currentModule, onContentIsEnded, courseId, moduleId }
                 </div>
             )}
 
+            {isPlayingAudio && !isPlayingIntro && (
+                <div data-aos="fade-up" className="fixed bottom-14 lg:bottom-4 right-4 bg-zinc-800/90 backdrop-blur-sm px-4 py-3 rounded-lg border border-zinc-700 shadow-xl z-50 animate-pulse">
+                    <div className="flex items-center gap-3">
+                        <div className="flex gap-1">
+                            <span className="w-1 h-4 bg-blue-400 rounded-full animate-pulse"></span>
+                            <span className="w-1 h-4 bg-blue-400 rounded-full animate-pulse" style={{ animationDelay: '0.2s' }}></span>
+                            <span className="w-1 h-4 bg-blue-400 rounded-full animate-pulse" style={{ animationDelay: '0.4s' }}></span>
+                        </div>
+                        <span className="text-white text-sm">Reproduciendo información...</span>
+                    </div>
+                </div>
+            )}
+
+            
             {showAudioPopup && (
                 <div data-aos="fade-up"
                     className="fixed bottom-14 lg:bottom-4 right-4 bg-gray-800 text-white px-6 py-3 rounded-xl shadow-lg text-sm text-center animate-pulse z-[9999]"

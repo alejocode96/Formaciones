@@ -686,7 +686,540 @@ function TrainingLogiTransProvider({ children }) {
                     },
 
 
-                    { id: 11, lessons: "Evaluación", name: "Evaluacion Final", completed: false, type: "Pregunta", duration: "01:26", },
+                    {
+                        id: 11, lessons: "Evaluación", name: "Evaluacion Final", completed: false, type: "Quiz",
+                        questions: [
+                            {
+                                "etiqueta": "¿Qué es SARLAFT?",
+                                "preguntas": [
+                                    {
+                                        "id": 1,
+                                        "name": "¿Qué significa SARLAFT y cuál es su objetivo principal?",
+                                        "respuestas": [
+                                            { "opcion": "Es un sistema para prevenir el lavado de activos y la financiación del terrorismo dentro de las empresas.", "rsp": true },
+                                            { "opcion": "Es un procedimiento para mejorar las ventas y la eficiencia operativa.", "rsp": false },
+                                            { "opcion": "Es una norma exclusiva del sector bancario que no aplica a otras empresas.", "rsp": false },
+                                            { "opcion": "Es un plan de emergencia ante desastres naturales.", "rsp": false }
+                                        ]
+                                    },
+                                    {
+                                        "id": 2,
+                                        "name": "¿Por qué es importante aplicar el SARLAFT en una empresa de transporte?",
+                                        "respuestas": [
+                                            { "opcion": "Porque ayuda a evitar que la empresa sea utilizada en actividades ilícitas y protege su reputación.", "rsp": true },
+                                            { "opcion": "Porque garantiza que los vehículos estén siempre en buen estado.", "rsp": false },
+                                            { "opcion": "Porque reemplaza los controles de calidad en las operaciones logísticas.", "rsp": false },
+                                            { "opcion": "Porque asegura que todos los clientes paguen a tiempo.", "rsp": false }
+                                        ]
+                                    },
+                                    {
+                                        "id": 3,
+                                        "name": "¿Cuál de las siguientes afirmaciones describe mejor al SARLAFT?",
+                                        "respuestas": [
+                                            { "opcion": "Es un sistema de control que identifica, previene y gestiona riesgos relacionados con el lavado de activos y la financiación del terrorismo.", "rsp": true },
+                                            { "opcion": "Es un protocolo interno para mejorar la atención al cliente.", "rsp": false },
+                                            { "opcion": "Es una herramienta para optimizar la logística de transporte.", "rsp": false },
+                                            { "opcion": "Es un proceso contable que revisa los pagos y cobros de la empresa.", "rsp": false }
+                                        ]
+                                    }
+                                ]
+                            },
+                            {
+                                "etiqueta": "Etapas del SARLAFT",
+                                "preguntas": [
+                                    {
+                                        "id": 1,
+                                        "name": "¿Cuáles son las etapas del SARLAFT?",
+                                        "respuestas": [
+                                            { "opcion": "Identificación, Medición, Control y Monitoreo", "correcta": true },
+                                            { "opcion": "Planeación, Ejecución, Verificación y Cierre", "correcta": false },
+                                            { "opcion": "Prevención, Detección, Acción y Reporte", "correcta": false }
+                                        ]
+                                    },
+                                    {
+                                        "id": 2,
+                                        "name": "¿Qué se realiza en la etapa de Identificación del riesgo?",
+                                        "respuestas": [
+                                            { "opcion": "Reconocer y documentar factores que puedan representar peligro de lavado de activos o financiación del terrorismo", "correcta": true },
+                                            { "opcion": "Implementar medidas de mitigación y controles internos", "correcta": false },
+                                            { "opcion": "Monitorear continuamente las operaciones sospechosas", "correcta": false }
+                                        ]
+                                    },
+                                    {
+                                        "id": 3,
+                                        "name": "¿Cuál es el propósito principal de la etapa de Medición o Evaluación del riesgo?",
+                                        "respuestas": [
+                                            { "opcion": "Determinar la probabilidad e impacto de los riesgos identificados para priorizar su atención", "correcta": true },
+                                            { "opcion": "Registrar y documentar señales de alerta", "correcta": false },
+                                            { "opcion": "Aplicar medidas correctivas ante operaciones sospechosas", "correcta": false }
+                                        ]
+                                    },
+                                    {
+                                        "id": 4,
+                                        "name": "¿Qué se busca lograr en la etapa de Control del riesgo?",
+                                        "respuestas": [
+                                            { "opcion": "Reducir la probabilidad e impacto de los riesgos mediante la aplicación de controles y políticas internas", "correcta": true },
+                                            { "opcion": "Identificar nuevos factores de riesgo", "correcta": false },
+                                            { "opcion": "Evaluar la eficacia de las auditorías externas", "correcta": false }
+                                        ]
+                                    },
+                                    {
+                                        "id": 5,
+                                        "name": "¿Cuál es el objetivo de la etapa de Monitoreo del riesgo en el SARLAFT?",
+                                        "respuestas": [
+                                            { "opcion": "Evaluar continuamente la efectividad de los controles y detectar operaciones inusuales o sospechosas", "correcta": true },
+                                            { "opcion": "Establecer nuevos factores de riesgo por actividad económica", "correcta": false },
+                                            { "opcion": "Clasificar clientes por nivel de riesgo", "correcta": false }
+                                        ]
+                                    }
+                                ]
+
+                            },
+                            {
+                                "etiqueta": "Factores de Riesgo en el Transporte de Carga",
+                                "preguntas": [
+                                    {
+                                        "id": 1,
+                                        "name": "¿Cuáles son los cuatro factores de riesgo del SARLAFT?",
+                                        "respuestas": [
+                                            { "opcion": "Cliente o contraparte, Producto o servicio, Canal de distribución y Jurisdicción o zona geográfica", "correcta": true },
+                                            { "opcion": "Proveedor, Ruta, Documentación y Personal", "correcta": false },
+                                            { "opcion": "Finanzas, Mercadeo, Operaciones y Tecnología", "correcta": false }
+                                        ]
+                                    },
+                                    {
+                                        "id": 2,
+                                        "name": "¿Qué representa el factor de riesgo 'Cliente o Contraparte' en el transporte de carga?",
+                                        "respuestas": [
+                                            { "opcion": "Los actores con los que la empresa se relaciona y que podrían usar la operación para fines ilícitos", "correcta": true },
+                                            { "opcion": "Las rutas por las que se moviliza la carga", "correcta": false },
+                                            { "opcion": "Los productos que se transportan", "correcta": false }
+                                        ]
+                                    },
+                                    {
+                                        "id": 3,
+                                        "name": "¿Qué riesgo está asociado al factor 'Producto o Servicio' dentro del SARLAFT?",
+                                        "respuestas": [
+                                            { "opcion": "Que el servicio de transporte sea usado como fachada para mover mercancías ilegales o justificar operaciones sospechosas", "correcta": true },
+                                            { "opcion": "Que la documentación de transporte se extravíe durante el proceso logístico", "correcta": false },
+                                            { "opcion": "Que el cliente no firme el manifiesto de carga", "correcta": false }
+                                        ]
+                                    },
+                                    {
+                                        "id": 4,
+                                        "name": "¿Qué implica el factor 'Canal de Distribución' en el SARLAFT?",
+                                        "respuestas": [
+                                            { "opcion": "La movilización física de la carga y la documentación que respalda la operación, donde pueden presentarse riesgos como falsificación o alteración", "correcta": true },
+                                            { "opcion": "El tipo de vehículo que se usa para transportar la carga", "correcta": false },
+                                            { "opcion": "El contrato firmado con el cliente principal", "correcta": false }
+                                        ]
+                                    },
+                                    {
+                                        "id": 5,
+                                        "name": "¿Qué riesgo se asocia al factor 'Jurisdicción o Zona Geográfica'?",
+                                        "respuestas": [
+                                            { "opcion": "Que algunas regiones del país representen mayor exposición al contrabando, lavado de activos o contaminación de carga", "correcta": true },
+                                            { "opcion": "Que el cliente opere en varias ciudades del país", "correcta": false },
+                                            { "opcion": "Que las rutas sean demasiado largas o costosas", "correcta": false }
+                                        ]
+                                    }
+                                ]
+
+                            },
+                            {
+                                "etiqueta": "Señales de Alerta",
+                                "preguntas": [
+                                    {
+                                        "id": 1,
+                                        "name": "¿Cuáles son las señales de alerta del SARLAFT?",
+                                        "respuestas": [
+                                            {
+                                                "opcion": "Pagos inusuales o muy altos en efectivo, cambios frecuentes en remitentes o destinatarios, documentos incompletos o falsos, clientes que no quieren dar información y operaciones que no coinciden con el perfil del cliente",
+                                                "correcta": true
+                                            },
+                                            {
+                                                "opcion": "Altos niveles de rotación de personal y demoras en la entrega de mercancía",
+                                                "correcta": false
+                                            },
+                                            {
+                                                "opcion": "Incremento de ventas, nuevos clientes y expansión de rutas comerciales",
+                                                "correcta": false
+                                            }]
+                                    },
+                                    {
+                                        "id": 2,
+                                        "name": "¿Por qué un pago inusual o muy alto en efectivo puede considerarse una señal de alerta?",
+                                        "respuestas": [
+                                            { "opcion": "Porque podría indicar que se intenta ocultar el origen del dinero o evitar controles bancarios", "correcta": true },
+                                            { "opcion": "Porque el cliente no tiene cuenta bancaria", "correcta": false },
+                                            { "opcion": "Porque la empresa no acepta transferencias electrónicas", "correcta": false }
+                                        ]
+                                    },
+                                    {
+                                        "id": 3,
+                                        "name": "¿Qué riesgo representa que haya cambios frecuentes en remitentes o destinatarios?",
+                                        "respuestas": [
+                                            { "opcion": "Podría tratarse de una forma de ocultar la identidad real del beneficiario o del origen de los fondos", "correcta": true },
+                                            { "opcion": "Demuestra una estrategia comercial para diversificar proveedores", "correcta": false },
+                                            { "opcion": "Indica que la empresa está creciendo y cambiando de socios", "correcta": false }
+                                        ]
+                                    },
+                                    {
+                                        "id": 4,
+                                        "name": "¿Por qué los documentos incompletos o falsos son una señal de alerta?",
+                                        "respuestas": [
+                                            { "opcion": "Porque pueden ocultar información clave o usarse para simular operaciones legales que en realidad son ilícitas", "correcta": true },
+                                            { "opcion": "Porque generan retrasos administrativos normales", "correcta": false },
+                                            { "opcion": "Porque suelen ser errores humanos sin importancia", "correcta": false }
+                                        ]
+                                    },
+                                    {
+                                        "id": 5,
+                                        "name": "¿Qué indica cuando un cliente no quiere suministrar información básica?",
+                                        "respuestas": [
+                                            { "opcion": "Que podría estar ocultando su identidad o la verdadera naturaleza de su actividad económica", "correcta": true },
+                                            { "opcion": "Que no tiene tiempo disponible para llenar los formularios", "correcta": false },
+                                            { "opcion": "Que la empresa ya tiene la información registrada anteriormente", "correcta": false }
+                                        ]
+                                    },
+                                    {
+                                        "id": 6,
+                                        "name": "¿Por qué se considera señal de alerta una operación que no coincide con el perfil del cliente?",
+                                        "respuestas": [
+                                            { "opcion": "Porque puede reflejar movimientos financieros inusuales o sospechosos que no corresponden con su comportamiento habitual", "correcta": true },
+                                            { "opcion": "Porque el cliente cambió su estrategia comercial", "correcta": false },
+                                            { "opcion": "Porque se trata de una promoción temporal de servicios", "correcta": false }
+                                        ]
+                                    }
+                                ]
+
+                            },
+                            {
+                                "etiqueta": "Casos Reales en Colombia",
+                                "preguntas": [
+                                    {
+                                        "id": 1,
+                                        "name": "¿Qué tipo de práctica ilícita se ha detectado en Colombia relacionada con el transporte de carga?",
+                                        "respuestas": [
+                                            { "opcion": "El envío de dinero o mercancía ilegal oculta en encomiendas declaradas como ropa usada", "correcta": true },
+                                            { "opcion": "La pérdida de documentos de transporte por errores administrativos", "correcta": false },
+                                            { "opcion": "El uso de vehículos sin permisos de tránsito vigentes", "correcta": false }
+                                        ]
+                                    },
+                                    {
+                                        "id": 2,
+                                        "name": "¿Cómo se han utilizado algunas constructoras e inmobiliarias para lavar dinero en Colombia?",
+                                        "respuestas": [
+                                            { "opcion": "Mediante la sobrevaloración de inmuebles y pagos en efectivo injustificados", "correcta": true },
+                                            { "opcion": "Por no entregar los inmuebles en el tiempo acordado", "correcta": false },
+                                            { "opcion": "Por usar materiales de baja calidad en la construcción", "correcta": false }
+                                        ]
+                                    },
+                                    {
+                                        "id": 3,
+                                        "name": "¿Qué demuestra que empresas de distintos sectores pueden ser usadas para actividades ilícitas?",
+                                        "respuestas": [
+                                            { "opcion": "Que incluso cooperativas y entidades financieras han sido sancionadas por no reportar operaciones sospechosas", "correcta": true },
+                                            { "opcion": "Que las empresas tienen dificultades tecnológicas para enviar reportes", "correcta": false },
+                                            { "opcion": "Que los controles del SARLAFT solo aplican a grandes compañías", "correcta": false }
+                                        ]
+                                    }
+                                ]
+
+                            },
+                            {
+                                "etiqueta": "El Rol de los Empleados",
+                                "preguntas": [
+                                    {
+                                        "id": 1,
+                                        "name": "¿Cuáles son los roles de los empleados dentro del SARLAFT?",
+                                        "respuestas": [
+                                            {
+                                                "opcion": "Detectar comportamientos inusuales, reportar lo que no encaje, cumplir responsabilidades según el cargo y asumir la gestión del riesgo como una tarea compartida",
+                                                "correcta": true
+                                            },
+                                            {
+                                                "opcion": "Cumplir únicamente las funciones operativas sin involucrarse en la gestión de riesgos",
+                                                "correcta": false
+                                            },
+                                            {
+                                                "opcion": "Solo los jefes y supervisores son responsables de detectar y reportar irregularidades",
+                                                "correcta": false
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        "id": 2,
+                                        "name": "¿Qué significa que los empleados no sean detectives dentro del SARLAFT?",
+                                        "respuestas": [
+                                            {
+                                                "opcion": "Que su función no es investigar, sino identificar comportamientos inusuales y reportarlos al responsable SARLAFT",
+                                                "correcta": true
+                                            },
+                                            {
+                                                "opcion": "Que deben evitar involucrarse en cualquier situación sospechosa",
+                                                "correcta": false
+                                            },
+                                            {
+                                                "opcion": "Que solo deben seguir órdenes sin observar las operaciones diarias",
+                                                "correcta": false
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        "id": 3,
+                                        "name": "¿Qué deben hacer los empleados cuando algo no encaja o parece inusual?",
+                                        "respuestas": [
+                                            {
+                                                "opcion": "Reportar la situación al responsable SARLAFT de manera oportuna",
+                                                "correcta": true
+                                            },
+                                            {
+                                                "opcion": "Ignorar el hecho si no afecta directamente su trabajo",
+                                                "correcta": false
+                                            },
+                                            {
+                                                "opcion": "Confrontar directamente al cliente o proveedor involucrado",
+                                                "correcta": false
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        "id": 4,
+                                        "name": "¿Qué significa que todos los cargos cuentan dentro del SARLAFT?",
+                                        "respuestas": [
+                                            {
+                                                "opcion": "Que cada empleado, sin importar su posición, cumple un papel en la detección y prevención de riesgos",
+                                                "correcta": true
+                                            },
+                                            {
+                                                "opcion": "Que solo el personal administrativo debe aplicar los controles del SARLAFT",
+                                                "correcta": false
+                                            },
+                                            {
+                                                "opcion": "Que los cargos operativos no tienen relación con la gestión del riesgo",
+                                                "correcta": false
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        "id": 5,
+                                        "name": "¿Qué implica la responsabilidad compartida en el SARLAFT?",
+                                        "respuestas": [
+                                            {
+                                                "opcion": "Que tanto la empresa como los empleados deben actuar para prevenir el lavado de activos y proteger la reputación de la organización",
+                                                "correcta": true
+                                            },
+                                            {
+                                                "opcion": "Que los empleados solo informan y la empresa asume toda la responsabilidad",
+                                                "correcta": false
+                                            },
+                                            {
+                                                "opcion": "Que la gestión del riesgo depende únicamente del área financiera o de cumplimiento",
+                                                "correcta": false
+                                            }
+                                        ]
+                                    }
+                                ]
+
+
+                            },
+                            {
+                                "etiqueta": "Consecuencias de No Aplicar el SARLAFT",
+                                "preguntas": [
+                                    {
+                                        "id": 1,
+                                        "name": "¿Cuáles son las posibles consecuencias de no aplicar el SARLAFT?",
+                                        "respuestas": [
+                                            {
+                                                "opcion": "Multas y sanciones legales, pérdida de licencias o cierre de operaciones, daño reputacional, responsabilidad individual del empleado y sanciones derivadas de casos reales",
+                                                "correcta": true
+                                            },
+                                            {
+                                                "opcion": "Solo pérdida de tiempo en la implementación de controles innecesarios",
+                                                "correcta": false
+                                            },
+                                            {
+                                                "opcion": "Aumento en la productividad y reducción de costos administrativos",
+                                                "correcta": false
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        "id": 2,
+                                        "name": "¿Qué tipo de sanciones puede recibir una empresa por incumplir el SARLAFT?",
+                                        "respuestas": [
+                                            {
+                                                "opcion": "Multas económicas impuestas por autoridades financieras o la Superintendencia",
+                                                "correcta": true
+                                            },
+                                            {
+                                                "opcion": "Reconocimientos públicos por transparencia y eficiencia",
+                                                "correcta": false
+                                            },
+                                            {
+                                                "opcion": "Bonificaciones tributarias por reducir procesos internos",
+                                                "correcta": false
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        "id": 3,
+                                        "name": "¿Qué puede ocurrir si una empresa no tiene controles SARLAFT adecuados?",
+                                        "respuestas": [
+                                            {
+                                                "opcion": "Puede perder licencias, habilitaciones o incluso ser cerrada temporal o definitivamente",
+                                                "correcta": true
+                                            },
+                                            {
+                                                "opcion": "Recibirá nuevas oportunidades comerciales y más contratos",
+                                                "correcta": false
+                                            },
+                                            {
+                                                "opcion": "Solo enfrentará observaciones sin sanciones reales",
+                                                "correcta": false
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        "id": 4,
+                                        "name": "¿Qué tipo de daño puede sufrir una empresa si se asocia con actividades ilegales, incluso por omisión?",
+                                        "respuestas": [
+                                            {
+                                                "opcion": "Daño reputacional que afecta la confianza de clientes, aliados y autoridades",
+                                                "correcta": true
+                                            },
+                                            {
+                                                "opcion": "Aumento inmediato de su credibilidad en el mercado",
+                                                "correcta": false
+                                            },
+                                            {
+                                                "opcion": "Solo una amonestación interna sin mayores consecuencias",
+                                                "correcta": false
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        "id": 5,
+                                        "name": "¿Qué consecuencias puede tener un empleado que ignore una señal de alerta o participe en una operación irregular?",
+                                        "respuestas": [
+                                            {
+                                                "opcion": "Puede enfrentar sanciones disciplinarias, pérdida del empleo o incluso implicaciones legales",
+                                                "correcta": true
+                                            },
+                                            {
+                                                "opcion": "No tendrá ninguna consecuencia si no fue intencional",
+                                                "correcta": false
+                                            },
+                                            {
+                                                "opcion": "Recibirá capacitación adicional como única medida correctiva",
+                                                "correcta": false
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        "id": 6,
+                                        "name": "¿Qué enseñan los casos reales sobre el incumplimiento del SARLAFT?",
+                                        "respuestas": [
+                                            {
+                                                "opcion": "Que la prevención no es opcional y que el incumplimiento puede llevar al cierre o intervención de empresas",
+                                                "correcta": true
+                                            },
+                                            {
+                                                "opcion": "Que las sanciones solo aplican a bancos y no a empresas de transporte",
+                                                "correcta": false
+                                            },
+                                            {
+                                                "opcion": "Que los controles del SARLAFT son opcionales y solo de cumplimiento formal",
+                                                "correcta": false
+                                            }
+                                        ]
+                                    }
+                                ]
+
+                            },
+                            {
+                                "etiqueta": "Canales internos de reporte",
+                                "preguntas": [
+                                    {
+                                        "id": 1,
+                                        "name": "¿Cuáles son los canales internos establecidos para reportar situaciones inusuales o sospechosas dentro de la empresa?",
+                                        "respuestas": [
+                                            {
+                                                "opcion": "Correo institucional del Oficial de Cumplimiento (ycely@argos.com.co), teléfono de reporte del Oficial de Cumplimiento (320 216 34 23), Oficial de Cumplimiento.",
+                                                "correcta": true
+                                            },
+                                            {
+                                                "opcion": "Líneas de atención al cliente y redes sociales corporativas",
+                                                "correcta": false
+                                            },
+                                            {
+                                                "opcion": "Comunicación directa con proveedores o clientes externos",
+                                                "correcta": false
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        "id": 2,
+                                        "name": "¿Cuál es el propósito principal de reportar una operación inusual o sospechosa?",
+                                        "respuestas": [
+                                            {
+                                                "opcion": "Alertar a los expertos del SARLAFT para que evalúen y gestionen adecuadamente el riesgo",
+                                                "correcta": true
+                                            },
+                                            {
+                                                "opcion": "Acusar directamente al cliente o colaborador involucrado",
+                                                "correcta": false
+                                            },
+                                            {
+                                                "opcion": "Evitar responsabilidades personales sin informar a nadie más",
+                                                "correcta": false
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        "id": 3,
+                                        "name": "¿Por qué el cumplimiento del SARLAFT trasciende una obligación legal?",
+                                        "respuestas": [
+                                            {
+                                                "opcion": "Porque representa un compromiso ético con la transparencia, la legalidad y la reputación institucional",
+                                                "correcta": true
+                                            },
+                                            {
+                                                "opcion": "Porque solo aplica para empresas del sector financiero",
+                                                "correcta": false
+                                            },
+                                            {
+                                                "opcion": "Porque su aplicación depende de la decisión del área administrativa",
+                                                "correcta": false
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        "id": 4,
+                                        "name": "¿Qué se logra cuando todos los empleados reportan de forma activa y responsable las situaciones sospechosas?",
+                                        "respuestas": [
+                                            {
+                                                "opcion": "Fortalecer el sistema SARLAFT, garantizar el cumplimiento normativo y consolidar una cultura basada en la integridad y la confianza",
+                                                "correcta": true
+                                            },
+                                            {
+                                                "opcion": "Reducir la carga de trabajo del Oficial de Cumplimiento sin generar impacto real",
+                                                "correcta": false
+                                            },
+                                            {
+                                                "opcion": "Evitar auditorías internas aunque se pierda trazabilidad de los casos",
+                                                "correcta": false
+                                            }
+                                        ]
+                                    }
+                                ]
+
+                            }
+
+
+                        ], duration: "01:26",
+                    },
 
                 ]
             }
