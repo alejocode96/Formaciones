@@ -255,7 +255,7 @@ function TrainingLogiTransProvider({ children }) {
                     {
                         id: 5, lessons: "Fundamentos", name: "Factores de Riesgo en el Transporte de Carga", completed: false, type: "dragDropOrder",
                         objetivo: 'Es fundamental comprender los cuatro factores de riesgo del SARLAFT y cómo pueden presentarse en las operaciones de transporte de carga.  Explora y aprende de qué manera los factores del SARLAFT se manifiestan en el contexto logístico, fortaleciendo tu capacidad para prevenir, detectar y mitigar riesgos operativos y financieros dentro de la cadena de transporte.',
-                        audioObjetivo: 'Es fundamental comprender los cuatro factores de riesgo del SARLAFT y cómo pueden presentarse en las operaciones de transporte de carga. Para afianzar este conocimiento, arrastra los elementos en el orden correcto y descubre información detallada sobre cada uno. Explora y aprende de qué manera los factores del SARLAFT se manifiestan en el contexto logístico, fortaleciendo tu capacidad para prevenir, detectar y mitigar riesgos operativos y financieros dentro de la cadena de transporte.',
+                        audioObjetivo: 'Factores de Riesgo en el Transporte de Carga. Es fundamental comprender los cuatro factores de riesgo del SARLAFT y cómo pueden presentarse en las operaciones de transporte de carga. Para afianzar este conocimiento, arrastra los elementos en el orden correcto y descubre información detallada sobre cada uno. Explora y aprende de qué manera los factores del SARLAFT se manifiestan en el contexto logístico, fortaleciendo tu capacidad para prevenir, detectar y mitigar riesgos operativos y financieros dentro de la cadena de transporte.',
                         cards: [
                             {
                                 id: "intro",
@@ -380,7 +380,7 @@ function TrainingLogiTransProvider({ children }) {
                     {
                         id: 6, lessons: "Fundamentos", name: "Señales de Alerta", completed: false, type: "FlipCardReverse",
                         objetivo: 'Las señales de alerta son comportamientos o situaciones que nos indican que algo podría no estar bien y que existe un posible riesgo de lavado de activos o financiación del terrorismo. Identificarlas a tiempo ayuda a proteger a la organización y cumplir con la normativa.',
-                        audioObjetivo: 'Señales de Alerta, Las señales de alerta son comportamientos o situaciones que nos indican que algo podría no estar bien y que existe un posible riesgo de lavado de activos o financiación del terrorismo. Identificarlas a tiempo ayuda a proteger a la organización y cumplir con la normativa.',
+                        audioObjetivo: 'Señales de Alerta, Las señales de alerta son comportamientos o situaciones que nos indican que algo podría no estar bien y que existe un posible riesgo de lavado de activos o financiación del terrorismo. Identificarlas a tiempo ayuda a proteger a la organización y cumplir con la normativa. ',
                         cards: [
                             {
                                 id: 1,
@@ -482,8 +482,197 @@ function TrainingLogiTransProvider({ children }) {
 
                         ]
                     },
-                    { id: 8, lessons: "Fundamentos", name: "El Rol de los Empleados", completed: false, type: "Video", duration: "01:26", },
-                    { id: 9, lessons: "Fundamentos", name: "Consecuencias de No Aplicar SARLAFT", completed: false, type: "Video", duration: "01:26", },
+
+                    {
+                        id: 8, lessons: "Fundamentos", name: "El Rol de los Empleados", completed: false, type: "dragDropOrder",
+                        objetivo: 'Comprender que cada colaborador desempeña un papel esencial en la prevención del Lavado de Activos y la Financiación del Terrorismo, y que son sus acciones diarias, su atención al detalle y su comunicación oportuna las que fortalecen el SARLAFT como sistema de defensa empresarial.',
+                        audioObjetivo: 'Comprender que cada colaborador desempeña un papel esencial en la prevención del Lavado de Activos y la Financiación del Terrorismo. Son las acciones diarias, la atención al detalle y la comunicación oportuna las que fortalecen el SARLAFT como sistema de defensa empresarial. En esta actividad, podrás descubrir cómo cada comportamiento y decisión contribuyen a proteger a la organización frente a los riesgos del LAFT.'
+                        ,
+                        cards: [
+                            {
+                                id: "intro",
+                                title: "Introducción",
+                                icon: "🧠",
+                                order: 1,
+                                content: `El SARLAFT no es solo una política o un documento: es una cultura organizacional que requiere la participación activa de todos los empleados.
+
+                                          Cada colaborador, sin importar su rol o cargo, forma parte de la primera línea de defensa contra los riesgos de Lavado de Activos y Financiación del Terrorismo.
+
+                                          Esto significa que no necesitamos ser investigadores, sino personas atentas, responsables y comprometidas con reportar lo que no encaje con las operaciones normales.`,
+                                audioText: `El SARLAFT no es solo una política o un documento: es una cultura organizacional que requiere la participación activa de todos los empleados. Cada colaborador, sin importar su rol o cargo, forma parte de la primera línea de defensa contra los riesgos de lavado de activos y financiación del terrorismo. Esto significa que no necesitamos ser investigadores, sino personas atentas, responsables y comprometidas con reportar lo que no encaje con las operaciones normales.`
+                            },
+                            {
+                                id: "rol1",
+                                title: "No somos detectives",
+                                icon: "🕵️‍♂️",
+                                order: 2,
+                                content: `El SARLAFT no busca que los empleados actúen como investigadores o autoridades judiciales.
+
+                                          Nuestro deber es detectar comportamientos o situaciones inusuales en el desarrollo de nuestras labores y reportarlas oportunamente.
+
+                                         🔹 Ejemplo:
+                                           Si un cliente o proveedor entrega documentos confusos, da respuestas evasivas o cambia constantemente la información, no debemos confrontarlo, sino informar al responsable SARLAFT.`,
+                                audioText: `No somos detectives. El SARLAFT no busca que los empleados actúen como investigadores o autoridades judiciales. Nuestro deber es detectar comportamientos o situaciones inusuales y reportarlas oportunamente. Por ejemplo, si un cliente o proveedor entrega documentos confusos, da respuestas evasivas o cambia constantemente la información, debemos informar al responsable SARLAFT.`
+                            },
+                            {
+                                id: "rol2",
+                                title: "Reportar lo que no encaje",
+                                icon: "📑",
+                                order: 3,
+                                content: `Todos los empleados debemos estar atentos a identificar y reportar operaciones inusuales o sospechosas. 
+
+                                        Algunos ejemplos de señales de alerta:
+                                            🔹 Documentos alterados o con información incompleta.
+                                            🔹 Personas que se niegan a suministrar datos básicos.
+                                            🔹 Operaciones o solicitudes que no coinciden con la actividad normal del cliente.
+                                            🔹 Pagos o transferencias con montos inusuales o desde cuentas desconocidas.
+
+                                        🚨 Si algo no encaja, se reporta. No se ignora.`,
+                                audioText: `Todos los empleados debemos estar atentos a identificar y reportar operaciones inusuales o sospechosas. Por ejemplo, documentos alterados, personas que se niegan a entregar información, operaciones que no coinciden con la actividad del cliente, o pagos con montos inusuales. Si algo no encaja, se reporta. No se ignora.`
+
+                            }, {
+                                id: "rol3",
+                                title: "Todos los cargos cuentan",
+                                icon: "👷‍♀️",
+                                order: 4,
+                                content: `El SARLAFT aplica para todos los niveles y áreas de la organización. 
+
+                                            Cada cargo tiene una función que puede ayudar a detectar y prevenir riesgos:
+                                            🔹 Conductores: verifican documentos, rutas y cargues.
+                                            🔹 Auxiliares de despacho: confirman cantidades, destinatarios y sellos.
+                                            🔹 Personal administrativo o de caja: valida datos, pagos y registros.
+                                            🔹 Supervisores y jefes: garantizan la aplicación de los controles.
+
+                                            Todos sumamos en la protección de la empresa.`,
+                                audioText: `El SARLAFT aplica para todos los niveles y áreas de la organización. Cada cargo cumple un papel clave: los conductores verifican documentos y rutas; los auxiliares de despacho revisan cantidades y sellos; el personal administrativo valida pagos y registros; y los supervisores garantizan que se cumplan los controles. Todos sumamos en la protección de la empresa.`
+                            },
+                            {
+                                id: "rol4",
+                                title: "Responsabilidad compartida",
+                                icon: "🤝",
+                                order: 5,
+                                content: `La gestión del riesgo es una responsabilidad compartida entre la empresa y sus colaboradores.
+
+                                            Cuando cada persona cumple con su deber de alertar sobre posibles irregularidades:
+                                            🔹 Se protege la reputación de la compañía.
+                                            🔹Se evita la participación involuntaria en delitos financieros.
+                                            🔹 Se refuerza la transparencia de las operaciones.
+
+                                        🛡️ Si todos cumplimos, protegemos a la empresa y fortalecemos la cultura del cumplimiento.`,
+                                audioText: `La gestión del riesgo es una responsabilidad compartida entre la empresa y sus colaboradores. Cuando cada persona cumple con su deber de alertar sobre posibles irregularidades, se protege la reputación de la compañía, se evitan delitos financieros y se refuerza la transparencia. Si todos cumplimos, protegemos a la empresa y fortalecemos la cultura del cumplimiento.`
+                            },
+                            {
+                                id: "conclusion",
+                                title: "Conclusión",
+                                icon: "✅",
+                                order: 6,
+                                content: `🔍 En resumen:
+
+                                            🔹 Todos los empleados somos parte activa del SARLAFT.
+                                            🔹 No necesitamos investigar, solo observar y reportar lo inusual.
+                                            🔹 Cada rol tiene una responsabilidad concreta para prevenir riesgos.
+                                            🔹 La comunicación y el trabajo en equipo son clave para mantener la integridad y la transparencia de la empresa.
+
+                                            👉 Recuerda: tu atención y compromiso son la mejor defensa contra los riesgos de Lavado de Activos y Financiación del Terrorismo.`,
+                                audioText: `En resumen: todos los empleados somos parte activa del SARLAFT. No necesitamos investigar, solo observar y reportar lo inusual. Cada rol tiene una responsabilidad concreta para prevenir riesgos. La comunicación y el trabajo en equipo son clave para mantener la integridad de la empresa. Recuerda: tu atención y compromiso son la mejor defensa contra los riesgos de lavado de activos y financiación del terrorismo.`
+                            }
+                        ],
+                        duration: "01:26",
+                        resumen: [
+                            "**El Rol de los Empleados**",
+                            "El SARLAFT no es solo un sistema, es una cultura organizacional que depende del compromiso de cada empleado.",
+                            "Todos los colaboradores conforman la primera línea de defensa frente a los riesgos de Lavado de Activos y Financiación del Terrorismo.",
+                            "El rol del empleado no es investigar, sino identificar y reportar comportamientos inusuales o sospechosos.",
+                            "Cada cargo tiene un papel clave: desde el conductor y el auxiliar, hasta el administrativo y el jefe de área.",
+                            "La prevención y el reporte oportuno son responsabilidades compartidas que protegen la reputación y transparencia de la empresa.",
+                            "Si todos cumplimos con nuestros deberes, fortalecemos el SARLAFT y aseguramos operaciones éticas y seguras."
+
+                        ]
+                    },
+
+
+
+                    {
+                        id: 9,
+                        lessons: "Fundamentos",
+                        name: "Consecuencias de No Aplicar el SARLAFT",
+                        completed: false,
+                        type: "FlipCardReverse",
+                        objetivo: 'Reconocer la importancia de cumplir con el SARLAFT y comprender las graves consecuencias que puede generar su incumplimiento tanto para la empresa como para los empleados. Entender que aplicar el SARLAFT no es un requisito formal, sino una medida esencial para proteger la reputación, la estabilidad y la sostenibilidad del negocio.',
+                        audioObjetivo: 'Reconocer la importancia de cumplir con el SARLAFT y comprender las graves consecuencias que puede generar su incumplimiento tanto para la empresa como para los empleados. Aplicar el SARLAFT no es solo una obligación legal, sino una herramienta clave para proteger la reputación, la estabilidad y la sostenibilidad de la empresa y sus trabajadores.',
+                        cards: [
+                            {
+                                id: 1,
+                                title: "Multas y sanciones legales",
+                                content: "El incumplimiento del SARLAFT puede generar sanciones económicas impuestas por la Superintendencia o por autoridades financieras. Estas multas pueden alcanzar cifras millonarias, afectar el flujo de caja de la empresa y poner en riesgo su continuidad.",
+                                example: "Ejemplo: una empresa de transporte sancionada con más de 200 millones de pesos por no implementar adecuadamente sus políticas de prevención de lavado de activos.",
+                                icon: '💰',
+                                color: "from-red-500 to-red-700",
+                                colorSolido: "bg-red-600",
+                                colorBorde: "border-red-600"
+                            },
+                            {
+                                id: 2,
+                                title: "Pérdida de licencias o cierre de operaciones",
+                                content: "La falta de controles SARLAFT puede llevar a la suspensión o cancelación del Registro Único de Transporte o de la habilitación para operar. Esto implica la pérdida de contratos, clientes y fuentes de empleo.",
+                                example: "Ejemplo: una empresa del sector logístico fue cerrada temporalmente por no reportar operaciones sospechosas ante la autoridad competente.",
+                                icon: '🏢',
+                                color: "from-orange-500 to-orange-600",
+                                colorSolido: "bg-orange-500",
+                                colorBorde: "border-orange-500"
+                            },
+                            {
+                                id: 3,
+                                title: "Daño reputacional",
+                                content: "El vínculo con actividades ilegales, incluso por omisión, puede afectar gravemente la imagen de la empresa. Recuperar la confianza de clientes, aliados y autoridades puede tardar años o ser imposible.",
+                                example: "Ejemplo: una transportadora fue señalada en medios por estar involucrada en operaciones de contrabando debido a fallas en sus controles internos.",
+                                icon: '⚠️',
+                                color: "from-yellow-500 to-yellow-600",
+                                colorSolido: "bg-yellow-500",
+                                colorBorde: "border-yellow-500"
+                            },
+                            {
+                                id: 4,
+                                title: "Responsabilidad individual del empleado",
+                                content: "El SARLAFT también protege a los empleados. Ignorar una señal de alerta o participar, incluso sin intención, en una operación irregular puede generar sanciones disciplinarias, pérdida del empleo o implicaciones legales.",
+                                example: "Ejemplo: un auxiliar logístico sancionado por no reportar un documento falso detectado durante el cargue de mercancía.",
+                                icon: '👤',
+                                color: "from-blue-500 to-blue-600",
+                                colorSolido: "bg-blue-500",
+                                colorBorde: "border-blue-500"
+                            },
+                            {
+                                id: 5,
+                                title: "Casos reales y lecciones aprendidas",
+                                content: "En Colombia y otros países, bancos, cooperativas y empresas han sido sancionadas o cerradas por incumplir los estándares del SARLAFT. Estos casos demuestran que la prevención no es opcional: es la única forma de garantizar la integridad y sostenibilidad de la organización.",
+                                example: "Ejemplo: varias cooperativas financieras fueron intervenidas por permitir operaciones sospechosas sin aplicar controles adecuados.",
+                                icon: '📚',
+                                color: "from-green-500 to-green-600",
+                                colorSolido: "bg-green-600",
+                                colorBorde: "border-green-600"
+                            }
+                        ],
+                        resumen: [
+                            "**Consecuencias de No Aplicar el SARLAFT**",
+                            "El SARLAFT no es un simple trámite administrativo. Es el sistema que protege a la empresa, sus empleados y su reputación frente a los riesgos del Lavado de Activos y la Financiación del Terrorismo.",
+                            "Ignorar o incumplir sus políticas puede tener consecuencias graves tanto institucionales como personales:",
+                            "**🔹 Para la empresa:**",
+                            "- Multas millonarias y sanciones de las autoridades.",
+                            "- Suspensión o pérdida de licencias y permisos para operar.",
+                            "- Pérdida de contratos, clientes y aliados estratégicos.",
+                            "- Daño irreparable a la reputación y pérdida de confianza.",
+                            "**🔹 Para los empleados:**",
+                            "- Sanciones internas o disciplinarias.",
+                            "- Implicaciones legales por omisión o participación indirecta.",
+                            "- Pérdida del empleo y afectación a la trayectoria laboral.",
+                            "Los casos reales de sanciones a empresas y entidades financieras demuestran que no aplicar el SARLAFT puede poner en riesgo todo el esfuerzo de años de trabajo.",
+                            "**Conclusión:**",
+                            "Cumplir con el SARLAFT no es una carga, es una responsabilidad compartida que garantiza la sostenibilidad de la empresa, la protección de los empleos y la confianza de clientes y autoridades.",
+                            "Aplicarlo correctamente es asegurar el futuro de la organización y el bienestar de todos sus colaboradores."
+                        ],
+                        duration: "01:35",
+                    },
+
 
                     {
                         id: 10, lessons: "Fundamentos", name: "Canales internos de reporte", completed: false, type: "Video", duration: "01:26", path: finalSARLAFT,
@@ -495,7 +684,6 @@ function TrainingLogiTransProvider({ children }) {
                             "En conclusión, el SARLAFT no solo protege a la empresa frente a riesgos legales y reputacionales, sino que también promueve una cultura de responsabilidad compartida en la prevención del lavado de activos y la financiación del terrorismo.",
                         ]
                     },
-
 
 
                     { id: 11, lessons: "Evaluación", name: "Evaluacion Final", completed: false, type: "Pregunta", duration: "01:26", },
