@@ -1,10 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { useLocation } from 'react-router-dom';
-import { TrainingLogiTransContext } from '../../Context';
-import ModalFlipCard from './modalFlipCard';
 import { Volume2, VolumeX, ChevronRight, ChevronLeft, BookOpen, Target, Lightbulb, Wrench, Lock, CheckCircle, X } from 'lucide-react';
-import AOS from 'aos';
-import 'aos/dist/aos.css';
 
 /**
  * =============================================================================
@@ -13,19 +8,6 @@ import 'aos/dist/aos.css';
  * 
  * Componente principal que gestiona el aprendizaje interactivo mediante tarjetas
  * con reproducción de audio automática y seguimiento de progreso.
- * 
- * @param {Object} currentModule - Módulo actual con información de cards y audio
- * @param {Function} onContentIsEnded - Callback cuando se completa todo el contenido
- * @param {string|number} courseId - ID del curso actual
- * @param {string|number} moduleId - ID del módulo actual
- * 
- * CARACTERÍSTICAS PRINCIPALES:
- * - Reproducción de audio con síntesis de voz en español
- * - Sistema de progreso con localStorage
- * - Navegación secuencial entre etapas
- * - Detección de dispositivos móviles
- * - Manejo de visibilidad y foco de ventana
- * - Reintentos automáticos en caso de error de audio
  */
 function FlipCard({ currentModule, onContentIsEnded, courseId, moduleId }) {
 
@@ -34,7 +16,7 @@ function FlipCard({ currentModule, onContentIsEnded, courseId, moduleId }) {
     // =========================================================================
 
     const cards = currentModule.cards;
-    const maxRetries = 10; // Número máximo de reintentos para el audio
+    const maxRetries = 10;
 
     // =========================================================================
     // SECCIÓN 2: ESTADOS - Organizados por categoría
@@ -55,6 +37,7 @@ function FlipCard({ currentModule, onContentIsEnded, courseId, moduleId }) {
     const [isPlayingAudio, setIsPlayingAudio] = useState(false);
     const [isPaused, setIsPaused] = useState(false);
     const [audioCompletado, setAudioCompletado] = useState(false);
+    const [audioProgress, setAudioProgress] = useState(0);
 
     // --- Estados de Navegación del Modal ---
     const [etapaAbierta, setEtapaAbierta] = useState(null);
@@ -73,6 +56,9 @@ function FlipCard({ currentModule, onContentIsEnded, courseId, moduleId }) {
     const pausedTextRef = useRef({ text: "" });
     const currentUtteranceRef = useRef(null);
     const audioRetryRef = useRef(0);
+    const progressIntervalRef = useRef(null);
+    const pausedByVisibilityRef = useRef(false);
+    const audioCompletedRef = useRef(false);
 
     // Referencia para mantener el estado del audio entre renderizados
     const audioStateRef = useRef({
@@ -84,28 +70,8 @@ function FlipCard({ currentModule, onContentIsEnded, courseId, moduleId }) {
     // SECCIÓN 4: FUNCIONES DE LOCAL STORAGE
     // =========================================================================
 
-    /**
-     * Obtiene la clave para acceder al progreso del usuario
-     * @returns {string} Clave del localStorage
-     */
     const getProgressKey = () => `userProgress`;
 
-    /**
-     * Carga el progreso guardado del usuario desde localStorage
-     * 
-     * ESTRUCTURA DE DATOS:
-     * {
-     *   [courseId]: {
-     *     flipCardProgress: {
-     *       course_X: {
-     *         module_Y: ["cardId-seccion-titulo", ...]
-     *       }
-     *     }
-     *   }
-     * }
-     * 
-     * @returns {Object} { seccionesVistas: {}, completadas: [] }
-     */
     const loadProgress = () => {
         const key = getProgressKey();
         const existingProgress = localStorage.getItem(key);
@@ -123,7 +89,6 @@ function FlipCard({ currentModule, onContentIsEnded, courseId, moduleId }) {
                 const courseProgress = userProgress.flipCardProgress[`course_${courseId}`] || {};
                 const moduleProgress = courseProgress[`module_${moduleId}`] || [];
 
-                // Procesar secciones vistas
                 const seccionesVistasObj = {};
                 const completadasPorCard = {};
 
@@ -142,7 +107,6 @@ function FlipCard({ currentModule, onContentIsEnded, courseId, moduleId }) {
                     }
                 });
 
-                // Determinar cards completadas (todas las secciones vistas)
                 const completadas = [];
                 Object.keys(completadasPorCard).forEach(cardId => {
                     const secciones = completadasPorCard[cardId];
@@ -166,13 +130,6 @@ function FlipCard({ currentModule, onContentIsEnded, courseId, moduleId }) {
         return { seccionesVistas: {}, completadas: [] };
     };
 
-    /**
-     * Guarda el progreso de una sección en localStorage
-     * 
-     * @param {number} cardId - ID de la card
-     * @param {string} seccion - ID de la sección (objetivo, quehace, como, ejemplo)
-     * @param {string} titulo - Título de la card
-     */
     const saveProgress = (cardId, seccion, titulo) => {
         const key = getProgressKey();
         const existingProgress = localStorage.getItem(key);
@@ -180,7 +137,6 @@ function FlipCard({ currentModule, onContentIsEnded, courseId, moduleId }) {
         try {
             let allProgress = existingProgress ? JSON.parse(existingProgress) : {};
 
-            // Inicializar estructura si no existe
             if (!allProgress[courseId]) {
                 allProgress[courseId] = {
                     id: courseId,
@@ -203,7 +159,6 @@ function FlipCard({ currentModule, onContentIsEnded, courseId, moduleId }) {
                 allProgress[courseId].flipCardProgress[courseKey][moduleKey] = [];
             }
 
-            // Agregar entrada si no existe
             const entry = `${cardId}-${seccion}-${titulo}`;
             const moduleProgress = allProgress[courseId].flipCardProgress[courseKey][moduleKey];
 
@@ -222,74 +177,58 @@ function FlipCard({ currentModule, onContentIsEnded, courseId, moduleId }) {
     // SECCIÓN 5: FUNCIONES DE AUDIO - Síntesis de voz
     // =========================================================================
 
-    /**
-     * Detiene completamente la reproducción de audio actual
-     */
-    const stopAudio = (force = false) => {
-        const synth = synthRef.current;
-        try {
-            if (synth && (synth.speaking || force)) {
-                console.log('🛑 Forzando detención total de audio...');
+    const stopAudio = () => {
+        return new Promise((resolve) => {
+            const synth = synthRef.current;
+            try {
+                if (synth && (synth.speaking || synth.pending)) {
+                    console.log('🛑 Deteniendo audio...');
 
-                // 1️⃣ Pausar primero (necesario en móviles)
-                try {
-                    synth.pause();
-                } catch (e) {
-                    console.warn('⚠️ No se pudo pausar:', e);
-                }
+                    try { synth.pause(); } catch (e) { }
 
-                // 2️⃣ Cancelar después de un breve retardo
-                setTimeout(() => {
-                    try {
-                        synth.cancel();
-                        console.log('✅ Audio cancelado (primera vez)');
-                    } catch (error) {
-                        console.error('❌ Error al cancelar:', error);
+                    setTimeout(() => { try { synth.cancel(); } catch (e) { } }, 80);
+
+                    setTimeout(() => {
+                        try {
+                            synth.cancel();
+                            console.log('✅ Cancel 2, audio detenido');
+
+                            // 🧹 Limpieza total
+                            if (progressIntervalRef.current) {
+                                clearInterval(progressIntervalRef.current);
+                                progressIntervalRef.current = null;
+                            }
+                            setAudioProgress(0);
+                            audioStateRef.current.isPlaying = false;
+                            audioStateRef.current.wasPaused = false;
+                            audioRetryRef.current = 0;
+                            setIsPlayingAudio(false);
+                            setIsPaused(false);
+
+                            resolve();
+                        } catch (error) {
+                            console.error('❌ Error al cancelar audio:', error);
+                            resolve();
+                        }
+                    }, 320);
+                } else {
+                    // Si no hay audio en reproducción, igual reiniciamos
+                    if (progressIntervalRef.current) {
+                        clearInterval(progressIntervalRef.current);
+                        progressIntervalRef.current = null;
                     }
-                }, 80);
-
-                // 3️⃣ Cancelar nuevamente después (Safari/iOS necesita doble cancel)
-                setTimeout(() => {
-                    try {
-                        synth.cancel();
-                        console.log('✅ Audio cancelado (segunda vez)');
-                    } catch (error) {
-                        console.error('❌ Error en segunda cancelación:', error);
-                    }
-                }, 300);
-
-                // 4️⃣ Limpieza total de referencias
-                if (currentUtteranceRef.current) {
-                    currentUtteranceRef.current.onend = null;
-                    currentUtteranceRef.current.onerror = null;
-                    currentUtteranceRef.current = null;
+                    setAudioProgress(0);
+                    resolve();
                 }
-
-                audioStateRef.current.isPlaying = false;
-                audioStateRef.current.wasPaused = false;
-                audioRetryRef.current = 0;
-                setIsPlayingAudio(false);
-                setIsPaused(false);
+            } catch (error) {
+                console.error('Error deteniendo audio:', error);
+                resolve();
             }
-        } catch (error) {
-            console.error('Error deteniendo audio:', error);
-        }
+        });
     };
 
 
-    /**
-     * Reproduce texto usando síntesis de voz con reintentos automáticos
-     * 
-     * COMPORTAMIENTO:
-     * - Usa la mejor voz disponible en español
-     * - Reintenta automáticamente en caso de error (máx 10 veces)
-     * - No reintenta si el error es por interrupción del usuario
-     * - Maneja estados de reproducción y pausa
-     * 
-     * @param {string} text - Texto a reproducir
-     * @param {Function} onEnd - Callback al finalizar exitosamente
-     * @param {Function} onError - Callback en caso de error definitivo
-     */
+
     const speak = (text, onEnd, onError) => {
         if (!vocesCargadas || !mejorVoz) {
             console.warn('⚠️ Voces aún no cargadas');
@@ -301,7 +240,6 @@ function FlipCard({ currentModule, onContentIsEnded, courseId, moduleId }) {
 
         const synth = synthRef.current;
 
-        // Cancelar audio anterior si existe
         if (synth.speaking) {
             try {
                 synth.cancel();
@@ -311,43 +249,69 @@ function FlipCard({ currentModule, onContentIsEnded, courseId, moduleId }) {
             }
         }
 
-        // Configurar utterance
+        if (progressIntervalRef.current) {
+            clearInterval(progressIntervalRef.current);
+            progressIntervalRef.current = null;
+        }
+
         const utterance = new SpeechSynthesisUtterance(text);
         utterance.voice = mejorVoz;
         utterance.lang = mejorVoz.lang || 'es-ES';
-        utterance.rate = 0.9;  // Velocidad de reproducción
-        utterance.pitch = 1;   // Tono de voz
+        utterance.rate = 0.9;
+        utterance.pitch = 1;
+        utterance.wasCancelled = false;
 
         pausedTextRef.current.text = text;
         currentUtteranceRef.current = utterance;
 
-        // Evento: inicio de reproducción
+        let startTime = Date.now();
+        const estimatedDuration = (text.length / 16) * 1000;
+
         utterance.onstart = () => {
             setIsPlayingAudio(true);
             setIsPaused(false);
+            setAudioProgress(0);
             audioStateRef.current.isPlaying = true;
+            audioStateRef.current.wasPaused = false;
             audioRetryRef.current = 0;
+            audioCompletedRef.current = false;
+            startTime = Date.now();
+
+            progressIntervalRef.current = setInterval(() => {
+                const elapsed = Date.now() - startTime;
+                const progress = Math.min((elapsed / estimatedDuration) * 100, 100);
+                setAudioProgress(progress);
+            }, 100);
+
             console.log('▶️ Audio iniciado');
             setShowAudioPopup(false);
         };
 
-        // Evento: fin de reproducción
         utterance.onend = () => {
+            if (progressIntervalRef.current) {
+                clearInterval(progressIntervalRef.current);
+                progressIntervalRef.current = null;
+            }
+            setAudioProgress(100);
             setIsPlayingAudio(false);
             setIsPaused(false);
+            currentUtteranceRef.current = null;
             audioStateRef.current.isPlaying = false;
+            audioStateRef.current.wasPaused = false;
             console.log('✅ Audio finalizado');
             setShowAudioPopup(false);
-            if (onEnd) onEnd();
+
+            if (!utterance.wasCancelled) {
+                audioCompletedRef.current = true;
+                if (onEnd) onEnd();
+            }
         };
 
-        // Evento: error en reproducción
         utterance.onerror = (e) => {
             const isInterrupted = e.error === 'interrupted';
             setShowAudioPopup(true);
             console.error('❌ Error de síntesis:', e.error);
 
-            // Reintentar si no fue interrumpido y no se alcanzó el límite
             if (!isInterrupted && audioRetryRef.current < maxRetries) {
                 audioRetryRef.current++;
                 console.log(`🔄 Reintentando audio (${audioRetryRef.current}/${maxRetries})...`);
@@ -365,19 +329,17 @@ function FlipCard({ currentModule, onContentIsEnded, courseId, moduleId }) {
                 handleAudioFailed(onError);
             }
         };
-        // ⏸️ Evento: Audio pausado
+
         utterance.onpause = () => {
             console.log('⏸️ Audio pausado');
         };
 
-        // ▶️ Evento: Audio reanudado
         utterance.onresume = () => {
             setIsPaused(false);
             audioStateRef.current.wasPaused = false;
             console.log('▶️ Audio reanudado (evento)');
         };
 
-        // Iniciar reproducción
         try {
             synth.speak(utterance);
         } catch (error) {
@@ -387,10 +349,6 @@ function FlipCard({ currentModule, onContentIsEnded, courseId, moduleId }) {
         }
     };
 
-    /**
-     * Maneja el fallo definitivo de audio después de agotar reintentos
-     * @param {Function} onError - Callback de error
-     */
     const handleAudioFailed = (onError) => {
         setIsPlayingAudio(false);
         setIsPaused(false);
@@ -401,56 +359,34 @@ function FlipCard({ currentModule, onContentIsEnded, courseId, moduleId }) {
         if (onError) onError();
     };
 
-    /**
-     * Reproduce audio de una sección y guarda el progreso automáticamente
-     * 
-     * @param {string} text - Texto a reproducir
-     * @param {number} cardId - ID de la card
-     * @param {string} seccionId - ID de la sección
-     * @param {string} titulo - Título de la card
-     * @param {Function} onError - Callback de error
-     */
     const speakAndSave = (text, cardId, seccionId, titulo, onError) => {
         const key = `${cardId}-${seccionId}`;
 
         speak(text, () => {
-            // Guardar progreso al completar
             saveProgress(cardId, seccionId, titulo);
             setAudioCompletado(true);
 
-            // Actualizar secciones vistas
             const updatedVistas = { ...seccionesVistas, [key]: true };
             setSeccionesVistas(updatedVistas);
 
-            // Verificar si la card está completa
             verificarCardCompleta(cardId, updatedVistas);
         }, onError);
     };
 
-    /**
-     * Verifica si una card tiene todas sus secciones completadas
-     * Si está completa, la marca como completada y desbloquea la siguiente
-     * 
-     * @param {number} cardId - ID de la card a verificar
-     * @param {Object} currentVistas - Estado actual de secciones vistas
-     */
     const verificarCardCompleta = (cardId, currentVistas = null) => {
         const secciones = ['objetivo', 'quehace', 'como', 'ejemplo'];
         const vistasActuales = currentVistas || seccionesVistas;
 
-        // Verificar si todas las secciones fueron vistas
         const todasVistas = secciones.every(s => vistasActuales[`${cardId}-${s}`]);
 
         if (todasVistas && !etapasCompletadas.includes(cardId)) {
             console.log(`✅ Card ${cardId} completada!`);
             setEtapasCompletadas(prev => [...prev, cardId]);
 
-            // Desbloquear siguiente etapa
             if (cardId < cards.length) {
                 setEtapaActiva(cardId + 1);
             }
 
-            // Si es la última etapa, notificar finalización
             if (cardId === cards.length) {
                 console.log("🎉 Última etapa completada, guardando definitivamente...");
 
@@ -466,15 +402,12 @@ function FlipCard({ currentModule, onContentIsEnded, courseId, moduleId }) {
     // SECCIÓN 6: FUNCIONES DE NAVEGACIÓN DEL MODAL
     // =========================================================================
 
-    /**
-     * Abre una etapa (card) y reproduce su audio de objetivo
-     * @param {number} etapaId - ID de la etapa a abrir
-     */
     const abrirEtapa = (etapaId) => {
         stopAudio();
         setEtapaAbierta(etapaId);
         setSeccionActiva('objetivo');
         setAudioCompletado(false);
+        setAudioProgress(0);
 
         const etapa = cards.find(e => e.id === etapaId);
         if (etapa) {
@@ -484,21 +417,16 @@ function FlipCard({ currentModule, onContentIsEnded, courseId, moduleId }) {
         }
     };
 
-    /**
-     * Cierra el modal de etapa y detiene el audio
-     */
     const cerrarEtapa = () => {
         stopAudio();
         setEtapaAbierta(null);
         setSeccionActiva('objetivo');
         setAudioCompletado(false);
+        setAudioProgress(0);
     };
 
-    /**
-     * Navega a la sección anterior dentro de una etapa
-     */
-    const irSeccionAnterior = () => {
-        stopAudio();
+    const irSeccionAnterior = async () => {
+        await stopAudio();
 
         const etapa = cards.find(e => e.id === etapaAbierta);
         if (!etapa) return;
@@ -510,8 +438,8 @@ function FlipCard({ currentModule, onContentIsEnded, courseId, moduleId }) {
             const seccionAnterior = secciones[indexActual - 1];
             setSeccionActiva(seccionAnterior);
             setAudioCompletado(false);
+            setAudioProgress(0);
 
-            // Reproducir audio de la sección anterior
             if (seccionAnterior === 'objetivo') {
                 speakAndSave(etapa.audioObjetivo, etapaAbierta, 'objetivo', etapa.titulo, () => {
                     setAudioCompletado(true);
@@ -527,11 +455,9 @@ function FlipCard({ currentModule, onContentIsEnded, courseId, moduleId }) {
         }
     };
 
-    /**
-     * Navega a la siguiente sección dentro de una etapa
-     */
-    const irSeccionSiguiente = () => {
-        stopAudio();
+
+    const irSeccionSiguiente = async () => {
+        await stopAudio(); // Espera la cancelación
 
         const etapa = cards.find(e => e.id === etapaAbierta);
         if (!etapa) return;
@@ -544,7 +470,6 @@ function FlipCard({ currentModule, onContentIsEnded, courseId, moduleId }) {
             setSeccionActiva(seccionSiguiente);
             setAudioCompletado(false);
 
-            // Reproducir audio de la siguiente sección
             const seccionData = etapa.secciones.find(s => s.id === seccionSiguiente);
             if (seccionData) {
                 speakAndSave(seccionData.audio, etapaAbierta, seccionSiguiente, etapa.titulo, () => {
@@ -554,28 +479,20 @@ function FlipCard({ currentModule, onContentIsEnded, courseId, moduleId }) {
         }
     };
 
-    /**
-     * Navega directamente a una sección específica
-     * Solo permite navegar a secciones ya vistas (excepto objetivo)
-     * 
-     * @param {string} seccionId - ID de la sección destino
-     */
-    const irASeccion = (seccionId) => {
+
+    const irASeccion = async (seccionId) => {
         const key = `${etapaAbierta}-${seccionId}`;
+        if (seccionId !== 'objetivo' && !seccionesVistas[key]) return;
 
-        // Bloquear secciones no vistas (excepto objetivo)
-        if (seccionId !== 'objetivo' && !seccionesVistas[key]) {
-            return;
-        }
+        await stopAudio();
 
-        stopAudio();
         setSeccionActiva(seccionId);
         setAudioCompletado(false);
+        setAudioProgress(0);
 
         const etapa = cards.find(e => e.id === etapaAbierta);
         if (!etapa) return;
 
-        // Reproducir audio de la sección seleccionada
         if (seccionId === 'objetivo') {
             speakAndSave(etapa.audioObjetivo, etapaAbierta, 'objetivo', etapa.titulo, () => {
                 setAudioCompletado(true);
@@ -590,14 +507,11 @@ function FlipCard({ currentModule, onContentIsEnded, courseId, moduleId }) {
         }
     };
 
+
     // =========================================================================
     // SECCIÓN 7: FUNCIONES AUXILIARES
     // =========================================================================
 
-    /**
-     * Inicia la introducción en dispositivos móviles
-     * (requiere interacción del usuario por políticas del navegador)
-     */
     const iniciarIntroMovil = () => {
         if (!introStarted && vocesCargadas) {
             setIntroStarted(true);
@@ -611,10 +525,6 @@ function FlipCard({ currentModule, onContentIsEnded, courseId, moduleId }) {
     // SECCIÓN 8: EFFECTS - Inicialización y eventos
     // =========================================================================
 
-    /**
-     * EFFECT: Carga y selección de voces en español
-     * Prioriza voces Microsoft Natural y femeninas
-     */
     useEffect(() => {
         const synth = window.speechSynthesis;
 
@@ -629,7 +539,6 @@ function FlipCard({ currentModule, onContentIsEnded, courseId, moduleId }) {
 
             const vocesEspanol = voices.filter(v => v.lang.toLowerCase().startsWith('es'));
 
-            // Prioridad de voces Microsoft Natural
             const prioridadMicrosoft = [
                 'Microsoft Andrea Online (Natural) - Spanish (Ecuador)',
                 'Microsoft Dalia Online (Natural) - Spanish (Mexico)',
@@ -641,13 +550,11 @@ function FlipCard({ currentModule, onContentIsEnded, courseId, moduleId }) {
 
             let mejorOpcion = null;
 
-            // Buscar voz de prioridad
             for (const nombre of prioridadMicrosoft) {
                 mejorOpcion = vocesEspanol.find(v => v.name.toLowerCase().includes(nombre.toLowerCase()));
                 if (mejorOpcion) break;
             }
 
-            // Fallback: buscar voces femeninas
             if (!mejorOpcion) {
                 const vocesFemeninas = vocesEspanol.filter(v =>
                     /(female|mujer|paulina|monica|soledad|camila|lucia|maría|carla|rosa|laura|catalina|dalia|salome|andrea|paola|google|microsoft)/i.test(v.name)
@@ -674,7 +581,6 @@ function FlipCard({ currentModule, onContentIsEnded, courseId, moduleId }) {
         cargarVoces();
         synth.onvoiceschanged = cargarVoces;
 
-        // Forzar carga al primer clic del usuario
         const handleUserInteraction = () => {
             console.log('👆 Usuario hizo clic: forzando carga de voces...');
             cargarVoces();
@@ -688,16 +594,12 @@ function FlipCard({ currentModule, onContentIsEnded, courseId, moduleId }) {
         };
     }, []);
 
-    /**
-     * EFFECT: Carga el progreso guardado cuando las voces estén listas
-     */
     useEffect(() => {
         if (vocesCargadas) {
             const savedProgress = loadProgress();
             setSeccionesVistas(savedProgress.seccionesVistas);
             setEtapasCompletadas(savedProgress.completadas);
 
-            // Determinar etapa activa según progreso
             if (savedProgress.completadas.length > 0) {
                 const ultimaCompletada = Math.max(...savedProgress.completadas);
                 setEtapaActiva(ultimaCompletada < cards.length ? ultimaCompletada + 1 : cards.length);
@@ -707,18 +609,12 @@ function FlipCard({ currentModule, onContentIsEnded, courseId, moduleId }) {
         }
     }, [vocesCargadas]);
 
-    /**
-     * EFFECT: Inicia la introducción automáticamente en desktop
-     */
     useEffect(() => {
         if (!isMobile && vocesCargadas && !introStarted) {
             setIntroStarted(true);
         }
     }, [vocesCargadas, isMobile]);
 
-    /**
-     * EFFECT: Reproduce el audio de introducción
-     */
     useEffect(() => {
         if (!isMobile && vocesCargadas && introStarted && !introPlayed) {
             console.log('🎬 Reproduciendo intro...');
@@ -729,9 +625,6 @@ function FlipCard({ currentModule, onContentIsEnded, courseId, moduleId }) {
         }
     }, [isMobile, vocesCargadas, introStarted, introPlayed]);
 
-    /**
-     * EFFECT: Detecta si el dispositivo es móvil
-     */
     useEffect(() => {
         const checkMobile = () => {
             const isMobileDevice = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || window.innerWidth < 768;
@@ -743,23 +636,22 @@ function FlipCard({ currentModule, onContentIsEnded, courseId, moduleId }) {
         return () => window.removeEventListener('resize', checkMobile);
     }, []);
 
-    /**
-         * useEffect: Detectar cuando el usuario cambia de pestaña
-         */
     useEffect(() => {
         const handleVisibilityChange = () => {
             const synth = synthRef.current;
 
             if (document.hidden) {
-                // Usuario cambió de pestaña
                 if (synth.speaking && !synth.paused) {
                     console.log('👁️ Página oculta: pausando audio...');
                     synth.pause();
                     setIsPaused(true);
                     audioStateRef.current.wasPaused = true;
+                    if (progressIntervalRef.current) {
+                        clearInterval(progressIntervalRef.current);
+                        progressIntervalRef.current = null;
+                    }
                 }
             } else {
-                // Usuario regresó a la pestaña
                 if (audioStateRef.current.wasPaused && audioStateRef.current.isPlaying) {
                     console.log('👁️ Página visible: intentando reanudar audio...');
                     setTimeout(() => {
@@ -768,6 +660,17 @@ function FlipCard({ currentModule, onContentIsEnded, courseId, moduleId }) {
                             setIsPaused(false);
                             audioStateRef.current.wasPaused = false;
                             console.log('✅ Resume ejecutado');
+
+                            const currentText = pausedTextRef.current.text;
+                            if (currentText) {
+                                const estimatedDuration = (currentText.length / 15) * 1000;
+                                let startTime = Date.now() - (audioProgress / 100 * estimatedDuration);
+                                progressIntervalRef.current = setInterval(() => {
+                                    const elapsed = Date.now() - startTime;
+                                    const progress = Math.min((elapsed / estimatedDuration) * 100, 99);
+                                    setAudioProgress(progress);
+                                }, 100);
+                            }
                         } catch (error) {
                             console.error('❌ Error al reanudar:', error);
                         }
@@ -781,12 +684,8 @@ function FlipCard({ currentModule, onContentIsEnded, courseId, moduleId }) {
         return () => {
             document.removeEventListener('visibilitychange', handleVisibilityChange);
         };
-    }, []);
+    }, [audioProgress]);
 
-    /**
-     *  useEffect: Detectar cuando la ventana pierde/recupera el foco
-     * 
-     */
     useEffect(() => {
         const handleBlur = () => {
             const synth = synthRef.current;
@@ -795,21 +694,36 @@ function FlipCard({ currentModule, onContentIsEnded, courseId, moduleId }) {
                 synth.pause();
                 setIsPaused(true);
                 audioStateRef.current.wasPaused = true;
-                // ✅ NOTA: NO se marca wasCancelled = true aquí
-                // Esto permite que si el usuario regresa, el progreso se guarde
+                pausedByVisibilityRef.current = true;
+                if (progressIntervalRef.current) {
+                    clearInterval(progressIntervalRef.current);
+                    progressIntervalRef.current = null;
+                }
             }
         };
 
         const handleFocus = () => {
             const synth = synthRef.current;
-            if (audioStateRef.current.wasPaused && audioStateRef.current.isPlaying) {
+            if (pausedByVisibilityRef.current && audioStateRef.current.isPlaying) {
                 console.log('🔊 Ventana recuperó el foco: intentando reanudar...');
                 setTimeout(() => {
                     try {
                         synth.resume();
                         setIsPaused(false);
                         audioStateRef.current.wasPaused = false;
+                        pausedByVisibilityRef.current = false;
                         console.log('✅ Resume ejecutado');
+
+                        const currentText = pausedTextRef.current.text;
+                        if (currentText) {
+                            const estimatedDuration = (currentText.length / 15) * 1000;
+                            let startTime = Date.now() - (audioProgress / 100 * estimatedDuration);
+                            progressIntervalRef.current = setInterval(() => {
+                                const elapsed = Date.now() - startTime;
+                                const progress = Math.min((elapsed / estimatedDuration) * 100, 99);
+                                setAudioProgress(progress);
+                            }, 100);
+                        }
                     } catch (error) {
                         console.error('❌ Error al reanudar:', error);
                     }
@@ -824,18 +738,13 @@ function FlipCard({ currentModule, onContentIsEnded, courseId, moduleId }) {
             window.removeEventListener('blur', handleBlur);
             window.removeEventListener('focus', handleFocus);
         };
-    }, []);
+    }, [audioProgress]);
 
-    /**
-     *  useEffect: Cancelar audio al cerrar página o desmontar componente
-     * 
-     */
     useEffect(() => {
         const handleBeforeUnload = () => {
             const synth = synthRef.current;
             if (synth.speaking) {
                 console.log('🛑 Cerrando página: cancelando audio...');
-                // 🚩 Marcar como cancelado para que NO se guarde el progreso
                 if (currentUtteranceRef.current)
                     currentUtteranceRef.current.wasCancelled = true;
                 synth.cancel();
@@ -844,12 +753,14 @@ function FlipCard({ currentModule, onContentIsEnded, courseId, moduleId }) {
 
         window.addEventListener('beforeunload', handleBeforeUnload);
 
-        // Cleanup al desmontar el componente
         return () => {
             const synth = synthRef.current;
             if (synth.speaking) {
                 console.log('🧹 Componente desmontado: cancelando audio...');
                 synth.cancel();
+            }
+            if (progressIntervalRef.current) {
+                clearInterval(progressIntervalRef.current);
             }
             window.removeEventListener('beforeunload', handleBeforeUnload);
         };
@@ -919,15 +830,10 @@ function FlipCard({ currentModule, onContentIsEnded, courseId, moduleId }) {
                             key={etapa.id}
                             className="relative flex flex-col items-center justify-center p-6 rounded-2xl border-1 border-[#2c2c2f] bg-[#121214] overflow-hidden"
                         >
-                            {/* Efecto de carga animado */}
                             <div className="absolute inset-0 rounded-2xl bg-[#3a3a3f]/40 animate-pulse-radial"></div>
-
-                            {/* Ícono skeleton */}
                             <div className="relative w-16 h-16 mb-3 rounded-full bg-[#1f1f23] overflow-hidden">
                                 <div className="absolute inset-0 bg-gradient-to-br from-[#2c2c2f] via-[#3a3a3f] to-[#2c2c2f] rounded-full animate-pulse-delay"></div>
                             </div>
-
-                            {/* Líneas de texto skeleton */}
                             <div className="w-full space-y-2 mt-2">
                                 <div className="h-3 bg-[#1f1f23] rounded w-1/3 mx-auto animate-pulse delay-75"></div>
                                 <div className="h-5 bg-[#1f1f23] rounded w-2/3 mx-auto animate-pulse delay-150"></div>
@@ -953,28 +859,26 @@ function FlipCard({ currentModule, onContentIsEnded, courseId, moduleId }) {
                                 className={`relative flex flex-col items-center justify-center p-6 rounded-2xl border-2 transition-all duration-300
                                 ${estaBloqueada
                                         ? 'bg-slate-800 border-slate-700 opacity-50 cursor-not-allowed'
-                                        : `bg-gradient-to-br ${etapa.color} border-transparent hover:scale-105 hover:shadow-2xl cursor-pointer`
+                                        : `bg-gradient-to-br   from-[#0a1a3a]/80 to-[#071D49]/70 backdrop-blur-md border border-[#071D49]/30 shadow-md shadow-[#071D49]/40 hover:border-[#1a4fff] hover:shadow-xl hover:shadow-[#1a4fff]/40 cursor-pointer`
                                     }`}
                             >
-                                {/* Indicador: Bloqueada */}
                                 {estaBloqueada && (
                                     <Lock size={24} className="absolute top-3 right-3 text-slate-500" />
                                 )}
 
-                                {/* Indicador: Completada */}
                                 {estaCompletada && (
                                     <CheckCircle size={24} className="absolute top-3 right-3 text-green-400" />
                                 )}
 
-                                {/* Ícono de la etapa */}
-                                <div className="text-5xl mb-3">{etapa.icono}</div>
+                                <div className={`w-18 h-18 mx-auto mb-2 bg-gradient-to-br ${estaBloqueada?'':'from-[#071D49] to-[#1a4fff]'}  rounded-xl flex items-center justify-center shadow-inner shadow-black/50`}>
+                                    <span className={`text-5xl drop-shadow-lg ${!estaBloqueada ? 'grayscale-0' : 'grayscale opacity-40'
+                                                        }`}>{etapa.icono}</span>
+                                </div>
 
-                                {/* Contenido de la card */}
                                 <div className="text-white text-center flex flex-col items-center">
                                     <div className="text-xs opacity-75 mb-1">{etapa.numero}</div>
                                     <div className="font-bold text-lg">{etapa.titulo}</div>
 
-                                    {/* Estados de la card */}
                                     {estaBloqueada ? (
                                         <div className="text-xs opacity-90 text-center mt-2">
                                             <p>Completa la etapa anterior</p>
@@ -998,7 +902,6 @@ function FlipCard({ currentModule, onContentIsEnded, courseId, moduleId }) {
 
             {/* ====== MODAL DE ETAPA ====== */}
             {etapaAbierta && etapaActualData && (() => {
-                // Calcular estado de navegación
                 const siguienteEsUltima = seccionActiva ===
                     etapaActualData.secciones[etapaActualData.secciones.length - 1]?.id;
 
@@ -1008,153 +911,249 @@ function FlipCard({ currentModule, onContentIsEnded, courseId, moduleId }) {
                 const bottonSiguienteDisabled = !puedeAvanzar || siguienteEsUltima;
 
                 return (
-                    <ModalFlipCard etapaActualData={etapaActualData} onClose={cerrarEtapa}>
-
-                        {/* ====== CONTENIDO DEL MODAL ====== */}
-                        <div className="p-2 md:p-4 space-y-2">
-
-                            {/* --- Sección: Objetivo --- */}
-                            {seccionActiva === 'objetivo' && (
-                                <div className="space-y-2 animate-fadeIn">
-                                    <div className="flex items-center gap-2 text-zinc-200 mb-1">
-                                        <Target size={20} />
-                                        <h3 className="text-md md:text-2xl font-bold">Objetivo</h3>
+                    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 z-[9999]">
+                        <div className="bg-gradient-to-br bg-zinc-900 rounded-xl max-w-4xl w-full max-h-[90vh] overflow-hidden border border-zinc-700 shadow-2xl">
+                            {/* Header del modal */}
+                            <div className={`bg-gradient-to-r from-[#071D49] to-[#1a4fff]  p-4 flex items-center justify-between`}>
+                                <div className="flex items-center gap-3">
+                                    {etapaActualData.icono && (
+                                        <div className="w-10 h-10 bg-white/40 backdrop-blur-sm rounded-lg flex items-center justify-center">
+                                            <span className="text-xl">{etapaActualData.icono}</span>
+                                        </div>
+                                    )}
+                                    <div>
+                                        <h3 className="text-lg font-bold text-white">
+                                            {etapaActualData.titulo}
+                                        </h3>
+                                        <p className="text-blue-100 text-xs">{etapaActualData.numero}</p>
                                     </div>
-                                    <p className="text-slate-300 leading-relaxed text-sm md:text-lg">
-                                        {etapaActualData.objetivo}
-                                    </p>
                                 </div>
-                            )}
-
-                            {/* --- Otras Secciones (Qué hace, Cómo, Ejemplo) --- */}
-                            {seccionActiva && seccionActiva !== 'objetivo' && (
-                                <div className="space-y-3 animate-fadeIn">
-                                    {(() => {
-                                        const seccionData = etapaActualData.secciones.find(s => s.id === seccionActiva);
-                                        if (!seccionData) return null;
-
-                                        return (
-                                            <>
-                                                {/* Título de la sección */}
-                                                <div className="flex items-center gap-2 text-zinc-300 mb-4">
-                                                    {seccionData.icono}
-                                                    <h3 className="text-lg md:text-2xl font-bold">{seccionData.titulo}</h3>
-                                                </div>
-
-                                                {/* Contenido de la sección */}
-                                                {seccionData.contenido.map((item, idx) => (
-                                                    <div key={idx} className="bg-zinc-800 rounded-lg p-5 border border-zinc-700">
-                                                        {item.subtitulo && (
-                                                            <h4 className="text-white font-semibold mb-3 flex items-center gap-2 text-sm md:text-lg">
-                                                                <span className="text-zinc-300">•</span>
-                                                                {item.subtitulo}
-                                                            </h4>
-                                                        )}
-                                                        <p className="text-slate-300 leading-relaxed text-sm md:text-lg">
-                                                            {item.texto}
-                                                        </p>
-                                                    </div>
-                                                ))}
-                                            </>
-                                        );
-                                    })()}
-                                </div>
-                            )}
-                        </div>
-
-                        {/* ====== CONTROLES DE NAVEGACIÓN ====== */}
-                        <div className="bg-[#151518] border-t-2 border-slate-700 p-4">
-                            <div className="flex items-center justify-between gap-1 md:gap-4">
-
-                                {/* --- Botón: Anterior --- */}
                                 <button
-                                    onClick={irSeccionAnterior}
-                                    disabled={seccionActiva === 'objetivo'}
-                                    className={`flex items-center gap-2 px-1 md:px-4 py-2 rounded-lg font-medium transition-all ${seccionActiva === 'objetivo'
-                                        ? 'bg-slate-800 text-slate-600 cursor-not-allowed'
-                                        : 'bg-slate-700 text-white hover:bg-slate-600'
-                                        }`}
+                                    onClick={cerrarEtapa}
+                                    className="p-2 hover:bg-white/20 rounded-lg transition-colors"
                                 >
-                                    <ChevronLeft size={20} />
-                                    <span className='hidden md:block'>Anterior</span>
+                                    <X className="w-5 h-5 text-white" />
                                 </button>
+                            </div>
 
-                                {/* --- Botones de Secciones --- */}
-                                <div className="flex gap-2 flex-wrap justify-center">
+                            {/* Contenido del modal */}
+                            <div className="p-2 md:p-4 space-y-2 overflow-y-auto max-h-[calc(90vh-280px)]">
+                                {seccionActiva === 'objetivo' && (
+                                    <div className="space-y-2 animate-fadeIn">
+                                        <div className="flex items-center gap-2 text-zinc-200 mb-1">
+                                            <Target size={20} />
+                                            <h3 className="text-md md:text-2xl font-bold">Objetivo</h3>
+                                        </div>
+                                        <p className="text-slate-300 leading-relaxed text-sm md:text-lg">
+                                            {etapaActualData.objetivo}
+                                        </p>
+                                    </div>
+                                )}
 
-                                    {/* Botón: Objetivo */}
+                                {seccionActiva && seccionActiva !== 'objetivo' && (
+                                    <div className="space-y-3 animate-fadeIn">
+                                        {(() => {
+                                            const seccionData = etapaActualData.secciones.find(s => s.id === seccionActiva);
+                                            if (!seccionData) return null;
+
+                                            return (
+                                                <>
+                                                    <div className="flex items-center gap-2 text-zinc-300 mb-4">
+                                                        {seccionData.icono}
+                                                        <h3 className="text-lg md:text-2xl font-bold">{seccionData.titulo}</h3>
+                                                    </div>
+
+                                                    {seccionData.contenido.map((item, idx) => (
+                                                        <div key={idx} className="bg-zinc-800 rounded-lg p-5 border border-zinc-700">
+                                                            {item.subtitulo && (
+                                                                <h4 className="text-white font-semibold mb-3 flex items-center gap-2 text-sm md:text-lg">
+                                                                    <span className="text-zinc-300">•</span>
+                                                                    {item.subtitulo}
+                                                                </h4>
+                                                            )}
+                                                            <p className="text-slate-300 leading-relaxed text-sm md:text-lg">
+                                                                {item.texto}
+                                                            </p>
+                                                        </div>
+                                                    ))}
+                                                </>
+                                            );
+                                        })()}
+                                    </div>
+                                )}
+
+                                {/* Controles de audio y progreso */}
+                                <div className="bg-zinc-800 backdrop-blur-sm rounded-lg p-3 border-t border-zinc-700 mb-4">
+                                    <div className="flex items-center gap-3 mb-3">
+                                        <button
+                                            onClick={() => {
+                                                if (isPlayingAudio) {
+                                                    synthRef.current.pause();
+                                                    setIsPaused(true);
+                                                } else if (isPaused) {
+                                                    synthRef.current.resume();
+                                                    setIsPaused(false);
+                                                }
+                                            }}
+                                            className={`bg-gradient-to-br from-[#071D49] to-[#1a4fff] w-10 h-10 rounded-full transition-all duration-300 flex items-center justify-center flex-shrink-0
+                                            ${audioCompletado
+                                                    ? 'cursor-not-allowed'
+                                                    : 'hover:shadow-lg hover:shadow-blue-500/30 active:scale-95'
+                                                }`}
+                                            disabled={audioCompletado}
+                                        >
+                                            <Volume2 className={`w-5 h-5 text-white ${isPlayingAudio ? 'animate-pulse' : ''}`} />
+                                        </button>
+                                        <div className="flex-1">
+                                            <div className="flex justify-between items-center mb-1">
+                                                <span className="text-xs text-slate-300">Progreso</span>
+                                                <span className="text-xs font-bold text-blue-400">
+                                                    {Math.round(audioProgress)}%
+                                                </span>
+                                            </div>
+                                            <div className="h-2 bg-zinc-700 rounded-full overflow-hidden">
+                                                <div
+                                                    className="h-full bg-gradient-to-r from-[#071D49] via-[#0e2e80] to-[#1a4fff] transition-all duration-200 rounded-full"
+                                                    style={{ width: `${audioProgress}%` }}
+                                                />
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div className="space-y-2">
+                                        {isPlayingAudio && (
+                                            <div className="flex items-center gap-2 text-blue-400 bg-blue-500/10 rounded-lg p-2">
+                                                <div className="flex gap-1">
+                                                    <span className="inline-block w-1 h-3 bg-blue-400 rounded-full animate-pulse"></span>
+                                                    <span className="inline-block w-1 h-3 bg-blue-400 rounded-full animate-pulse" style={{ animationDelay: '0.2s' }}></span>
+                                                    <span className="inline-block w-1 h-3 bg-blue-400 rounded-full animate-pulse" style={{ animationDelay: '0.4s' }}></span>
+                                                </div>
+                                                <span className="text-xs font-medium">Reproduciendo audio...</span>
+                                            </div>
+                                        )}
+
+                                        {audioCompletado && (
+                                            <div className="flex items-center gap-2 text-blue-400 bg-blue-400/10 rounded-lg p-2">
+                                                <div className="w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center flex-shrink-0">
+                                                    <CheckCircle className="w-4 h-4 text-white" />
+                                                </div>
+                                                <div className="flex-1">
+                                                    <p className="font-bold text-xs">¡Audio completado!</p>
+                                                    <p className="text-xs text-blue-300">Puedes avanzar a la siguiente sección</p>
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        {!audioCompletado && !isPlayingAudio && audioProgress === 0 && (
+                                            <div className="text-center p-2 text-slate-400 text-xs">
+                                                El audio se reproducirá automáticamente
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+
+                            </div>
+
+
+
+                            {/* Controles de navegación */}
+                            <div className="bg-[#151518] border-t-2 border-slate-700 p-4">
+                                <div className="flex items-center justify-between gap-1 md:gap-4">
                                     <button
-                                        onClick={() => irASeccion('objetivo')}
-                                        className={`px-4 py-2 rounded-lg text-sm font-medium transition-all relative ${seccionActiva === 'objetivo'
-                                            ? `${etapaActualData.colorSolido} text-white`
-                                            : seccionesVistas[`${etapaAbierta}-objetivo`]
-                                                ? 'bg-slate-700 text-slate-300 hover:bg-slate-600'
-                                                : 'bg-slate-800 text-slate-600 cursor-not-allowed'
+                                        onClick={irSeccionAnterior}
+                                        disabled={seccionActiva === 'objetivo'}
+                                        className={`flex items-center gap-2 px-1 md:px-4 py-2 rounded-lg font-medium transition-all ${seccionActiva === 'objetivo'
+                                            ? 'bg-slate-800 text-slate-600 cursor-not-allowed'
+                                            : 'bg-slate-700 text-white hover:bg-slate-600'
                                             }`}
                                     >
-                                        Objetivo
-                                        {seccionesVistas[`${etapaAbierta}-objetivo`] && (
-                                            <CheckCircle size={14} className="absolute -top-1 -right-1 text-green-400" />
-                                        )}
+                                        <ChevronLeft size={20} />
+                                        <span className='hidden md:block'>Anterior</span>
                                     </button>
 
-                                    {/* Botones: Otras secciones */}
-                                    {etapaActualData.secciones.map((s) => {
-                                        const seccionVista = seccionesVistas[`${etapaAbierta}-${s.id}`];
+                                    <div className="flex gap-2 flex-wrap justify-center">
+                                        <button
+                                            onClick={() => irASeccion('objetivo')}
+                                            className={`px-4 py-2 rounded-lg text-sm font-medium transition-all relative ${seccionActiva === 'objetivo'
+                                                ? `bg-[#1a4fff] text-white`
+                                                : seccionesVistas[`${etapaAbierta}-objetivo`]
+                                                    ? 'bg-slate-700 text-slate-300 hover:bg-slate-600'
+                                                    : 'bg-slate-800 text-slate-600 cursor-not-allowed'
+                                                }`}
+                                        >
+                                            Objetivo
+                                            {seccionesVistas[`${etapaAbierta}-objetivo`] && (
+                                                <CheckCircle size={14} className="absolute -top-1 -right-1 text-green-400" />
+                                            )}
+                                        </button>
 
-                                        return (
-                                            <button
-                                                key={s.id}
-                                                onClick={() => irASeccion(s.id)}
-                                                disabled={!seccionVista}
-                                                className={`px-2 md:px-4 py-2 rounded-lg text-sm font-medium transition-all relative ${seccionActiva === s.id
-                                                    ? `${etapaActualData.colorSolido} text-white`
-                                                    : seccionVista
-                                                        ? 'bg-slate-700 text-slate-300 hover:bg-slate-600'
-                                                        : 'bg-slate-800 text-slate-600 cursor-not-allowed'
-                                                    }`}
-                                                title={s.titulo}
-                                            >
-                                                <span className="flex items-center gap-1">
-                                                    {s.icono}
-                                                </span>
-                                                {seccionVista && (
-                                                    <CheckCircle size={14} className="absolute -top-1 -right-1 text-green-400" />
-                                                )}
-                                            </button>
-                                        );
-                                    })}
+                                        {etapaActualData.secciones.map((s) => {
+                                            const seccionVista = seccionesVistas[`${etapaAbierta}-${s.id}`];
+
+                                            return (
+                                                <button
+                                                    key={s.id}
+                                                    onClick={() => irASeccion(s.id)}
+                                                    disabled={!seccionVista}
+                                                    className={`px-2 md:px-4 py-2 rounded-lg text-sm font-medium transition-all relative ${seccionActiva === s.id
+                                                        ? `bg-[#1a4fff] text-white`
+                                                        : seccionVista
+                                                            ? 'bg-slate-700 text-slate-300 hover:bg-slate-600'
+                                                            : 'bg-slate-800 text-slate-600 cursor-not-allowed'
+                                                        }`}
+                                                    title={s.titulo}
+                                                >
+                                                    <span className="flex items-center gap-1">
+                                                        {s.icono}
+                                                    </span>
+                                                    {seccionVista && (
+                                                        <CheckCircle size={14} className="absolute -top-1 -right-1 text-green-400" />
+                                                    )}
+                                                </button>
+                                            );
+                                        })}
+                                    </div>
+
+                                    <button
+                                        onClick={irSeccionSiguiente}
+                                        disabled={bottonSiguienteDisabled}
+                                        className={`flex items-center gap-2 px-1 md:px-4 py-2 rounded-lg font-medium transition-all ${bottonSiguienteDisabled
+                                            ? 'bg-slate-800 text-slate-600 cursor-not-allowed'
+                                            : 'bg-slate-700 text-white hover:bg-slate-600'
+                                            }`}
+                                    >
+                                        <span className='hidden md:block'>Siguiente</span>
+                                        <ChevronRight size={20} />
+                                    </button>
                                 </div>
+                            </div>
 
-                                {/* --- Botón: Siguiente --- */}
-                                <button
-                                    onClick={irSeccionSiguiente}
-                                    disabled={bottonSiguienteDisabled}
-                                    className={`flex items-center gap-2 px-1 md:px-4 py-2 rounded-lg font-medium transition-all ${bottonSiguienteDisabled
-                                        ? 'bg-slate-800 text-slate-600 cursor-not-allowed'
-                                        : 'bg-slate-700 text-white hover:bg-slate-600'
-                                        }`}
+                            {showAudioPopup && (
+                                <div
+                                    className="fixed bottom-8 lg:bottom-4 right-4 bg-gray-800 text-white px-6 py-3 rounded-xl shadow-lg text-sm text-center animate-pulse z-[9999]"
                                 >
-                                    <span className='hidden md:block'>Siguiente</span>
-                                    <ChevronRight size={20} />
-                                </button>
-                            </div>
+                                    🔊 <strong>Estamos intentando reproducir el audio...</strong><br />
+                                    Si el problema persiste, cierra esta etapa y vuelve a cargarla.
+                                </div>
+                            )}
                         </div>
-
-                        {/* ====== POPUP DE AUDIO (Notificación de reintento) ====== */}
-                        {showAudioPopup && (
-                            <div
-                                className="fixed bottom-4 right-4 bg-gray-800 text-white px-6 py-3 rounded-xl shadow-lg text-sm text-center animate-pulse z-[9999]"
-                            >
-                                🔊 <strong>Estamos intentando reproducir el audio...</strong><br />
-                                Si el problema persiste, cierra esta etapa y vuelve a cargarla.
-                            </div>
-                        )}
-
-                    </ModalFlipCard>
+                    </div>
                 );
             })()}
 
+            {/* Indicador de reproducción de intro */}
+            {isPlayingIntro && (
+                <div data-aos="fade-up" className="fixed bottom-14 lg:bottom-4 right-4 bg-zinc-800/90 backdrop-blur-sm px-4 py-3 rounded-lg border border-zinc-700 shadow-xl z-50 animate-pulse">
+                    <div className="flex items-center gap-3">
+                        <div className="flex gap-1">
+                            <span className="w-1 h-4 bg-blue-400 rounded-full animate-pulse"></span>
+                            <span className="w-1 h-4 bg-blue-400 rounded-full animate-pulse" style={{ animationDelay: '0.2s' }}></span>
+                            <span className="w-1 h-4 bg-blue-400 rounded-full animate-pulse" style={{ animationDelay: '0.4s' }}></span>
+                        </div>
+                        <span className="text-white text-sm">Reproduciendo introducción...</span>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

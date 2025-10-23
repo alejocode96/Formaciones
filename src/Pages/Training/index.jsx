@@ -269,7 +269,7 @@ function Training() {
                                         <User className="h-5 w-5 text-zinc-400" />
                                     </div>
                                     <input type="text" id="nombre" value={nombre} onChange={(e) => setNombre(e.target.value)} placeholder="Ingresa tu nombre completo"
-                                        className={`block w-full pl-10 pr-3 py-3 border rounded-lg bg-zinc-800/50 text-white placeholder-zinc-400 focus:outline-none focus:ring-2 transition-colors duration-200 ${errors.nombre ? 'border-red-500 focus:ring-red-500/50' : 'border-zinc-700 focus:ring-emerald-500/50 focus:border-emerald-500'}`}      >
+                                        className={`block w-full pl-10 pr-3 py-3 border rounded-lg bg-zinc-800/50 text-white placeholder-zinc-400 focus:outline-none focus:ring-2 transition-colors duration-200 ${errors.nombre ? 'border-red-500 focus:ring-red-500/50' : 'border-zinc-700 focus:ring-blue-500/50 focus:border-blue-500'}`}      >
                                     </input>
                                 </div>
                                 {errors.nombre && (
@@ -283,7 +283,7 @@ function Training() {
                                         <IdCard className="h-5 w-5 text-zinc-400" />
                                     </div>
                                     <input type="text" id="cedula" value={cedula} onChange={(e) => setCedula(e.target.value)} placeholder="Ingresa tu número de cédula"
-                                        className={`block w-full pl-10 pr-3 py-3 border rounded-lg bg-zinc-800/50 text-white placeholder-zinc-400 focus:outline-none focus:ring-2 transition-colors duration-200 ${errors.cedula ? 'border-red-500 focus:ring-red-500/50' : 'border-zinc-700 focus:ring-emerald-500/50 focus:border-emerald-500'}`}>
+                                        className={`block w-full pl-10 pr-3 py-3 border rounded-lg bg-zinc-800/50 text-white placeholder-zinc-400 focus:outline-none focus:ring-2 transition-colors duration-200 ${errors.cedula ? 'border-red-500 focus:ring-red-500/50' : 'border-zinc-700 focus:ring-blue-500/50 focus:border-blue-500'}`}>
 
                                     </input>
                                 </div>
@@ -295,7 +295,7 @@ function Training() {
                         </div>
                     </div>
                     <div className="flex justify-center">
-                        <button onClick={handleStartCourse} className="bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white font-semibold py-4 px-32 w-full rounded-xl transition-all duration-300 ease-in-out hover:scale-105 hover:shadow-lg text-lg">Comenzar</button>
+                        <button onClick={handleStartCourse} className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold py-4 px-32 w-full rounded-xl transition-all duration-300 ease-in-out hover:scale-105 hover:shadow-lg text-lg">Comenzar</button>
                     </div>
                 </div>
             </main>

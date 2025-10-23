@@ -1,7 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Volume2, CheckCircle, X, Target, AlertCircle } from 'lucide-react';
-import AOS from 'aos';
-import 'aos/dist/aos.css';
 import { motion, AnimatePresence } from "framer-motion";
 
 function DragDropOrder({ currentModule, onContentIsEnded, courseId, moduleId }) {
@@ -30,10 +28,12 @@ function DragDropOrder({ currentModule, onContentIsEnded, courseId, moduleId }) 
   const [audioFailed, setAudioFailed] = useState(false);
   const [isPlayingAudio, setIsPlayingAudio] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
-  const [draggableItems, setDraggableItems] = useState(() => shuffleArray(cards));
-  const [dropZones, setDropZones] = useState(() =>
-    cards.map((_, index) => ({ zone: null, originalIndex: index }))
-  );
+  
+  // 🔥 CAMBIO CRÍTICO: Ya NO inicializamos con valores, esperamos cargar el progreso primero
+  const [draggableItems, setDraggableItems] = useState([]);
+  const [dropZones, setDropZones] = useState([]);
+  const [isInitialized, setIsInitialized] = useState(false); // Nuevo estado
+  
   const [draggedItem, setDraggedItem] = useState(null);
   const [showError, setShowError] = useState(false);
   const [showModal, setShowModal] = useState(false);
@@ -44,7 +44,7 @@ function DragDropOrder({ currentModule, onContentIsEnded, courseId, moduleId }) 
   const [touchPosition, setTouchPosition] = useState({ x: 0, y: 0 });
   const [isDraggingTouch, setIsDraggingTouch] = useState(false);
   const [isReorganizing, setIsReorganizing] = useState(false);
-  
+
   // 🔗 REFERENCIAS
   const synthRef = useRef(window.speechSynthesis);
   const pausedTextRef = useRef({ text: "" });
@@ -66,8 +66,8 @@ function DragDropOrder({ currentModule, onContentIsEnded, courseId, moduleId }) 
       try {
         const allProgress = JSON.parse(existingProgress);
         const userProgress = allProgress[courseId];
-        if (!userProgress?.dropDragOrder) return [];
-        const courseProgress = userProgress.dropDragOrder[`course_${courseId}`] || {};
+        if (!userProgress?.dragDropOrderProgress) return [];
+        const courseProgress = userProgress.dragDropOrderProgress[`course_${courseId}`] || {};
         const moduleProgress = courseProgress[`module_${moduleId}`] || [];
         console.log('📖 Progreso cargado:', moduleProgress);
         return moduleProgress;
@@ -82,32 +82,34 @@ function DragDropOrder({ currentModule, onContentIsEnded, courseId, moduleId }) 
   const saveProgress = (itemId) => {
     const key = getProgressKey();
     const existingProgress = localStorage.getItem(key);
-    const itemTitle = cards.find(i => i.id === itemId)?.title || "";
-    const itemKey = `${itemId}-${itemTitle}`;
+    const itemKey = `${itemId}`;
     let allProgress = existingProgress ? JSON.parse(existingProgress) : {};
 
     if (!allProgress[courseId]) {
       allProgress[courseId] = {
         id: courseId,
-        title: "SARLAFT - Factores de Riesgo",
+        title: currentModule.title || "",
         cumplimiento: 0,
         startedAt: new Date().toISOString(),
         lastAccessAt: new Date().toISOString(),
         currentModule: moduleId,
         completedModules: [],
-        dropDragOrder: {}
+        flipCardProgress: {},
+        flipCardReverseProgress: {},
+        dragDropProgress: {},
+        dragDropOrderProgress: {},
       };
     }
 
     const userProgress = allProgress[courseId];
-    if (!userProgress.dropDragOrder[`course_${courseId}`]) {
-      userProgress.dropDragOrder[`course_${courseId}`] = {};
+    if (!userProgress.dragDropOrderProgress[`course_${courseId}`]) {
+      userProgress.dragDropOrderProgress[`course_${courseId}`] = {};
     }
-    if (!userProgress.dropDragOrder[`course_${courseId}`][`module_${moduleId}`]) {
-      userProgress.dropDragOrder[`course_${courseId}`][`module_${moduleId}`] = [];
+    if (!userProgress.dragDropOrderProgress[`course_${courseId}`][`module_${moduleId}`]) {
+      userProgress.dragDropOrderProgress[`course_${courseId}`][`module_${moduleId}`] = [];
     }
 
-    const moduleProgress = userProgress.dropDragOrder[`course_${courseId}`][`module_${moduleId}`];
+    const moduleProgress = userProgress.dragDropOrderProgress[`course_${courseId}`][`module_${moduleId}`];
     if (!moduleProgress.includes(itemKey)) {
       moduleProgress.push(itemKey);
     }
@@ -117,12 +119,58 @@ function DragDropOrder({ currentModule, onContentIsEnded, courseId, moduleId }) 
     console.log(`✅ Progreso guardado: ${itemKey}`);
   };
 
-  // 🧠 EFFECTS: Inicialización
-  useEffect(() => {
-    const savedProgress = loadProgress();
-    const completedIds = savedProgress.map(item => item.split('-')[0]);
-    setCompletedItems(completedIds);
-  }, []);
+  // 🔥 INICIALIZACIÓN CON PROGRESO GUARDADO
+ // 🔥 INICIALIZACIÓN CON PROGRESO GUARDADO
+useEffect(() => {
+  const savedProgress = loadProgress();
+  setCompletedItems(savedProgress);
+  console.log('✅ Items completados cargados:', savedProgress);
+
+  // Separar items completados y pendientes
+  const completedIds = new Set(savedProgress);
+  const pendingCards = cards.filter(card => !completedIds.has(card.id));
+  const completedCards = cards.filter(card => completedIds.has(card.id));
+
+  // Inicializar draggableItems solo con los pendientes (mezclados)
+  setDraggableItems(shuffleArray(pendingCards));
+
+  // 🔥 NUEVO: Inicializar dropZones YA REORGANIZADOS
+  const allZones = cards.map((card, index) => {
+    const isCompleted = completedIds.has(card.id);
+    return {
+      zone: isCompleted ? card : null,
+      originalIndex: index
+    };
+  });
+
+  // Separar en incompletos y completados ANTES de setear el estado
+  const incompleteZones = [];
+  const completedZones = [];
+
+  allZones.forEach(slot => {
+    if (slot.zone && completedIds.has(slot.zone.id)) {
+      completedZones.push(slot);
+    } else {
+      incompleteZones.push(slot);
+    }
+  });
+
+  // Mantener orden original por originalIndex
+  incompleteZones.sort((a, b) => a.originalIndex - b.originalIndex);
+  completedZones.sort((a, b) => a.originalIndex - b.originalIndex);
+
+  // Unir: primero incompletos, luego completados
+  const organizedZones = [...incompleteZones, ...completedZones];
+
+  setDropZones(organizedZones);
+  setIsInitialized(true);
+  
+  console.log('🎯 Estado inicializado con progreso:', {
+    completados: completedCards.length,
+    pendientes: pendingCards.length,
+    zonesOrganizadas: organizedZones.length
+  });
+}, [courseId, moduleId]);
 
   useEffect(() => {
     if (vocesCargadas && !introStarted) {
@@ -134,43 +182,67 @@ function DragDropOrder({ currentModule, onContentIsEnded, courseId, moduleId }) 
 
   useEffect(() => {
     const synth = window.speechSynthesis;
+
     const cargarVoces = () => {
       const voices = synth.getVoices();
+
       if (!voices.length) {
         console.log('🔄 Reintentando cargar voces...');
         setTimeout(cargarVoces, 300);
         return;
       }
+
       const vocesEspanol = voices.filter(v => v.lang.toLowerCase().startsWith('es'));
+
       const prioridadMicrosoft = [
         'Microsoft Andrea Online (Natural) - Spanish (Ecuador)',
         'Microsoft Dalia Online (Natural) - Spanish (Mexico)',
         'Microsoft Salome Online (Natural) - Spanish (Colombia)',
+        'Microsoft Catalina Online (Natural) - Spanish (Chile)',
+        'Microsoft Camila Online (Natural) - Spanish (Peru)',
+        'Microsoft Paola Online (Natural) - Spanish (Venezuela)',
       ];
+
       let mejorOpcion = null;
+
       for (const nombre of prioridadMicrosoft) {
         mejorOpcion = vocesEspanol.find(v => v.name.toLowerCase().includes(nombre.toLowerCase()));
         if (mejorOpcion) break;
       }
+
       if (!mejorOpcion) {
         const vocesFemeninas = vocesEspanol.filter(v =>
-          /(female|mujer|monica|camila|andrea|salome)/i.test(v.name)
+          /(female|mujer|paulina|monica|soledad|camila|lucia|maría|carla|rosa|laura|catalina|dalia|salome|andrea|paola|google|microsoft)/i.test(v.name)
         );
-        mejorOpcion = vocesFemeninas[0] || vocesEspanol[0];
+
+        mejorOpcion =
+          vocesFemeninas.find(v => v.name.toLowerCase().includes('monica')) ||
+          vocesFemeninas.find(v => v.name.toLowerCase().includes('camila')) ||
+          vocesFemeninas.find(v => v.name.toLowerCase().includes('andrea')) ||
+          vocesFemeninas.find(v => v.name.toLowerCase().includes('salome')) ||
+          vocesFemeninas[0] ||
+          vocesEspanol[0];
       }
+
       if (mejorOpcion) {
         setMejorVoz(mejorOpcion);
         setVocesCargadas(true);
         console.log(`✅ Voz seleccionada: ${mejorOpcion.name} [${mejorOpcion.lang}]`);
+      } else {
+        console.warn('⚠️ No se encontró ninguna voz en español.');
       }
     };
+
     cargarVoces();
     synth.onvoiceschanged = cargarVoces;
+
     const handleUserInteraction = () => {
+      console.log('👆 Usuario hizo clic: forzando carga de voces...');
       cargarVoces();
       document.removeEventListener('click', handleUserInteraction);
     };
     document.addEventListener('click', handleUserInteraction);
+
     return () => {
       synth.onvoiceschanged = null;
       document.removeEventListener('click', handleUserInteraction);
@@ -302,7 +374,7 @@ function DragDropOrder({ currentModule, onContentIsEnded, courseId, moduleId }) 
                 let startTime = Date.now() - (audioProgress / 100 * estimatedDuration);
                 progressIntervalRef.current = setInterval(() => {
                   const elapsed = Date.now() - startTime;
-                  const progress = Math.min((elapsed / estimatedDuration) * 100, 99);
+                  const progress = Math.min((elapsed / estimatedDuration) * 100, 100);
                   setAudioProgress(progress);
                 }, 100);
               }
@@ -341,7 +413,7 @@ function DragDropOrder({ currentModule, onContentIsEnded, courseId, moduleId }) 
               let startTime = Date.now() - (audioProgress / 100 * estimatedDuration);
               progressIntervalRef.current = setInterval(() => {
                 const elapsed = Date.now() - startTime;
-                const progress = Math.min((elapsed / estimatedDuration) * 100, 99);
+                const progress = Math.min((elapsed / estimatedDuration) * 100, 100);
                 setAudioProgress(progress);
               }, 100);
             }
@@ -453,7 +525,6 @@ function DragDropOrder({ currentModule, onContentIsEnded, courseId, moduleId }) 
 
   const handleTouchMove = (e) => {
     if (!isDraggingTouch) return;
-    e.preventDefault();
     const touch = e.touches[0];
     setTouchPosition({ x: touch.clientX, y: touch.clientY });
   };
@@ -561,22 +632,8 @@ function DragDropOrder({ currentModule, onContentIsEnded, courseId, moduleId }) 
   };
 
   const reorganizeDropZones = () => {
-    const allCompleted = dropZones.every(slot =>
-      slot.zone && completedItems.includes(slot.zone.id)
-    );
-
-    if (allCompleted) {
-      setIsReorganizing(true);
-      setTimeout(() => {
-        setDropZones(prev =>
-          [...prev].sort((a, b) => a.originalIndex - b.originalIndex)
-        );
-        setTimeout(() => setIsReorganizing(false), 800);
-      }, 50);
-      return;
-    }
-
     setIsReorganizing(true);
+
     setTimeout(() => {
       setDropZones(prev => {
         const incomplete = [];
@@ -590,8 +647,12 @@ function DragDropOrder({ currentModule, onContentIsEnded, courseId, moduleId }) 
           }
         });
 
+        incomplete.sort((a, b) => a.originalIndex - b.originalIndex);
+        completed.sort((a, b) => a.originalIndex - b.originalIndex);
+
         return [...incomplete, ...completed];
       });
+
       setTimeout(() => setIsReorganizing(false), 800);
     }, 50);
   };
@@ -610,7 +671,7 @@ function DragDropOrder({ currentModule, onContentIsEnded, courseId, moduleId }) 
   const getPreviewText = (content) => {
     const cleaned = content.replace(/\n/g, ' ').replace(/\s+/g, ' ').trim();
     if (cleaned.length <= 80) return cleaned;
-    return cleaned.substring(0, 80) + '...';
+    return cleaned.substring(0, 100) + '...';
   };
 
   const getGridClass = () => {
@@ -623,16 +684,38 @@ function DragDropOrder({ currentModule, onContentIsEnded, courseId, moduleId }) 
     return 'grid-cols-2 md:grid-cols-3 lg:grid-cols-6';
   };
 
-  if (!vocesCargadas) {
+  const handleClickCompleted = (item) => {
+    setCurrentItem(item);
+    setAudioProgress(0);
+    setIsPlayingAudio(false);
+    setIsPaused(false);
+    audioCompletedRef.current = true;
+    setShowModal(true);
+
+    setTimeout(() => {
+      speak(
+        item.audioText,
+        () => { },
+        () => console.error('Error reproduciendo audio')
+      );
+    }, 500);
+  };
+
+  // 🔥 MOSTRAR LOADING MIENTRAS SE INICIALIZA
+  if (!vocesCargadas || !isInitialized) {
     return (
       <div className="flex justify-center items-center h-64">
-        <p className="text-slate-400 text-lg animate-pulse">Cargando voces en español...</p>
+        <p className="text-slate-400 text-lg animate-pulse">
+          {!vocesCargadas ? 'Cargando voces en español...' : 'Cargando progreso...'}
+        </p>
       </div>
     );
   }
 
   const allCompleted = completedItems.length === cards.length;
   const isPlayingIntro = introStarted && !introPlayed && isPlayingAudio;
+
+
 
   return (
     <div className="w-full mx-auto pt-10 pb-14 lg:pb-0">
@@ -683,7 +766,7 @@ function DragDropOrder({ currentModule, onContentIsEnded, courseId, moduleId }) 
       {introPlayed && (
         <div className="max-w-6xl mx-auto px-4">
           {/* DESKTOP: Layout original */}
-          <div className="hidden lg:block">
+          <div className="hidden lg:block mb-10">
             {draggableItems.length > 0 && (
               <div className="mb-10 transition-all duration-500" data-aos="fade-up">
                 <div className="flex items-center gap-2 mb-4">
@@ -725,7 +808,7 @@ function DragDropOrder({ currentModule, onContentIsEnded, courseId, moduleId }) 
               </div>
             )}
 
-            <div className="relative mb-6​​​​​​​​​​​​​​​​ " data-aos="fade-up">
+            <div className="relative mb-6​​​​​​​​​​​​​​​ pb-10​ " data-aos="fade-up">
               <div className="absolute left-8 md:left-10 top-0 bottom-0 w-0.5 bg-gradient-to-b from-blue-500 via-purple-500 to-pink-500"></div>
               <AnimatePresence mode="popLayout">
                 <motion.div
@@ -762,10 +845,11 @@ function DragDropOrder({ currentModule, onContentIsEnded, courseId, moduleId }) 
                           onTouchStart={(e) => slot.zone && handleTouchStart(e, slot.zone)}
                           onTouchMove={handleTouchMove}
                           onTouchEnd={handleTouchEnd}
+                          onClick={() => isCompleted && handleClickCompleted(slot.zone)}
                           className={`relative z-10 w-20 h-20 rounded-xl flex items-center justify-center flex-shrink-0 transition-all duration-300 shadow-lg
-                            ${slot.zone
+                          ${slot.zone
                               ? isCompleted
-                                ? 'bg-gradient-to-br from-[#071D49] to-[#1a4fff] shadow-blue-500/50 cursor-move'
+                                ? 'bg-gradient-to-br from-[#071D49] to-[#1a4fff] shadow-blue-500/50 cursor-pointer hover:scale-105'
                                 : 'bg-gradient-to-br from-orange-500 to-red-600 shadow-orange-500/50 cursor-move'
                               : 'bg-slate-800 border-2 border-dashed border-slate-600 hover:border-blue-500/50 hover:bg-slate-700'
                             }`}
@@ -783,6 +867,7 @@ function DragDropOrder({ currentModule, onContentIsEnded, courseId, moduleId }) 
 
                         <div
                           data-drop-zone={index}
+
                           draggable={!!slot.zone}
                           onDragStart={(e) => slot.zone && handleDragStart(e, slot.zone)}
                           onDragOver={handleDragOver}
@@ -790,16 +875,17 @@ function DragDropOrder({ currentModule, onContentIsEnded, courseId, moduleId }) 
                           onTouchStart={(e) => slot.zone && handleTouchStart(e, slot.zone)}
                           onTouchMove={handleTouchMove}
                           onTouchEnd={handleTouchEnd}
+                          onClick={() => isCompleted && handleClickCompleted(slot.zone)}
                           className={`flex-1 rounded-xl p-3 border-2 transition-all duration-500 
-                            ${slot.zone
+                              ${slot.zone
                               ? isCompleted
-                                ? 'bg-blue-500/10 border-blue-500/50 shadow-md shadow-green-500/10 cursor-move'
+                                ? 'bg-blue-500/10 border-blue-500/50 shadow-md shadow-blue-500/10 cursor-pointer hover:bg-blue-500/20'
                                 : 'bg-orange-500/10 border-orange-500/50 cursor-move'
                               : 'bg-slate-900/40 border-slate-700 border-dashed hover:border-blue-500/50 hover:bg-slate-900/60'
                             }`}
                         >
                           {slot.zone ? (
-                            <div>
+                            <div >
                               <div className="flex items-start justify-between gap-3 mb-2">
                                 <div className="flex items-center gap-2 flex-1 min-w-0">
                                   <div className="w-8 h-8 bg-gradient-to-br from-[#071D49] to-[#1a4fff] rounded-lg flex items-center justify-center shadow-md flex-shrink-0">
@@ -835,167 +921,150 @@ function DragDropOrder({ currentModule, onContentIsEnded, courseId, moduleId }) 
 
           {/* MOBILE/TABLET: Layout lado a lado */}
           <div className="lg:hidden">
-            <div className="flex gap-4">
-              {/* Columna izquierda: Elementos arrastrables (35%) */}
-              {draggableItems.length > 0 && (
-                <div className="w-[35%] transition-all duration-500" data-aos="fade-up">
-                  <div className="flex items-center gap-2 mb-4">
-                    <Target className="w-4 h-4 text-blue-400" />
-                    <span className="text-white font-semibold text-xs">Factores</span>
-                  </div>
+            {/* 🔹 Pasos completados (100%) arriba */}
+            <div className="space-y-3 mb-4">
+              {dropZones.map((slot, index) => {
+                const isCompleted = slot.zone && completedItems.includes(slot.zone.id);
+                if (!isCompleted) return null; // solo mostrar completados
 
-                  <div className="space-y-3">
-                    {draggableItems.map((item) => (
-                      <div
-                        className="bg-gradient-to-br from-[#0a1a3a]/80 to-[#071D49]/70 backdrop-blur-md border border-[#071D49]/30 shadow-md shadow-[#071D49]/40 hover:border-[#1a4fff] hover:shadow-xl hover:shadow-[#1a4fff]/40 transition-all duration-300 rounded-2xl cursor-move select-none"
-                        key={item.id}
-                        draggable
-                        onDragStart={(e) => handleDragStart(e, item)}
-                        onTouchStart={(e) => handleTouchStart(e, item)}
-                        onTouchMove={handleTouchMove}
-                        onTouchEnd={handleTouchEnd}
-                        style={isDraggingTouch && touchDragItem?.id === item.id ? {
-                          position: 'fixed',
-                          left: `${touchPosition.x - 60}px`,
-                          top: `${touchPosition.y - 60}px`,
-                          zIndex: 1000,
-                          opacity: 0.9,
-                          pointerEvents: 'none'
-                        } : {}}
-                      >
-                        <div className="text-center pointer-events-none p-3">
-                          <div className="w-12 h-12 mx-auto mb-2 bg-gradient-to-br from-[#071D49] to-[#1a4fff] rounded-xl flex items-center justify-center shadow-inner shadow-black/50">
-                            <span className="text-xl text-[#C4D600] drop-shadow-lg">{item.icon}</span>
+                const stepNumber = index + 1;
+                return (
+                  <div
+                    key={`completed-${index}`}
+                    className="w-full transition-all duration-500"
+                    data-aos="fade-up" onClick={() => handleClickCompleted(slot.zone)}
+                  >
+                    <div
+                      className="bg-blue-500/10 border-blue-500/50 rounded-xl p-3 shadow-md shadow-blue-500/10"
+                    >
+                      <div className="flex items-start justify-between gap-2 mb-1">
+                        <div className="flex items-center gap-2 flex-1 min-w-0">
+                          <div className="w-8 h-8 bg-gradient-to-br from-[#071D49] to-[#1a4fff] rounded-lg flex items-center justify-center shadow-md flex-shrink-0">
+                            <span className="text-base">{slot.zone.icon}</span>
                           </div>
-                          <p className="text-white/90 text-xs font-medium leading-tight tracking-wide">
-                            {item.title}
-                          </p>
+                          <div className="flex-1 min-w-0">
+                            <h4 className="text-white font-bold text-xs leading-tight">
+                              {slot.zone.title}
+                            </h4>
+                          </div>
                         </div>
+                        <p className="text-slate-500 text-xs whitespace-nowrap">
+                          {stepNumber}/{cards.length}
+                        </p>
                       </div>
-                    ))}
+                      <p className="text-slate-400 text-[10px] leading-relaxed line-clamp-2">
+                        {getPreviewText(slot.zone.content)}
+                      </p>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* 🔹 Pasos pendientes (30% izquierda + 70% derecha) */}
+            <div className="flex gap-4">
+              {/* Columna izquierda: elementos arrastrables */}
+              {draggableItems.length > 0 && (
+                <div className="w-[30%] transition-all duration-500" data-aos="fade-up">
+                  <div className="space-y-3">
+                    {cards.map((item) => {
+                      const isDraggable = draggableItems.some(d => d.id === item.id);
+                      if (!isDraggable) return null;
+
+                      return (
+                        <div
+                          key={item.id}
+                          className="bg-gradient-to-br from-[#0a1a3a]/80 to-[#071D49]/70 backdrop-blur-md border border-[#071D49]/30 shadow-md shadow-[#071D49]/40 hover:border-[#1a4fff] hover:shadow-xl hover:shadow-[#1a4fff]/40 transition-all duration-300 rounded-2xl cursor-move select-none h-[90px]"
+                          draggable
+                          onDragStart={(e) => handleDragStart(e, item)}
+                          onTouchStart={(e) => handleTouchStart(e, item)}
+                          onTouchMove={handleTouchMove}
+                          onTouchEnd={handleTouchEnd}
+                          style={isDraggingTouch && touchDragItem?.id === item.id ? {
+                            position: 'fixed',
+                            left: `${touchPosition.x - 60}px`,
+                            top: `${touchPosition.y - 45}px`,
+                            zIndex: 1000,
+                            opacity: 0.9,
+                            pointerEvents: 'none',
+                            width: '30%',
+                            height: '90px'
+                          } : {}}
+                        >
+                          <div className="text-center pointer-events-none h-full flex flex-col items-center justify-center p-2">
+                            <div className="w-10 h-10 mx-auto mb-1 bg-gradient-to-br from-[#071D49] to-[#1a4fff] rounded-xl flex items-center justify-center shadow-inner shadow-black/50">
+                              <span className="text-lg text-[#C4D600] drop-shadow-lg">{item.icon}</span>
+                            </div>
+                            <p className="text-white/90 text-[10px] font-medium leading-tight tracking-wide line-clamp-2">
+                              {item.title}
+                            </p>
+                          </div>
+                        </div>
+                      );
+                    })}
                   </div>
                 </div>
               )}
 
-              {/* Columna derecha: Zonas de drop (65% o 100% cuando todo completo) */}
-              <div className={`${draggableItems.length > 0 ? 'w-[65%]' : 'w-full'} transition-all duration-500`} data-aos="fade-up">
-                <AnimatePresence mode="popLayout">
-                  <motion.div
-                    className="space-y-3"
-                    layout
-                    transition={{ duration: 0.6, ease: [0.4, 0, 0.2, 1] }}
-                  >
-                    {dropZones.map((slot, index) => {
-                      if (!slot) return null;
+              {/* Columna derecha: zonas no completadas */}
+              <div
+                className={`${draggableItems.length > 0 ? 'w-[70%]' : 'w-full'} transition-all duration-500`}
+                data-aos="fade-up"
+              >
+                <div className="space-y-3">
+                  {dropZones.map((slot, index) => {
+                    const isCompleted = slot.zone && completedItems.includes(slot.zone.id);
+                    if (isCompleted) return null; // omitimos los completados aquí
 
-                      const isCompleted = slot.zone && completedItems.includes(slot.zone.id);
-                      const stepNumber = slot.originalIndex + 1;
-                      const shouldExpandFull = draggableItems.length === 0 && isCompleted;
+                    const stepNumber = index + 1;
 
-                      return (
-                        <motion.div
-                          key={`${slot.originalIndex}-${slot.zone?.id || 'empty'}`}
-                          ref={(el) => (dropZoneRefs.current[index] = el)}
-                          layout
-                          initial={{ opacity: 0, y: 20 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          exit={{ opacity: 0, y: -20 }}
-                          transition={{
-                            duration: 0.7,
-                            ease: [0.4, 0, 0.2, 1],
-                          }}
-                          className="relative"
+                    return (
+                      <div key={`pending-${index}`} className="relative h-[90px]">
+                        <div
+                          data-drop-zone={index}
+                          onDragOver={handleDragOver}
+                          onDrop={(e) => handleDrop(e, index)}
+                          onTouchMove={handleTouchMove}
+                          onTouchEnd={handleTouchEnd}
+                          className={`h-full rounded-xl p-3 border-2 transition-all duration-500
+                  ${slot.zone
+                              ? 'bg-orange-500/10 border-orange-500/50 cursor-move'
+                              : 'bg-slate-900/40 border-slate-700 border-dashed hover:border-blue-500/50 hover:bg-slate-900/60'
+                            }`}
                         >
-                          <div className="flex items-start gap-2">
-                            {/* Ícono/número izquierdo (se oculta cuando todo está completo) */}
-                            {!shouldExpandFull && (
-                              <div
-                                data-drop-zone={index}
-                                draggable={!!slot.zone}
-                                onDragStart={(e) => slot.zone && handleDragStart(e, slot.zone)}
-                                onDragOver={handleDragOver}
-                                onDrop={(e) => handleDrop(e, index)}
-                                onTouchStart={(e) => slot.zone && handleTouchStart(e, slot.zone)}
-                                onTouchMove={handleTouchMove}
-                                onTouchEnd={handleTouchEnd}
-                                className={`w-14 h-14 rounded-xl flex items-center justify-center flex-shrink-0 transition-all duration-300 shadow-lg
-                                  ${slot.zone
-                                    ? isCompleted
-                                      ? 'bg-gradient-to-br from-[#071D49] to-[#1a4fff] shadow-blue-500/50 cursor-move'
-                                      : 'bg-gradient-to-br from-orange-500 to-red-600 shadow-orange-500/50 cursor-move'
-                                    : 'bg-slate-800 border-2 border-dashed border-slate-600 hover:border-blue-500/50 hover:bg-slate-700'
-                                  }`}
-                              >
-                                {slot.zone ? (
-                                  isCompleted ? (
-                                    <CheckCircle className="w-7 h-7 text-white" />
-                                  ) : (
-                                    <span className="text-xl">{slot.zone.icon}</span>
-                                  )
-                                ) : (
-                                  <span className="text-slate-500 font-bold text-sm">{stepNumber}</span>
-                                )}
-                              </div>
-                            )}
-
-                            {/* Contenido del paso */}
-                            <div
-                              data-drop-zone={index}
-                              draggable={!!slot.zone}
-                              onDragStart={(e) => slot.zone && handleDragStart(e, slot.zone)}
-                              onDragOver={handleDragOver}
-                              onDrop={(e) => handleDrop(e, index)}
-                              onTouchStart={(e) => slot.zone && handleTouchStart(e, slot.zone)}
-                              onTouchMove={handleTouchMove}
-                              onTouchEnd={handleTouchEnd}
-                              className={`flex-1 rounded-xl p-3 border-2 transition-all duration-500 
-                                ${slot.zone
-                                  ? isCompleted
-                                    ? 'bg-blue-500/10 border-blue-500/50 shadow-md shadow-green-500/10 cursor-move'
-                                    : 'bg-orange-500/10 border-orange-500/50 cursor-move'
-                                  : 'bg-slate-900/40 border-slate-700 border-dashed hover:border-blue-500/50 hover:bg-slate-900/60'
-                                }`}
-                            >
-                              {slot.zone ? (
-                                <div>
-                                  <div className="flex items-start justify-between gap-2 mb-2">
-                                    <div className="flex items-center gap-2 flex-1 min-w-0">
-                                      {/* Icono visible cuando está expandido */}
-                                      {shouldExpandFull && (
-                                        <div className="w-8 h-8 bg-gradient-to-br from-[#071D49] to-[#1a4fff] rounded-lg flex items-center justify-center shadow-md flex-shrink-0">
-                                          <span className="text-lg">{slot.zone.icon}</span>
-                                        </div>
-                                      )}
-                                      <div className="flex-1 min-w-0">
-                                        <h4 className="text-white font-bold text-xs">{slot.zone.title}</h4>
-                                      </div>
-                                    </div>
-                                    <div className="text-right flex-shrink-0">
-                                      <p className="text-slate-500 text-xs whitespace-nowrap">
-                                        {stepNumber}/{dropZones.length}
-                                      </p>
-                                    </div>
+                          {slot.zone ? (
+                            <div className="h-full flex flex-col justify-center">
+                              <div className="flex items-start justify-between gap-2 mb-1">
+                                <div className="flex items-center gap-2 flex-1 min-w-0">
+                                  <div className="w-8 h-8 bg-gradient-to-br from-[#071D49] to-[#1a4fff] rounded-lg flex items-center justify-center shadow-md flex-shrink-0">
+                                    <span className="text-base">{slot.zone.icon}</span>
                                   </div>
-                                  
-                                  <p className="text-slate-400 text-xs leading-relaxed line-clamp-2">
-                                    {getPreviewText(slot.zone.content)}
-                                  </p>
+                                  <div className="flex-1 min-w-0">
+                                    <h4 className="text-white font-bold text-xs leading-tight">{slot.zone.title}</h4>
+                                  </div>
                                 </div>
-                              ) : (
-                                <div className="py-2 text-center">
-                                  <p className="text-slate-500 text-xs">Suelta el paso {stepNumber}</p>
+                                <div className="text-right flex-shrink-0">
+                                  <p className="text-slate-500 text-xs whitespace-nowrap">{stepNumber}/{cards.length}</p>
                                 </div>
-                              )}
+                              </div>
+                              <p className="text-slate-400 text-[10px] leading-relaxed line-clamp-2">
+                                {getPreviewText(slot.zone.content)}
+                              </p>
                             </div>
-                          </div>
-                        </motion.div>
-                      );
-                    })}
-                  </motion.div>
-                </AnimatePresence>
+                          ) : (
+                            <div className="h-full flex items-center justify-center">
+                              <p className="text-slate-500 text-xs">Suelta el paso {stepNumber}</p>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
             </div>
           </div>
+
 
           {/* Modal de reproducción de audio */}
           {showModal && currentItem && (
@@ -1107,7 +1176,7 @@ function DragDropOrder({ currentModule, onContentIsEnded, courseId, moduleId }) 
 
       {/* Indicador de reproducción de intro */}
       {isPlayingIntro && (
-        <div data-aos="fade-up" className="fixed bottom-4 right-4 bg-zinc-800/90 backdrop-blur-sm px-4 py-3 rounded-lg border border-zinc-700 shadow-xl z-50 animate-pulse">
+        <div data-aos="fade-up" className="fixed bottom-14 lg:bottom-4 right-4 bg-zinc-800/90 backdrop-blur-sm px-4 py-3 rounded-lg border border-zinc-700 shadow-xl z-50 animate-pulse">
           <div className="flex items-center gap-3">
             <div className="flex gap-1">
               <span className="w-1 h-4 bg-blue-400 rounded-full animate-pulse"></span>
@@ -1121,7 +1190,7 @@ function DragDropOrder({ currentModule, onContentIsEnded, courseId, moduleId }) 
 
       {/* Mensaje de error */}
       {showError && (
-        <div data-aos="fade-up" className="fixed bottom-4 right-4 px-6 py-3 bg-red-500/50 border border-red-500/50 rounded-lg flex items-center gap-2 animate-pulse z-50">
+        <div data-aos="fade-up" className="fixed bottom-14 lg:bottom-4  right-4 px-6 py-3 bg-red-500/50 border border-red-500/50 rounded-lg flex items-center gap-2 animate-pulse z-50">
           <AlertCircle className="w-4 h-4 text-red-400 flex-shrink-0" />
           <p className="text-red-200 text-xs">Orden incorrecto. Sigue la secuencia correcta.</p>
         </div>
@@ -1129,7 +1198,7 @@ function DragDropOrder({ currentModule, onContentIsEnded, courseId, moduleId }) 
 
       {/* Popup de audio */}
       {showAudioPopup && (
-        <div data-aos="fade-up" className="fixed bottom-4 right-4 bg-gray-800 text-white px-6 py-3 rounded-xl shadow-lg text-sm text-center animate-pulse z-[9999]">
+        <div data-aos="fade-up" className="fixed bottom-14 lg:bottom-4  right-4 bg-gray-800 text-white px-6 py-3 rounded-xl shadow-lg text-sm text-center animate-pulse z-[9999]">
           🔊 <strong>Estamos intentando reproducir el audio...</strong><br />
           Si el problema persiste, cierra esta etapa y vuelve a cargarla.
         </div>

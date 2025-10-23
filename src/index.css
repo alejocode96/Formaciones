@@ -294,3 +294,6 @@ body {
   border: 2px solid blue !important;
 }
 */
+.draggable {
+  touch-action: none;
+}

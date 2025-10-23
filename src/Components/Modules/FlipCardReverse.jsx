@@ -941,7 +941,7 @@ function FlipCardReverse({ currentModule, onContentIsEnded, courseId, moduleId }
                                     <div className="absolute w-full h-full backface-hidden">
                                         <div
                                             className={`w-full h-full ${isUnlocked
-                                                ? `bg-gradient-to-br ${card.color}` // Degradado de color si está desbloqueada
+                                                ? ` bg-gradient-to-br from-[#0a1a3a]/80 to-[#071D49]/70 backdrop-blur-md border border-[#071D49]/30 shadow-md shadow-[#071D49]/40 hover:border-[#1a4fff] hover:shadow-xl hover:shadow-[#1a4fff]/40 transition-all duration-300   rounded-2xl` // Degradado de color si está desbloqueada
                                                 : 'bg-zinc-950' // Gris oscuro si está bloqueada
                                                 } rounded-2xl shadow-2xl flex flex-col items-center justify-center p-6 relative overflow-hidden transition-all duration-500`}
                                         >
@@ -967,16 +967,16 @@ function FlipCardReverse({ currentModule, onContentIsEnded, courseId, moduleId }
                                             )}
 
                                             {/* Capa de glassmorphism (efecto vidrio) */}
-                                            <div className="absolute top-0 left-0 w-full h-full bg-white/10 backdrop-blur-sm"></div>
+                                            {/* <div className="absolute top-0 left-0 w-full h-full bg-white/10 backdrop-blur-sm"></div> */}
 
                                             {/* Contenido principal del front */}
                                             <div className="relative z-10 flex flex-col items-center text-center">
                                                 {/* Ícono emoji grande */}
-                                                <div className="mb-6 p-4 rounded-full transition-all duration-500">
-                                                    <span className={`text-7xl md:text-8xl ${isUnlocked ? 'grayscale-0' : 'grayscale opacity-40'
-                                                        } transition-all duration-500`}>
-                                                        {card.icon}
-                                                    </span>
+                                               
+
+                                                <div className={` mb-6 p-4 w-34 h-34 mx-auto  bg-gradient-to-br ${!isUnlocked ? 'grayscale-0' : 'from-[#071D49] to-[#1a4fff] '
+                                                        } rounded-xl flex items-center justify-center shadow-inner shadow-black/50`}>
+                                                    <span className={`text-7xl md:text-8xl drop-shadow-lg ${isUnlocked ? 'grayscale-0' : 'grayscale opacity-40'} `}>{card.icon}</span>
                                                 </div>
 
                                                 {/* Número de tarjeta */}
@@ -1022,7 +1022,7 @@ function FlipCardReverse({ currentModule, onContentIsEnded, courseId, moduleId }
                                                 <div className="flex items-center justify-between mb-4">
                                                     <div className="flex items-center gap-3">
                                                         {/* Ícono con gradiente de color */}
-                                                        <div className={`p-2 bg-gradient-to-br ${card.color} rounded-lg flex items-center justify-center`}>
+                                                        <div className={`p-2 bg-gradient-to-br from-[#071D49] to-[#1a4fff] rounded-lg flex items-center justify-center`}>
                                                             <span className="text-3xl">{card.icono}</span>
                                                         </div>
                                                         {/* Número de tarjeta */}
@@ -1047,7 +1047,7 @@ function FlipCardReverse({ currentModule, onContentIsEnded, courseId, moduleId }
                                                 </p>
 
                                                 {/* Ejemplo destacado con borde de color */}
-                                                <div className={`bg-[#1a1a1d] border-l-4 ${card.colorBorde} p-3 rounded`}>
+                                                <div className={`bg-[#1a1a1d] border-l-4 border-[#1a4fff]  p-3 rounded`}>
                                                     <p className="text-gray-400 text-xs md:text-sm italic font-medium">
                                                         {card.example}
                                                     </p>
@@ -1069,9 +1069,24 @@ function FlipCardReverse({ currentModule, onContentIsEnded, courseId, moduleId }
                 </div>
             )}
 
+
+            {/* Indicador de reproducción de intro */}
+            {isPlayingIntro && (
+                <div data-aos="fade-up" className="fixed bottom-14 lg:bottom-4 right-4 bg-zinc-800/90 backdrop-blur-sm px-4 py-3 rounded-lg border border-zinc-700 shadow-xl z-50 animate-pulse">
+                    <div className="flex items-center gap-3">
+                        <div className="flex gap-1">
+                            <span className="w-1 h-4 bg-blue-400 rounded-full animate-pulse"></span>
+                            <span className="w-1 h-4 bg-blue-400 rounded-full animate-pulse" style={{ animationDelay: '0.2s' }}></span>
+                            <span className="w-1 h-4 bg-blue-400 rounded-full animate-pulse" style={{ animationDelay: '0.4s' }}></span>
+                        </div>
+                        <span className="text-white text-sm">Reproduciendo introducción...</span>
+                    </div>
+                </div>
+            )}
+
             {showAudioPopup && (
                 <div data-aos="fade-up"
-                    className="fixed bottom-4 right-4 bg-gray-800 text-white px-6 py-3 rounded-xl shadow-lg text-sm text-center animate-pulse z-[9999]"
+                    className="fixed bottom-14 lg:bottom-4 right-4 bg-gray-800 text-white px-6 py-3 rounded-xl shadow-lg text-sm text-center animate-pulse z-[9999]"
                 >
                     🔊 <strong>Estamos intentando reproducir el audio...</strong><br />
                     Si el problema persiste, cierra esta etapa y vuelve a cargarla.
