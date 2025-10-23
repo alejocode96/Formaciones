@@ -663,7 +663,7 @@ function DragDropOrder({ currentModule, onContentIsEnded, courseId, moduleId }) 
       )}
 
       {isPlayingIntro && (
-        <div className="max-w-4xl mx-auto" data-aos="fade-up">
+        <div className="max-w-4xl mx-auto px-4" data-aos="fade-up">
           <div className={`hidden lg:grid ${getGridClass()} gap-3 mb-6`} style={{ minHeight: '180px' }}>
             {cards.map((_, i) => (
               <div key={i} className="h-32 bg-zinc-900/50 rounded-xl animate-pulse"></div>
@@ -682,47 +682,20 @@ function DragDropOrder({ currentModule, onContentIsEnded, courseId, moduleId }) 
 
       {introPlayed && (
         <div className="max-w-6xl mx-auto px-4">
-          {/* Layout responsive */}
-          <div className="flex flex-col lg:block gap-6">
-            
-            {/* Elementos arrastrables - Solo visible cuando hay items disponibles */}
+          {/* DESKTOP: Layout original */}
+          <div className="hidden lg:block">
             {draggableItems.length > 0 && (
-              <div className="transition-all duration-500" data-aos="fade-up">
+              <div className="mb-10 transition-all duration-500" data-aos="fade-up">
                 <div className="flex items-center gap-2 mb-4">
                   <Target className="w-5 h-5 text-blue-400" />
                   <span className="text-white font-semibold text-sm">Factores</span>
                   <span className="text-slate-500 text-xs ml-auto">{draggableItems.length} disponibles</span>
                 </div>
 
-                {/* Desktop: Grid */}
-                <div className={`hidden lg:grid ${getGridClass()} gap-4`} style={{ minHeight: '120px' }}>
+                <div className={`grid ${getGridClass()} gap-4`} style={{ minHeight: '120px' }}>
                   {draggableItems.map((item) => (
                     <div
                       className="bg-gradient-to-br from-[#0a1a3a]/80 to-[#071D49]/70 backdrop-blur-md border border-[#071D49]/30 shadow-md shadow-[#071D49]/40 hover:border-[#1a4fff] hover:shadow-xl hover:shadow-[#1a4fff]/40 transition-all duration-300 hover:-translate-y-2 hover:scale-105 rounded-2xl cursor-move select-none"
-                      key={item.id}
-                      draggable
-                      onDragStart={(e) => handleDragStart(e, item)}
-                      onTouchStart={(e) => handleTouchStart(e, item)}
-                      onTouchMove={handleTouchMove}
-                      onTouchEnd={handleTouchEnd}
-                    >
-                      <div className="text-center pointer-events-none h-full flex flex-col items-center justify-center p-3">
-                        <div className="w-14 h-14 mx-auto mb-2 bg-gradient-to-br from-[#071D49] to-[#1a4fff] rounded-xl flex items-center justify-center shadow-inner shadow-black/50">
-                          <span className="text-2xl text-[#C4D600] drop-shadow-lg">{item.icon}</span>
-                        </div>
-                        <p className="text-white/90 text-sm font-medium leading-tight tracking-wide">
-                          {item.title}
-                        </p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-
-                {/* Mobile/Tablet: Lista vertical - 35% width */}
-                <div className="lg:hidden space-y-3">
-                  {draggableItems.map((item) => (
-                    <div
-                      className="bg-gradient-to-br from-[#0a1a3a]/80 to-[#071D49]/70 backdrop-blur-md border border-[#071D49]/30 shadow-md shadow-[#071D49]/40 hover:border-[#1a4fff] hover:shadow​​​​​​​​​​​​​​​​-xl hover:shadow-[#1a4fff]/40 transition-all duration-300 rounded-2xl cursor-move select-none w-[35%]"
                       key={item.id}
                       draggable
                       onDragStart={(e) => handleDragStart(e, item)}
@@ -738,11 +711,11 @@ function DragDropOrder({ currentModule, onContentIsEnded, courseId, moduleId }) 
                         pointerEvents: 'none'
                       } : {}}
                     >
-                      <div className="flex items-center gap-3 p-3 pointer-events-none">
-                        <div className="w-12 h-12 bg-gradient-to-br from-[#071D49] to-[#1a4fff] rounded-xl flex items-center justify-center shadow-inner shadow-black/50 flex-shrink-0">
-                          <span className="text-xl text-[#C4D600] drop-shadow-lg">{item.icon}</span>
+                      <div className="text-center pointer-events-none h-full flex flex-col items-center justify-center p-3">
+                        <div className="w-14 h-14 mx-auto mb-2 bg-gradient-to-br from-[#071D49] to-[#1a4fff] rounded-xl flex items-center justify-center shadow-inner shadow-black/50">
+                          <span className="text-2xl text-[#C4D600] drop-shadow-lg">{item.icon}</span>
                         </div>
-                        <p className="text-white/90 text-xs font-medium leading-tight tracking-wide flex-1">
+                        <p className="text-white/90 text-sm font-medium leading-tight tracking-wide">
                           {item.title}
                         </p>
                       </div>
@@ -752,11 +725,8 @@ function DragDropOrder({ currentModule, onContentIsEnded, courseId, moduleId }) 
               </div>
             )}
 
-            {/* Zonas de drop */}
-            <div className="relative" data-aos="fade-up">
-              {/* Línea decorativa - solo desktop */}
-              <div className="absolute left-8 md:left-10 top-0 bottom-0 w-0.5 bg-gradient-to-b from-blue-500 via-purple-500 to-pink-500 hidden lg:block"></div>
-              
+            <div className="relative mb-6​​​​​​​​​​​​​​​​ " data-aos="fade-up">
+              <div className="absolute left-8 md:left-10 top-0 bottom-0 w-0.5 bg-gradient-to-b from-blue-500 via-purple-500 to-pink-500"></div>
               <AnimatePresence mode="popLayout">
                 <motion.div
                   className="space-y-5"
@@ -768,7 +738,6 @@ function DragDropOrder({ currentModule, onContentIsEnded, courseId, moduleId }) 
 
                     const isCompleted = slot.zone && completedItems.includes(slot.zone.id);
                     const stepNumber = slot.originalIndex + 1;
-                    const shouldExpandFull = draggableItems.length === 0 && isCompleted;
 
                     return (
                       <motion.div
@@ -782,178 +751,249 @@ function DragDropOrder({ currentModule, onContentIsEnded, courseId, moduleId }) 
                           duration: 0.7,
                           ease: [0.4, 0, 0.2, 1],
                         }}
-                        className="relative"
+                        className="relative flex items-center gap-4"
                       >
-                        {/* Layout para desktop: flex horizontal */}
-                        <div className="hidden lg:flex items-center gap-4">
-                          {/* Ícono o número */}
-                          <div
-                            data-drop-zone={index}
-                            draggable={!!slot.zone}
-                            onDragStart={(e) => slot.zone && handleDragStart(e, slot.zone)}
-                            onDragOver={handleDragOver}
-                            onDrop={(e) => handleDrop(e, index)}
-                            onTouchStart={(e) => slot.zone && handleTouchStart(e, slot.zone)}
-                            onTouchMove={handleTouchMove}
-                            onTouchEnd={handleTouchEnd}
-                            className={`relative z-10 w-20 h-20 rounded-xl flex items-center justify-center flex-shrink-0 transition-all duration-300 shadow-lg
-                              ${slot.zone
-                                ? isCompleted
-                                  ? 'bg-gradient-to-br from-[#071D49] to-[#1a4fff] shadow-blue-500/50 cursor-move'
-                                  : 'bg-gradient-to-br from-orange-500 to-red-600 shadow-orange-500/50 cursor-move'
-                                : 'bg-slate-800 border-2 border-dashed border-slate-600 hover:border-blue-500/50 hover:bg-slate-700'
-                              }`}
-                          >
-                            {slot.zone ? (
-                              isCompleted ? (
-                                <CheckCircle className="w-10 h-10 text-white" />
-                              ) : (
-                                <span className="text-3xl">{slot.zone.icon}</span>
-                              )
+                        <div
+                          data-drop-zone={index}
+                          draggable={!!slot.zone}
+                          onDragStart={(e) => slot.zone && handleDragStart(e, slot.zone)}
+                          onDragOver={handleDragOver}
+                          onDrop={(e) => handleDrop(e, index)}
+                          onTouchStart={(e) => slot.zone && handleTouchStart(e, slot.zone)}
+                          onTouchMove={handleTouchMove}
+                          onTouchEnd={handleTouchEnd}
+                          className={`relative z-10 w-20 h-20 rounded-xl flex items-center justify-center flex-shrink-0 transition-all duration-300 shadow-lg
+                            ${slot.zone
+                              ? isCompleted
+                                ? 'bg-gradient-to-br from-[#071D49] to-[#1a4fff] shadow-blue-500/50 cursor-move'
+                                : 'bg-gradient-to-br from-orange-500 to-red-600 shadow-orange-500/50 cursor-move'
+                              : 'bg-slate-800 border-2 border-dashed border-slate-600 hover:border-blue-500/50 hover:bg-slate-700'
+                            }`}
+                        >
+                          {slot.zone ? (
+                            isCompleted ? (
+                              <CheckCircle className="w-10 h-10 text-white" />
                             ) : (
-                              <span className="text-slate-500 font-bold text-lg">{stepNumber}</span>
-                            )}
-                          </div>
-
-                          {/* Contenido del paso - Desktop */}
-                          <div
-                            data-drop-zone={index}
-                            draggable={!!slot.zone}
-                            onDragStart={(e) => slot.zone && handleDragStart(e, slot.zone)}
-                            onDragOver={handleDragOver}
-                            onDrop={(e) => handleDrop(e, index)}
-                            onTouchStart={(e) => slot.zone && handleTouchStart(e, slot.zone)}
-                            onTouchMove={handleTouchMove}
-                            onTouchEnd={handleTouchEnd}
-                            className={`flex-1 rounded-xl p-3 border-2 transition-all duration-500 
-                              ${slot.zone
-                                ? isCompleted
-                                  ? 'bg-blue-500/10 border-blue-500/50 shadow-md shadow-green-500/10 cursor-move'
-                                  : 'bg-orange-500/10 border-orange-500/50 cursor-move'
-                                : 'bg-slate-900/40 border-slate-700 border-dashed hover:border-blue-500/50 hover:bg-slate-900/60'
-                              }`}
-                          >
-                            {slot.zone ? (
-                              <div>
-                                <div className="flex items-start justify-between gap-3 mb-2">
-                                  <div className="flex items-center gap-2 flex-1 min-w-0">
-                                    <div className="w-8 h-8 bg-gradient-to-br from-[#071D49] to-[#1a4fff] rounded-lg flex items-center justify-center shadow-md flex-shrink-0">
-                                      <span className="text-lg">{slot.zone.icon}</span>
-                                    </div>
-                                    <div className="flex-1 min-w-0">
-                                      <h4 className="text-white font-bold text-sm truncate">{slot.zone.title}</h4>
-                                    </div>
-                                  </div>
-                                  <div className="text-right flex-shrink-0">
-                                    <p className="text-slate-500 text-xs whitespace-nowrap">
-                                      Paso {stepNumber}/{dropZones.length}
-                                    </p>
-                                  </div>
-                                </div>
-                                <p className="text-slate-400 text-xs leading-relaxed">
-                                  {getPreviewText(slot.zone.content)}
-                                </p>
-                              </div>
-                            ) : (
-                              <div className="py-2 text-center">
-                                <p className="text-slate-500 text-xs">Suelta aquí el paso {stepNumber}</p>
-                              </div>
-                            )}
-                          </div>
+                              <span className="text-3xl">{slot.zone.icon}</span>
+                            )
+                          ) : (
+                            <span className="text-slate-500 font-bold text-lg">{stepNumber}</span>
+                          )}
                         </div>
 
-                        {/* Layout para mobile/tablet: lado a lado con expansión cuando todo está completo */}
-                        <div className="lg:hidden flex items-start gap-3">
-                          {/* Columna izquierda: ícono (35% cuando hay items, se oculta cuando todo completo) */}
-                          <div
-                            data-drop-zone={index}
-                            draggable={!!slot.zone}
-                            onDragStart={(e) => slot.zone && handleDragStart(e, slot.zone)}
-                            onDragOver={handleDragOver}
-                            onDrop={(e) => handleDrop(e, index)}
-                            onTouchStart={(e) => slot.zone && handleTouchStart(e, slot.zone)}
-                            onTouchMove={handleTouchMove}
-                            onTouchEnd={handleTouchEnd}
-                            className={`${draggableItems.length > 0 ? 'w-[35%]' : shouldExpandFull ? 'w-0 opacity-0 overflow-hidden' : 'w-16'} transition-all duration-500`}
-                          >
-                            <div
-                              className={`w-full h-16 md:h-20 rounded-xl flex items-center justify-center flex-shrink-0 transition-all duration-300 shadow-lg
-                                ${slot.zone
-                                  ? isCompleted
-                                    ? 'bg-gradient-to-br from-[#071D49] to-[#1a4fff] shadow-blue-500/50 cursor-move'
-                                    : 'bg-gradient-to-br from-orange-500 to-red-600 shadow-orange-500/50 cursor-move'
-                                  : 'bg-slate-800 border-2 border-dashed border-slate-600 hover:border-blue-500/50 hover:bg-slate-700'
-                                }`}
-                            >
-                              {slot.zone ? (
-                                isCompleted ? (
-                                  <CheckCircle className="w-8 h-8 md:w-10 md:h-10 text-white" />
-                                ) : (
-                                  <span className="text-2xl md:text-3xl">{slot.zone.icon}</span>
-                                )
-                              ) : (
-                                <span className="text-slate-500 font-bold text-base md:text-lg">{stepNumber}</span>
-                              )}
-                            </div>
-                          </div>
-
-                          {/* Columna derecha: contenido (65% o 100% cuando todo está completo) */}
-                          <div
-                            data-drop-zone={index}
-                            draggable={!!slot.zone}
-                            onDragStart={(e) => slot.zone && handleDragStart(e, slot.zone)}
-                            onDragOver={handleDragOver}
-                            onDrop={(e) => handleDrop(e, index)}
-                            onTouchStart={(e) => slot.zone && handleTouchStart(e, slot.zone)}
-                            onTouchMove={handleTouchMove}
-                            onTouchEnd={handleTouchEnd}
-                            className={`${draggableItems.length > 0 ? 'w-[65%]' : shouldExpandFull ? 'w-full' : 'flex-1'} rounded-xl p-3 border-2 transition-all duration-500 
-                              ${slot.zone
-                                ? isCompleted
-                                  ? 'bg-blue-500/10 border-blue-500/50 shadow-md shadow-green-500/10 cursor-move'
-                                  : 'bg-orange-500/10 border-orange-500/50 cursor-move'
-                                : 'bg-slate-900/40 border-slate-700 border-dashed hover:border-blue-500/50 hover:bg-slate-900/60'
-                              }`}
-                          >
-                            {slot.zone ? (
-                              <div>
-                                {/* Header con icono y título */}
-                                <div className="flex items-start justify-between gap-3 mb-2">
-                                  <div className="flex items-center gap-2 flex-1 min-w-0">
-                                    {/* Icono visible cuando está expandido */}
-                                    {shouldExpandFull && (
-                                      <div className="w-10 h-10 bg-gradient-to-br from-[#071D49] to-[#1a4fff] rounded-lg flex items-center justify-center shadow-md flex-shrink-0">
-                                        <span className="text-xl">{slot.zone.icon}</span>
-                                      </div>
-                                    )}
-                                    <div className="flex-1 min-w-0">
-                                      <h4 className="text-white font-bold text-sm">{slot.zone.title}</h4>
-                                    </div>
+                        <div
+                          data-drop-zone={index}
+                          draggable={!!slot.zone}
+                          onDragStart={(e) => slot.zone && handleDragStart(e, slot.zone)}
+                          onDragOver={handleDragOver}
+                          onDrop={(e) => handleDrop(e, index)}
+                          onTouchStart={(e) => slot.zone && handleTouchStart(e, slot.zone)}
+                          onTouchMove={handleTouchMove}
+                          onTouchEnd={handleTouchEnd}
+                          className={`flex-1 rounded-xl p-3 border-2 transition-all duration-500 
+                            ${slot.zone
+                              ? isCompleted
+                                ? 'bg-blue-500/10 border-blue-500/50 shadow-md shadow-green-500/10 cursor-move'
+                                : 'bg-orange-500/10 border-orange-500/50 cursor-move'
+                              : 'bg-slate-900/40 border-slate-700 border-dashed hover:border-blue-500/50 hover:bg-slate-900/60'
+                            }`}
+                        >
+                          {slot.zone ? (
+                            <div>
+                              <div className="flex items-start justify-between gap-3 mb-2">
+                                <div className="flex items-center gap-2 flex-1 min-w-0">
+                                  <div className="w-8 h-8 bg-gradient-to-br from-[#071D49] to-[#1a4fff] rounded-lg flex items-center justify-center shadow-md flex-shrink-0">
+                                    <span className="text-lg">{slot.zone.icon}</span>
                                   </div>
-                                  <div className="text-right flex-shrink-0">
-                                    <p className="text-slate-500 text-xs whitespace-nowrap">
-                                      Paso {stepNumber}/{dropZones.length}
-                                    </p>
+                                  <div className="flex-1 min-w-0">
+                                    <h4 className="text-white font-bold text-sm truncate">{slot.zone.title}</h4>
                                   </div>
                                 </div>
-                                
-                                {/* Contenido - SIEMPRE truncado con getPreviewText */}
-                                <p className="text-slate-400 text-xs leading-relaxed line-clamp-2">
-                                  {getPreviewText(slot.zone.content)}
-                                </p>
+                                <div className="text-right flex-shrink-0">
+                                  <p className="text-slate-500 text-xs whitespace-nowrap">
+                                    Paso {stepNumber}/{dropZones.length}
+                                  </p>
+                                </div>
                               </div>
-                            ) : (
-                              <div className="py-2 text-center">
-                                <p className="text-slate-500 text-xs">Suelta aquí el paso {stepNumber}</p>
-                              </div>
-                            )}
-                          </div>
+                              <p className="text-slate-400 text-xs leading-relaxed">
+                                {getPreviewText(slot.zone.content)}
+                              </p>
+                            </div>
+                          ) : (
+                            <div className="py-2 text-center">
+                              <p className="text-slate-500 text-xs">Suelta aquí el paso {stepNumber}</p>
+                            </div>
+                          )}
                         </div>
                       </motion.div>
                     );
                   })}
                 </motion.div>
               </AnimatePresence>
+            </div>
+          </div>
+
+          {/* MOBILE/TABLET: Layout lado a lado */}
+          <div className="lg:hidden">
+            <div className="flex gap-4">
+              {/* Columna izquierda: Elementos arrastrables (35%) */}
+              {draggableItems.length > 0 && (
+                <div className="w-[35%] transition-all duration-500" data-aos="fade-up">
+                  <div className="flex items-center gap-2 mb-4">
+                    <Target className="w-4 h-4 text-blue-400" />
+                    <span className="text-white font-semibold text-xs">Factores</span>
+                  </div>
+
+                  <div className="space-y-3">
+                    {draggableItems.map((item) => (
+                      <div
+                        className="bg-gradient-to-br from-[#0a1a3a]/80 to-[#071D49]/70 backdrop-blur-md border border-[#071D49]/30 shadow-md shadow-[#071D49]/40 hover:border-[#1a4fff] hover:shadow-xl hover:shadow-[#1a4fff]/40 transition-all duration-300 rounded-2xl cursor-move select-none"
+                        key={item.id}
+                        draggable
+                        onDragStart={(e) => handleDragStart(e, item)}
+                        onTouchStart={(e) => handleTouchStart(e, item)}
+                        onTouchMove={handleTouchMove}
+                        onTouchEnd={handleTouchEnd}
+                        style={isDraggingTouch && touchDragItem?.id === item.id ? {
+                          position: 'fixed',
+                          left: `${touchPosition.x - 60}px`,
+                          top: `${touchPosition.y - 60}px`,
+                          zIndex: 1000,
+                          opacity: 0.9,
+                          pointerEvents: 'none'
+                        } : {}}
+                      >
+                        <div className="text-center pointer-events-none p-3">
+                          <div className="w-12 h-12 mx-auto mb-2 bg-gradient-to-br from-[#071D49] to-[#1a4fff] rounded-xl flex items-center justify-center shadow-inner shadow-black/50">
+                            <span className="text-xl text-[#C4D600] drop-shadow-lg">{item.icon}</span>
+                          </div>
+                          <p className="text-white/90 text-xs font-medium leading-tight tracking-wide">
+                            {item.title}
+                          </p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Columna derecha: Zonas de drop (65% o 100% cuando todo completo) */}
+              <div className={`${draggableItems.length > 0 ? 'w-[65%]' : 'w-full'} transition-all duration-500`} data-aos="fade-up">
+                <AnimatePresence mode="popLayout">
+                  <motion.div
+                    className="space-y-3"
+                    layout
+                    transition={{ duration: 0.6, ease: [0.4, 0, 0.2, 1] }}
+                  >
+                    {dropZones.map((slot, index) => {
+                      if (!slot) return null;
+
+                      const isCompleted = slot.zone && completedItems.includes(slot.zone.id);
+                      const stepNumber = slot.originalIndex + 1;
+                      const shouldExpandFull = draggableItems.length === 0 && isCompleted;
+
+                      return (
+                        <motion.div
+                          key={`${slot.originalIndex}-${slot.zone?.id || 'empty'}`}
+                          ref={(el) => (dropZoneRefs.current[index] = el)}
+                          layout
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: -20 }}
+                          transition={{
+                            duration: 0.7,
+                            ease: [0.4, 0, 0.2, 1],
+                          }}
+                          className="relative"
+                        >
+                          <div className="flex items-start gap-2">
+                            {/* Ícono/número izquierdo (se oculta cuando todo está completo) */}
+                            {!shouldExpandFull && (
+                              <div
+                                data-drop-zone={index}
+                                draggable={!!slot.zone}
+                                onDragStart={(e) => slot.zone && handleDragStart(e, slot.zone)}
+                                onDragOver={handleDragOver}
+                                onDrop={(e) => handleDrop(e, index)}
+                                onTouchStart={(e) => slot.zone && handleTouchStart(e, slot.zone)}
+                                onTouchMove={handleTouchMove}
+                                onTouchEnd={handleTouchEnd}
+                                className={`w-14 h-14 rounded-xl flex items-center justify-center flex-shrink-0 transition-all duration-300 shadow-lg
+                                  ${slot.zone
+                                    ? isCompleted
+                                      ? 'bg-gradient-to-br from-[#071D49] to-[#1a4fff] shadow-blue-500/50 cursor-move'
+                                      : 'bg-gradient-to-br from-orange-500 to-red-600 shadow-orange-500/50 cursor-move'
+                                    : 'bg-slate-800 border-2 border-dashed border-slate-600 hover:border-blue-500/50 hover:bg-slate-700'
+                                  }`}
+                              >
+                                {slot.zone ? (
+                                  isCompleted ? (
+                                    <CheckCircle className="w-7 h-7 text-white" />
+                                  ) : (
+                                    <span className="text-xl">{slot.zone.icon}</span>
+                                  )
+                                ) : (
+                                  <span className="text-slate-500 font-bold text-sm">{stepNumber}</span>
+                                )}
+                              </div>
+                            )}
+
+                            {/* Contenido del paso */}
+                            <div
+                              data-drop-zone={index}
+                              draggable={!!slot.zone}
+                              onDragStart={(e) => slot.zone && handleDragStart(e, slot.zone)}
+                              onDragOver={handleDragOver}
+                              onDrop={(e) => handleDrop(e, index)}
+                              onTouchStart={(e) => slot.zone && handleTouchStart(e, slot.zone)}
+                              onTouchMove={handleTouchMove}
+                              onTouchEnd={handleTouchEnd}
+                              className={`flex-1 rounded-xl p-3 border-2 transition-all duration-500 
+                                ${slot.zone
+                                  ? isCompleted
+                                    ? 'bg-blue-500/10 border-blue-500/50 shadow-md shadow-green-500/10 cursor-move'
+                                    : 'bg-orange-500/10 border-orange-500/50 cursor-move'
+                                  : 'bg-slate-900/40 border-slate-700 border-dashed hover:border-blue-500/50 hover:bg-slate-900/60'
+                                }`}
+                            >
+                              {slot.zone ? (
+                                <div>
+                                  <div className="flex items-start justify-between gap-2 mb-2">
+                                    <div className="flex items-center gap-2 flex-1 min-w-0">
+                                      {/* Icono visible cuando está expandido */}
+                                      {shouldExpandFull && (
+                                        <div className="w-8 h-8 bg-gradient-to-br from-[#071D49] to-[#1a4fff] rounded-lg flex items-center justify-center shadow-md flex-shrink-0">
+                                          <span className="text-lg">{slot.zone.icon}</span>
+                                        </div>
+                                      )}
+                                      <div className="flex-1 min-w-0">
+                                        <h4 className="text-white font-bold text-xs">{slot.zone.title}</h4>
+                                      </div>
+                                    </div>
+                                    <div className="text-right flex-shrink-0">
+                                      <p className="text-slate-500 text-xs whitespace-nowrap">
+                                        {stepNumber}/{dropZones.length}
+                                      </p>
+                                    </div>
+                                  </div>
+                                  
+                                  <p className="text-slate-400 text-xs leading-relaxed line-clamp-2">
+                                    {getPreviewText(slot.zone.content)}
+                                  </p>
+                                </div>
+                              ) : (
+                                <div className="py-2 text-center">
+                                  <p className="text-slate-500 text-xs">Suelta el paso {stepNumber}</p>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        </motion.div>
+                      );
+                    })}
+                  </motion.div>
+                </AnimatePresence>
+              </div>
             </div>
           </div>
 
