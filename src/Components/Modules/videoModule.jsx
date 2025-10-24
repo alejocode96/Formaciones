@@ -1,11 +1,11 @@
 import React, { useRef, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { TrainingLogiTransContext } from '../../Context';
-import { useAudioCancel } from '../../Hooks/useAudioCancel';
+
 
 
 function VideoModule({ src, resumen, onContentIsEnded }) {
-    const { playSpeech, cancelAudio } = useAudioCancel();
+  
     const { } = React.useContext(TrainingLogiTransContext);
 
     const videoRef = useRef(null);
@@ -13,29 +13,6 @@ function VideoModule({ src, resumen, onContentIsEnded }) {
     const lastTimeRef = useRef(0); // aquí guardamos la última posición permitida
 
 
-
-    useEffect(() => {
-    
-        // Opción 2: Limpieza directa (backup)
-        const synth = window.speechSynthesis;
-        if (synth) {
-            try {
-                if (synth.paused) synth.resume();
-                synth.cancel();
-
-                // Múltiples cancelaciones
-                requestAnimationFrame(() => synth.cancel());
-                setTimeout(() => synth.cancel(), 10);
-                setTimeout(() => synth.cancel(), 50);
-                setTimeout(() => synth.cancel(), 100);
-                setTimeout(() => synth.cancel(), 200);
-
-                console.log('✅ Audio limpiado desde VideoModule');
-            } catch (error) {
-                console.error('Error limpiando audio:', error);
-            }
-        }
-    }, []); // Solo al montar
 
     // Efecto para auto-reproducir cuando el componente se monta (con delay de 2 segundos)
     useEffect(() => {

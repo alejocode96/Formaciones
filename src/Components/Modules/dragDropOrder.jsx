@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Volume2, CheckCircle, X, Target, AlertCircle } from 'lucide-react';
 import { motion, AnimatePresence } from "framer-motion";
-import { useAudioCancel } from '../../Hooks/useAudioCancel';
+
+
 function DragDropOrder({ currentModule, onContentIsEnded, courseId, moduleId }) {
-  const { playSpeech, cancelAudio } = useAudioCancel();
+
   let cards = currentModule.cards;
   const maxRetries = 10;
   const correctOrder = cards.map(card => card.id);

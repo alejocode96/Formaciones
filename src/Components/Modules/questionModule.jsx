@@ -5,7 +5,7 @@ import { useAudioCancel } from '../../Hooks/useAudioCancel';
 
 
 function QuestionModule({ question, answer, onContentIsEnded, onAttempt, onCorrectAnswer, isCompleted = false }) {
-const { playSpeech, cancelAudio } = useAudioCancel();
+
   const { } = React.useContext(TrainingLogiTransContext);
   const [selectedAnswer, setSelectedAnswer] = useState(null);
   const [isSubmitted, setIsSubmitted] = useState(false);
@@ -17,29 +17,6 @@ const { playSpeech, cancelAudio } = useAudioCancel();
   const respuestasIniciales = useRef([]);
 
 
-
-  useEffect(() => {
-    
-        // Opción 2: Limpieza directa (backup)
-        const synth = window.speechSynthesis;
-        if (synth) {
-            try {
-                if (synth.paused) synth.resume();
-                synth.cancel();
-
-                // Múltiples cancelaciones
-                requestAnimationFrame(() => synth.cancel());
-                setTimeout(() => synth.cancel(), 10);
-                setTimeout(() => synth.cancel(), 50);
-                setTimeout(() => synth.cancel(), 100);
-                setTimeout(() => synth.cancel(), 200);
-
-                console.log('✅ Audio limpiado desde VideoModule');
-            } catch (error) {
-                console.error('Error limpiando audio:', error);
-            }
-        }
-    }, []); // Solo al montar
 
   useEffect(() => {
     if (answer && answer.length > 0 && respuestasIniciales.current.length === 0) {

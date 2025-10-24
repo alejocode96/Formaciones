@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Volume2, VolumeX, ChevronRight, ChevronLeft, BookOpen, Target, Lightbulb, Wrench, Lock, CheckCircle, X } from 'lucide-react';
 import { useLocation } from 'react-router-dom';
 
-import { useAudioCancel } from '../../Hooks/useAudioCancel';
+
 
 /**
  * =============================================================================

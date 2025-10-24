@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useLocation } from 'react-router-dom';
 import { TrainingLogiTransContext } from '../../Context';
 import { Volume2, VolumeX, ChevronRight, ChevronLeft, BookOpen, Target, Lightbulb, Wrench, Lock, CheckCircle, X } from 'lucide-react';
-import { useAudioCancel } from '../../Hooks/useAudioCancel';
+
 
 /**
 import AOS from 'aos';
@@ -25,7 +25,7 @@ import 'aos/dist/aos.css';
  * @param {String} moduleId - ID del módulo actual
  */
 function FlipCardReverse({ currentModule, onContentIsEnded, courseId, moduleId }) {
-    const { playSpeech, cancelAudio } = useAudioCancel();
+
     // 📦 DATOS: Array de tarjetas del módulo actual
     let cards = currentModule.cards;
     const maxRetries = 10;
