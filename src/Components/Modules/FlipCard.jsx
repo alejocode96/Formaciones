@@ -776,6 +776,7 @@ function FlipCard({ currentModule, onContentIsEnded, courseId, moduleId }) {
         return () => window.removeEventListener('resize', checkMobile);
     }, []);
 
+
     useEffect(() => {
         const handleVisibilityChange = () => {
             const synth = synthRef.current;
@@ -968,24 +969,53 @@ function FlipCard({ currentModule, onContentIsEnded, courseId, moduleId }) {
         cancelarAudio(); // cada vez que cambies de ruta, limpia todo
     }, [location.pathname]);
 
-    // ✅ Detectar cierre, recarga o cambio de pestaña
+
+    // ✅ Cancelar audio al navegar, cerrar pestaña o perder foco
     useEffect(() => {
-        const handleUnload = () => cancelarAudio();
         const handleVisibilityChange = () => {
-            if (document.hidden) cancelarAudio();
+            if (document.hidden) {
+                console.log("📴 Página oculta → cancelar audio");
+                cancelarAudio();
+            }
         };
 
-        window.addEventListener("beforeunload", handleUnload);
-        window.addEventListener("pagehide", handleUnload);
+        const handlePageHide = () => {
+            console.log("📴 Página oculta (pagehide) → cancelar audio");
+            cancelarAudio();
+        };
+
+        const handleBlur = () => {
+            console.log("👋 Ventana perdió foco → cancelar audio");
+            cancelarAudio();
+        };
+
+        const handleFocusOut = () => {
+            console.log("👋 Focus out detectado → cancelar audio");
+            cancelarAudio();
+        };
+
+        const handleUnload = () => {
+            console.log("🚪 beforeunload → cancelar audio");
+            cancelarAudio();
+        };
+
+        // ✅ Listeners universales (cubren Android, iOS y desktop)
         document.addEventListener("visibilitychange", handleVisibilityChange);
+        window.addEventListener("pagehide", handlePageHide);
+        window.addEventListener("blur", handleBlur);
+        window.addEventListener("focusout", handleFocusOut);
+        window.addEventListener("beforeunload", handleUnload);
 
         return () => {
-            window.removeEventListener("beforeunload", handleUnload);
-            window.removeEventListener("pagehide", handleUnload);
             document.removeEventListener("visibilitychange", handleVisibilityChange);
+            window.removeEventListener("pagehide", handlePageHide);
+            window.removeEventListener("blur", handleBlur);
+            window.removeEventListener("focusout", handleFocusOut);
+            window.removeEventListener("beforeunload", handleUnload);
             cancelarAudio();
         };
     }, []);
+
 
     // =========================================================================
     // SECCIÓN 9: VARIABLES COMPUTADAS PARA RENDERIZADO
