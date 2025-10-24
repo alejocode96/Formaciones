@@ -1,78 +1,86 @@
-import { useEffect } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useEffect, useRef } from "react";
+import { useLocation } from "react-router-dom";
 
-/**
- * Hook que cancela automáticamente el audio al cambiar de ruta
- * Funciona en iOS, Android y Desktop
- * 
- * USO:
- * import { useAudioCancel } from './hooks/useAudioCancel';
- * 
- * function MiComponente() {
- *   useAudioCancel(); // ← Agregar esta línea al inicio
- *   // ... resto del componente
- * }
- */
+// Flag global para bloquear audio
+const isAudioBlocked = { current: false };
+
 export const useAudioCancel = () => {
-    const location = useLocation();
+  const synthRef = useRef(window.speechSynthesis);
+  const currentUtteranceRef = useRef(null);
 
-    // Cancelar al cambiar de ruta
-    useEffect(() => {
-        const forceCancel = () => {
-            const synth = window.speechSynthesis;
-            if (!synth) return;
+  const location = useLocation();
 
-            try {
-                // PASO 1: Pausar primero (crítico para iOS)
-                if (synth.speaking || synth.pending) {
-                    synth.pause();
-                }
+  // Función para reproducir audio con control
+  const playSpeech = (text, options = {}) => {
+    if (isAudioBlocked.current) return; // Bloqueado: no reproducir
+    if (!synthRef.current) return;
 
-                // PASO 2: Cancelar inmediatamente
-                synth.cancel();
+    const utterance = new SpeechSynthesisUtterance(text);
 
-                // PASO 3: Cancelar en el siguiente frame
-                requestAnimationFrame(() => {
-                    synth.cancel();
-                });
+    // Opciones adicionales como voz, rate, pitch
+    if (options.voice) utterance.voice = options.voice;
+    if (options.rate) utterance.rate = options.rate;
+    if (options.pitch) utterance.pitch = options.pitch;
 
-                // PASO 4: Cancelaciones con delay (Android/iOS)
-                setTimeout(() => synth.cancel(), 10);
-                setTimeout(() => synth.cancel(), 50);
-                setTimeout(() => synth.cancel(), 100);
-                setTimeout(() => synth.cancel(), 200);
+    currentUtteranceRef.current = utterance;
+    synthRef.current.speak(utterance);
 
-                console.log('✅ Audio cancelado');
-            } catch (error) {
-                console.error('Error cancelando audio:', error);
-            }
-        };
+    utterance.onend = () => {
+      currentUtteranceRef.current = null;
+    };
 
-        // Cancelar al montar
-        forceCancel();
+    utterance.onerror = () => {
+      currentUtteranceRef.current = null;
+    };
+  };
 
-        // Cancelar al cambiar de ruta
-        return () => {
-            forceCancel();
-        };
-    }, [location.pathname]);
+  // Cancelar audio y limpiar referencias
+  const cancelAudio = () => {
+    if (synthRef.current) {
+      synthRef.current.cancel();
+      currentUtteranceRef.current = null;
+    }
+  };
 
-    // Cancelar al ocultar la página (cambio de tab)
-    useEffect(() => {
-        const handleVisibilityChange = () => {
-            if (document.hidden) {
-                const synth = window.speechSynthesis;
-                if (synth) {
-                    synth.pause();
-                    synth.cancel();
-                    setTimeout(() => synth.cancel(), 50);
-                }
-            }
-        };
+  // Cancelar audio al montar (multi-intento para móviles)
+  useEffect(() => {
+    let attempts = 0;
+    const maxAttempts = 5;
 
-        document.addEventListener('visibilitychange', handleVisibilityChange);
-        return () => {
-            document.removeEventListener('visibilitychange', handleVisibilityChange);
-        };
-    }, []);
+    const tryCancel = () => {
+      cancelAudio();
+      attempts += 1;
+      if (attempts < maxAttempts) setTimeout(tryCancel, 200);
+    };
+
+    tryCancel();
+  }, []);
+
+  // Cancelar audio al cambiar de ruta
+  useEffect(() => {
+    // Bloquear reproducción temporal
+    isAudioBlocked.current = true;
+
+    cancelAudio();
+
+    const unblock = setTimeout(() => {
+      isAudioBlocked.current = false;
+    }, 300); // desbloquea después de 300ms
+
+    return () => clearTimeout(unblock);
+  }, [location]);
+
+  // Cancelar audio al cerrar la pestaña
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      cancelAudio();
+    };
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => {
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+      cancelAudio();
+    };
+  }, []);
+
+  return { playSpeech, cancelAudio, currentUtteranceRef };
 };

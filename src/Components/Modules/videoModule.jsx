@@ -5,7 +5,7 @@ import { useAudioCancel } from '../../Hooks/useAudioCancel';
 
 
 function VideoModule({ src, resumen, onContentIsEnded }) {
-    
+    const { playSpeech, cancelAudio } = useAudioCancel();
     const { } = React.useContext(TrainingLogiTransContext);
 
     const videoRef = useRef(null);

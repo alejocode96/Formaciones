@@ -5,7 +5,7 @@ import { useAudioCancel } from '../../Hooks/useAudioCancel';
 
 
 function QuestionModule({ question, answer, onContentIsEnded, onAttempt, onCorrectAnswer, isCompleted = false }) {
-  useAudioCancel();
+const { playSpeech, cancelAudio } = useAudioCancel();
   const { } = React.useContext(TrainingLogiTransContext);
   const [selectedAnswer, setSelectedAnswer] = useState(null);
   const [isSubmitted, setIsSubmitted] = useState(false);

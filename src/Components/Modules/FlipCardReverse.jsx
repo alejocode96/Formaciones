@@ -25,7 +25,7 @@ import 'aos/dist/aos.css';
  * @param {String} moduleId - ID del módulo actual
  */
 function FlipCardReverse({ currentModule, onContentIsEnded, courseId, moduleId }) {
-    useAudioCancel();
+    const { playSpeech, cancelAudio } = useAudioCancel();
     // 📦 DATOS: Array de tarjetas del módulo actual
     let cards = currentModule.cards;
     const maxRetries = 10;
@@ -799,7 +799,7 @@ function FlipCardReverse({ currentModule, onContentIsEnded, courseId, moduleId }
                 }
             }
         }, []); // Solo al montar
-        
+
     // ==============================================================
     // 🎨 RENDERIZADO: Pantalla de carga
     // ==============================================================

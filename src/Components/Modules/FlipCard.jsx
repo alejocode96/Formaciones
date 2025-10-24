@@ -13,7 +13,7 @@ import { useAudioCancel } from '../../Hooks/useAudioCancel';
  * con reproducción de audio automática y seguimiento de progreso.
  */
 function FlipCard({ currentModule, onContentIsEnded, courseId, moduleId }) {
-
+    
     // =========================================================================
     // SECCIÓN 1: DATOS Y CONFIGURACIÓN INICIAL
     // =========================================================================
