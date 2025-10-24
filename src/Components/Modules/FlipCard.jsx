@@ -307,7 +307,7 @@ function FlipCard({ currentModule, onContentIsEnded, courseId, moduleId }) {
         const baseRate = 0.9;
         let totalEstimated = 2000;
         sentences.forEach(s => {
-            const cps = 14 * baseRate;
+            const cps = 21 * baseRate;
             const punctuationBonus = (s.match(/[,;:]/g) || []).length * 180;
             const time = (s.length / cps) * 1000 + punctuationBonus;
             totalEstimated += time;
@@ -816,7 +816,7 @@ function FlipCard({ currentModule, onContentIsEnded, courseId, moduleId }) {
                             const currentText = pausedTextRef.current.text;
                             if (currentText && audioProgress < 98 && !progressIntervalRef.current) {
                                 const baseRate = 0.9;
-                                const cps = 14 * baseRate;
+                                const cps = 21 * baseRate;
                                 const correctionFactor = 1.08;
                                 const estimatedDuration = ((currentText.length / cps) * 1000 * correctionFactor) + 2000;
 
@@ -888,7 +888,7 @@ function FlipCard({ currentModule, onContentIsEnded, courseId, moduleId }) {
                         const currentText = pausedTextRef.current.text;
                         if (currentText && audioProgress < 98 && !progressIntervalRef.current) {
                             const baseRate = 0.9;
-                            const cps = 14 * baseRate;
+                            const cps = 21 * baseRate;
                             const correctionFactor = 1.08;
                             const estimatedDuration = ((currentText.length / cps) * 1000 * correctionFactor) + 2000;
 
@@ -921,8 +921,8 @@ function FlipCard({ currentModule, onContentIsEnded, courseId, moduleId }) {
             window.removeEventListener('focus', handleFocus);
         };
     }, [audioProgress]);
-
-
+    
+    
     useEffect(() => {
         const handleBeforeUnload = () => {
             const synth = synthRef.current;
@@ -948,61 +948,6 @@ function FlipCard({ currentModule, onContentIsEnded, courseId, moduleId }) {
             window.removeEventListener('beforeunload', handleBeforeUnload);
         };
     }, []);
-
-    useEffect(() => {
-        // Esta función se ejecutará cuando el componente se desmonte
-        return () => {
-            console.log('🧹 LIMPIEZA TOTAL: Desmontando FlipCard...');
-
-            const synth = synthRef.current;
-
-            // 1. Marcar como navegando para prevenir nuevas reproducciones
-            isNavigatingRef.current = true;
-
-            // 2. Limpiar intervalo de progreso
-            if (progressIntervalRef.current) {
-                clearInterval(progressIntervalRef.current);
-                progressIntervalRef.current = null;
-                console.log('✅ Intervalo limpiado en desmontaje');
-            }
-
-            // 3. Marcar utterance como cancelado y limpiar eventos
-            if (currentUtteranceRef.current) {
-                currentUtteranceRef.current.wasCancelled = true;
-                currentUtteranceRef.current.onend = null;
-                currentUtteranceRef.current.onboundary = null;
-                currentUtteranceRef.current.onerror = null;
-                currentUtteranceRef.current.onstart = null;
-                currentUtteranceRef.current.onpause = null;
-                currentUtteranceRef.current.onresume = null;
-                currentUtteranceRef.current = null;
-                console.log('✅ Utterance limpiado en desmontaje');
-            }
-
-            // 4. Cancelar cualquier síntesis de voz activa
-            try {
-                if (synth && (synth.speaking || synth.pending)) {
-                    synth.resume(); // Forzar resume para desbloquear
-                    synth.cancel();
-                    console.log('✅ Síntesis cancelada en desmontaje');
-                }
-            } catch (error) {
-                console.error('⚠️ Error cancelando síntesis en desmontaje:', error);
-            }
-
-            // 5. Resetear todas las referencias
-            pausedTextRef.current.text = '';
-            audioStateRef.current = { isPlaying: false, wasPaused: false };
-            pausedByVisibilityRef.current = false;
-            audioCompletedRef.current = false;
-            audioRetryRef.current = 0;
-
-            console.log('✅ LIMPIEZA TOTAL COMPLETADA');
-        };
-    }, []);
-
-
-
 
     // =========================================================================
     // SECCIÓN 9: VARIABLES COMPUTADAS PARA RENDERIZADO
