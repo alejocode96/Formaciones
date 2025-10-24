@@ -815,24 +815,23 @@ function DragDropOrder({ currentModule, onContentIsEnded, courseId, moduleId }) 
   }, [synthRef, currentUtteranceRef]);
 
 
-  useEffect(() => {
-    let attempts = 0;
-    const maxAttempts = 3;
+ useEffect(() => {
+  const cancelAudio = () => {
+    if (window.speechSynthesis) {
+      window.speechSynthesis.cancel();
+      console.log("✅ SpeechSynthesis cancelado (voiceschanged)");
+    }
+  };
 
-    const cancelSpeech = () => {
-      if (window.speechSynthesis) {
-        window.speechSynthesis.cancel();
-        console.log(`✅ SpeechSynthesis cancelado intento ${attempts + 1}`);
-      }
-      attempts += 1;
-      if (attempts < maxAttempts) {
-        setTimeout(cancelSpeech, 200); // reintenta cada 200ms
-      }
-    };
+  window.speechSynthesis.addEventListener("voiceschanged", cancelAudio);
+  cancelAudio(); // intento inicial
 
-    cancelSpeech();
-  }, []);
-  
+  return () => {
+    window.speechSynthesis.removeEventListener("voiceschanged", cancelAudio);
+  };
+}, []);
+
+
   const allCompleted = completedItems.length === cards.length;
   const isPlayingIntro = introStarted && !introPlayed && isPlayingAudio;
 

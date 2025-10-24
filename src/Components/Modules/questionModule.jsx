@@ -14,22 +14,21 @@ function QuestionModule({ question, answer, onContentIsEnded, onAttempt, onCorre
   const respuestasIniciales = useRef([]);
 
   useEffect(() => {
-    let attempts = 0;
-    const maxAttempts = 3;
-
-    const cancelSpeech = () => {
+    const cancelAudio = () => {
       if (window.speechSynthesis) {
         window.speechSynthesis.cancel();
-        console.log(`✅ SpeechSynthesis cancelado intento ${attempts + 1}`);
-      }
-      attempts += 1;
-      if (attempts < maxAttempts) {
-        setTimeout(cancelSpeech, 200); // reintenta cada 200ms
+        console.log("✅ SpeechSynthesis cancelado (voiceschanged)");
       }
     };
 
-    cancelSpeech();
+    window.speechSynthesis.addEventListener("voiceschanged", cancelAudio);
+    cancelAudio(); // intento inicial
+
+    return () => {
+      window.speechSynthesis.removeEventListener("voiceschanged", cancelAudio);
+    };
   }, []);
+
 
 
   useEffect(() => {

@@ -690,11 +690,22 @@ function TrainingLogiTransProvider({ children }) {
                         id: 11, lessons: "Evaluación", name: "Evaluacion Final", completed: false, type: "Quiz",
                         questions: [
                             {
-                                "multipleOption":false,
+                                "multipleOption": false,
                                 "etiqueta": "¿Qué es SARLAFT?",
                                 "preguntas": [
                                     {
                                         "id": 1,
+                                        "name": "¿Qué significan las siglas SARLAFT?",
+                                        "respuestas": [
+                                            { "opcion": "Sistema de Administración del Riesgo de Lavado de Activos y de la Financiación del Terrorismo.", "rsp": true },
+                                            { "opcion": "Sistema de Administración de Riesgos Laborales y Financieros en la Empresa.", "rsp": false },
+                                            { "opcion": "Sistema de Análisis y Regulación de Lavado de Activos y Fraudes Tributarios.", "rsp": false },
+                                            { "opcion": "Servicio de Auditoría y Registro Legal de Actividades Financieras y Tributarias.", "rsp": false }
+                                        ]
+                                    },
+                                    
+                                    {
+                                        "id": 2,
                                         "name": "¿Qué significa SARLAFT y cuál es su objetivo principal?",
                                         "respuestas": [
                                             { "opcion": "Es un sistema para prevenir el lavado de activos y la financiación del terrorismo dentro de las empresas.", "rsp": true },
@@ -704,7 +715,7 @@ function TrainingLogiTransProvider({ children }) {
                                         ]
                                     },
                                     {
-                                        "id": 2,
+                                        "id": 3,
                                         "name": "¿Por qué es importante aplicar el SARLAFT en una empresa de transporte?",
                                         "respuestas": [
                                             { "opcion": "Porque ayuda a evitar que la empresa sea utilizada en actividades ilícitas y protege su reputación.", "rsp": true },
@@ -714,7 +725,7 @@ function TrainingLogiTransProvider({ children }) {
                                         ]
                                     },
                                     {
-                                        "id": 3,
+                                        "id": 1,
                                         "name": "¿Cuál de las siguientes afirmaciones describe mejor al SARLAFT?",
                                         "respuestas": [
                                             { "opcion": "Es un sistema de control que identifica, previene y gestiona riesgos relacionados con el lavado de activos y la financiación del terrorismo.", "rsp": true },
@@ -726,7 +737,7 @@ function TrainingLogiTransProvider({ children }) {
                                 ]
                             },
                             {
-                                 "multipleOption":true,
+                                "multipleOption": true,
                                 "etiqueta": "Etapas del SARLAFT",
                                 "preguntas": [
                                     {
@@ -778,7 +789,7 @@ function TrainingLogiTransProvider({ children }) {
 
                             },
                             {
-                                "multipleOption":true,
+                                "multipleOption": true,
                                 "etiqueta": "Factores de Riesgo en el Transporte de Carga",
                                 "preguntas": [
                                     {
@@ -830,7 +841,7 @@ function TrainingLogiTransProvider({ children }) {
 
                             },
                             {
-                                "multipleOption":true,
+                                "multipleOption": true,
                                 "etiqueta": "Señales de Alerta",
                                 "preguntas": [
                                     {
@@ -899,7 +910,7 @@ function TrainingLogiTransProvider({ children }) {
 
                             },
                             {
-                                "multipleOption":false,
+                                "multipleOption": false,
                                 "etiqueta": "Casos Reales en Colombia",
                                 "preguntas": [
                                     {
@@ -933,7 +944,7 @@ function TrainingLogiTransProvider({ children }) {
 
                             },
                             {
-                                "multipleOption":true,
+                                "multipleOption": true,
                                 "etiqueta": "El Rol de los Empleados",
                                 "preguntas": [
                                     {
@@ -1031,7 +1042,7 @@ function TrainingLogiTransProvider({ children }) {
 
                             },
                             {
-                                "multipleOption":true,
+                                "multipleOption": true,
                                 "etiqueta": "Consecuencias de No Aplicar el SARLAFT",
                                 "preguntas": [
                                     {
@@ -1146,7 +1157,7 @@ function TrainingLogiTransProvider({ children }) {
 
                             },
                             {
-                                "multipleOption":true,
+                                "multipleOption": true,
                                 "etiqueta": "Canales internos de reporte",
                                 "preguntas": [
                                     {
