@@ -949,47 +949,60 @@ function FlipCard({ currentModule, onContentIsEnded, courseId, moduleId }) {
         };
     }, []);
 
-
     useEffect(() => {
-        const synth = synthRef?.current || window.speechSynthesis;
-
-        const cancelSpeech = (reason = "") => {
-            if (!synth) return;
-            if (synth.speaking || synth.pending) {
-                console.log(`🛑 ${reason} — cancelando audio y limpiando cola...`);
-                if (currentUtteranceRef?.current) {
-                    currentUtteranceRef.current.wasCancelled = true;
-                }
-                synth.cancel();
-            }
-        };
-
-        // 1️⃣ Al cerrar o recargar la página
-        const handleBeforeUnload = () => cancelSpeech("Cierre o recarga detectado");
-
-        // 2️⃣ Al ocultar la página (móviles o pestaña en background)
-        const handleVisibilityChange = () => {
-            if (document.hidden) cancelSpeech("Cambio de visibilidad (móvil o background)");
-        };
-
-        // 3️⃣ Al cambiar de ruta interna (si usas React Router)
-        const handlePopState = () => cancelSpeech("Cambio de ruta interna");
-
-        // Escuchar eventos globales
-        window.addEventListener("beforeunload", handleBeforeUnload);
-        document.addEventListener("visibilitychange", handleVisibilityChange);
-        window.addEventListener("pagehide", handleBeforeUnload); // iOS Safari
-        window.addEventListener("popstate", handlePopState);
-
-        // Limpieza al desmontar componente
+        // Esta función se ejecutará cuando el componente se desmonte
         return () => {
-            cancelSpeech("Desmontando componente");
-            window.removeEventListener("beforeunload", handleBeforeUnload);
-            document.removeEventListener("visibilitychange", handleVisibilityChange);
-            window.removeEventListener("pagehide", handleBeforeUnload);
-            window.removeEventListener("popstate", handlePopState);
+            console.log('🧹 LIMPIEZA TOTAL: Desmontando FlipCard...');
+
+            const synth = synthRef.current;
+
+            // 1. Marcar como navegando para prevenir nuevas reproducciones
+            isNavigatingRef.current = true;
+
+            // 2. Limpiar intervalo de progreso
+            if (progressIntervalRef.current) {
+                clearInterval(progressIntervalRef.current);
+                progressIntervalRef.current = null;
+                console.log('✅ Intervalo limpiado en desmontaje');
+            }
+
+            // 3. Marcar utterance como cancelado y limpiar eventos
+            if (currentUtteranceRef.current) {
+                currentUtteranceRef.current.wasCancelled = true;
+                currentUtteranceRef.current.onend = null;
+                currentUtteranceRef.current.onboundary = null;
+                currentUtteranceRef.current.onerror = null;
+                currentUtteranceRef.current.onstart = null;
+                currentUtteranceRef.current.onpause = null;
+                currentUtteranceRef.current.onresume = null;
+                currentUtteranceRef.current = null;
+                console.log('✅ Utterance limpiado en desmontaje');
+            }
+
+            // 4. Cancelar cualquier síntesis de voz activa
+            try {
+                if (synth && (synth.speaking || synth.pending)) {
+                    synth.resume(); // Forzar resume para desbloquear
+                    synth.cancel();
+                    console.log('✅ Síntesis cancelada en desmontaje');
+                }
+            } catch (error) {
+                console.error('⚠️ Error cancelando síntesis en desmontaje:', error);
+            }
+
+            // 5. Resetear todas las referencias
+            pausedTextRef.current.text = '';
+            audioStateRef.current = { isPlaying: false, wasPaused: false };
+            pausedByVisibilityRef.current = false;
+            audioCompletedRef.current = false;
+            audioRetryRef.current = 0;
+
+            console.log('✅ LIMPIEZA TOTAL COMPLETADA');
         };
-    }, [synthRef, currentUtteranceRef]);
+    }, []);
+
+
+
 
     // =========================================================================
     // SECCIÓN 9: VARIABLES COMPUTADAS PARA RENDERIZADO
