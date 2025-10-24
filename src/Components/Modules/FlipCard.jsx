@@ -13,7 +13,7 @@ import { useAudioCancel } from '../../Hooks/useAudioCancel';
  * con reproducción de audio automática y seguimiento de progreso.
  */
 function FlipCard({ currentModule, onContentIsEnded, courseId, moduleId }) {
-    useAudioCancel();
+
     // =========================================================================
     // SECCIÓN 1: DATOS Y CONFIGURACIÓN INICIAL
     // =========================================================================
@@ -69,6 +69,7 @@ function FlipCard({ currentModule, onContentIsEnded, courseId, moduleId }) {
         wasPaused: false
     });
     const location = useLocation();
+
     // =========================================================================
     // SECCIÓN 4: FUNCIONES DE LOCAL STORAGE
     // =========================================================================
@@ -1082,7 +1083,28 @@ function FlipCard({ currentModule, onContentIsEnded, courseId, moduleId }) {
 
     }, [location]); // Se ejecuta cada vez que cambia location
 
+    useEffect(() => {
 
+        // Opción 2: Limpieza directa (backup)
+        const synth = window.speechSynthesis;
+        if (synth) {
+            try {
+                if (synth.paused) synth.resume();
+                synth.cancel();
+
+                // Múltiples cancelaciones
+                requestAnimationFrame(() => synth.cancel());
+                setTimeout(() => synth.cancel(), 10);
+                setTimeout(() => synth.cancel(), 50);
+                setTimeout(() => synth.cancel(), 100);
+                setTimeout(() => synth.cancel(), 200);
+
+                console.log('✅ Audio limpiado desde VideoModule');
+            } catch (error) {
+                console.error('Error limpiando audio:', error);
+            }
+        }
+    }, []); // Solo al montar
 
 
     // =========================================================================

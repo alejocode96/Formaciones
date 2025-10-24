@@ -775,6 +775,31 @@ function FlipCardReverse({ currentModule, onContentIsEnded, courseId, moduleId }
         );
     };
 
+
+
+      useEffect(() => {
+        
+            // Opción 2: Limpieza directa (backup)
+            const synth = window.speechSynthesis;
+            if (synth) {
+                try {
+                    if (synth.paused) synth.resume();
+                    synth.cancel();
+    
+                    // Múltiples cancelaciones
+                    requestAnimationFrame(() => synth.cancel());
+                    setTimeout(() => synth.cancel(), 10);
+                    setTimeout(() => synth.cancel(), 50);
+                    setTimeout(() => synth.cancel(), 100);
+                    setTimeout(() => synth.cancel(), 200);
+    
+                    console.log('✅ Audio limpiado desde VideoModule');
+                } catch (error) {
+                    console.error('Error limpiando audio:', error);
+                }
+            }
+        }, []); // Solo al montar
+        
     // ==============================================================
     // 🎨 RENDERIZADO: Pantalla de carga
     // ==============================================================

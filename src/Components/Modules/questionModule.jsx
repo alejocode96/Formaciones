@@ -18,7 +18,28 @@ function QuestionModule({ question, answer, onContentIsEnded, onAttempt, onCorre
 
 
 
+  useEffect(() => {
+    
+        // Opción 2: Limpieza directa (backup)
+        const synth = window.speechSynthesis;
+        if (synth) {
+            try {
+                if (synth.paused) synth.resume();
+                synth.cancel();
 
+                // Múltiples cancelaciones
+                requestAnimationFrame(() => synth.cancel());
+                setTimeout(() => synth.cancel(), 10);
+                setTimeout(() => synth.cancel(), 50);
+                setTimeout(() => synth.cancel(), 100);
+                setTimeout(() => synth.cancel(), 200);
+
+                console.log('✅ Audio limpiado desde VideoModule');
+            } catch (error) {
+                console.error('Error limpiando audio:', error);
+            }
+        }
+    }, []); // Solo al montar
 
   useEffect(() => {
     if (answer && answer.length > 0 && respuestasIniciales.current.length === 0) {
