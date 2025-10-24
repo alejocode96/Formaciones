@@ -487,7 +487,7 @@ function DragDropOrder({ currentModule, onContentIsEnded, courseId, moduleId }) 
     if (!draggedItem) return;
 
     const currentSlot = dropZones[index];
-    
+
     // 🔥 FIX: Encontrar el primer slot vacío para validar el orden correcto
     const firstEmptyIndex = dropZones.findIndex(slot => !slot.zone);
 
@@ -545,41 +545,51 @@ function DragDropOrder({ currentModule, onContentIsEnded, courseId, moduleId }) 
 
   const handleTouchEnd = (e) => {
     if (!isDraggingTouch || !touchDragItem) return;
-    const touch = e.changedTouches[0];
-    const dropElement = document.elementFromPoint(touch.clientX, touch.clientY);
-    const dropZone = dropElement?.closest('[data-drop-zone]');
-    if (dropZone) {
-      const index = parseInt(dropZone.dataset.dropZone);
-      const currentSlot = dropZones[index];
-      const expectedItem = correctOrder[currentSlot.originalIndex];
 
-      if (touchDragItem.id === expectedItem && !currentSlot.zone) {
-        const newDropZones = [...dropZones];
-        newDropZones[index] = { ...currentSlot, zone: touchDragItem };
-        setDropZones(newDropZones);
-        const newDraggableItems = draggableItems.filter(item => item.id !== touchDragItem.id);
-        setDraggableItems(newDraggableItems);
-        setCurrentItem(touchDragItem);
+    // 🔥 NUEVO: En móvil validamos el orden secuencial, no la zona de drop
+    const firstEmptyIndex = dropZones.findIndex(slot => !slot.zone);
 
-        setAudioProgress(0);
-        setIsPlayingAudio(false);
-        setIsPaused(false);
-        audioCompletedRef.current = false;
-
-        setShowModal(true);
-
-        setTimeout(() => {
-          speak(
-            touchDragItem.audioText,
-            () => handleAudioComplete(touchDragItem.id),
-            () => console.error('Error reproduciendo audio')
-          );
-        }, 500);
-      } else {
-        setShowError(true);
-        setTimeout(() => setShowError(false), 3000);
-      }
+    if (firstEmptyIndex === -1) {
+      // No hay slots vacíos
+      setIsDraggingTouch(false);
+      setTouchDragItem(null);
+      setDraggedItem(null);
+      return;
     }
+
+    const currentSlot = dropZones[firstEmptyIndex];
+    const expectedItem = correctOrder[currentSlot.originalIndex];
+
+    // Validar que el item arrastrado sea el correcto en la secuencia
+    if (touchDragItem.id === expectedItem) {
+      const newDropZones = [...dropZones];
+      newDropZones[firstEmptyIndex] = { ...currentSlot, zone: touchDragItem };
+      setDropZones(newDropZones);
+
+      const newDraggableItems = draggableItems.filter(item => item.id !== touchDragItem.id);
+      setDraggableItems(newDraggableItems);
+      setCurrentItem(touchDragItem);
+
+      setAudioProgress(0);
+      setIsPlayingAudio(false);
+      setIsPaused(false);
+      audioCompletedRef.current = false;
+
+      setShowModal(true);
+
+      setTimeout(() => {
+        speak(
+          touchDragItem.audioText,
+          () => handleAudioComplete(touchDragItem.id),
+          () => console.error('Error reproduciendo audio')
+        );
+      }, 500);
+    } else {
+      // Orden incorrecto
+      setShowError(true);
+      setTimeout(() => setShowError(false), 3000);
+    }
+
     setIsDraggingTouch(false);
     setTouchDragItem(null);
     setDraggedItem(null);
@@ -611,13 +621,27 @@ function DragDropOrder({ currentModule, onContentIsEnded, courseId, moduleId }) 
     if (synth && (synth.speaking || synth.pending)) {
       console.log('🛑 Cerrando modal y deteniendo audio...');
 
-      // Marcar utterance actual como cancelada
-      if (currentUtteranceRef.current) currentUtteranceRef.current.wasCancelled = true;
+      // 1. Marca como cancelado
+      if (currentUtteranceRef.current) {
+        currentUtteranceRef.current.wasCancelled = true;
+        currentUtteranceRef.current.onend = null;      // 🔥 NUEVO: Limpia callbacks
+        currentUtteranceRef.current.onerror = null;    // 🔥 NUEVO: Limpia callbacks
+      }
 
       // Pausar y cancelar para asegurar que no quede en cola
-      try { synth.pause(); } catch (e) { }
+
       setTimeout(() => {
         try { synth.cancel(); } catch (e) { }
+
+        // 4. 🔥 NUEVO: En móviles, doble cancelación
+        if (isMobile) {
+          setTimeout(() => {
+            try {
+              synth.cancel();      // Segunda cancelación
+              synth.getVoices();   // Reinicia motor
+            } catch (e) { }
+          }, 100);
+        }
       }, 50);
 
       setIsPlayingAudio(false);
@@ -661,6 +685,9 @@ function DragDropOrder({ currentModule, onContentIsEnded, courseId, moduleId }) 
       setAudioProgress(0);
       audioCompletedRef.current = false;
       pausedByVisibilityRef.current = false;
+      audioStateRef.current.isPlaying = false;
+      audioStateRef.current.wasPaused = false;
+      currentUtteranceRef.current = null;
     }, 100);
   };
 
@@ -961,7 +988,7 @@ function DragDropOrder({ currentModule, onContentIsEnded, courseId, moduleId }) 
                 const isCompleted = slot.zone && completedItems.includes(slot.zone.id);
                 if (!isCompleted) return null; // solo mostrar completados
 
-                const stepNumber =  slot.originalIndex + 1;
+                const stepNumber = slot.originalIndex + 1;
                 return (
                   <div
                     key={`completed-${index}`}
@@ -1005,15 +1032,21 @@ function DragDropOrder({ currentModule, onContentIsEnded, courseId, moduleId }) 
                       const isDraggable = draggableItems.some(d => d.id === item.id);
                       if (!isDraggable) return null;
 
+                      // 🔥 NUEVO: Detecta cuál es el siguiente correcto
+                      const firstEmptyIndex = dropZones.findIndex(slot => !slot.zone);
+                      const nextCorrectId = firstEmptyIndex !== -1
+                        ? correctOrder[dropZones[firstEmptyIndex].originalIndex]
+                        : null;
+                      const isNextCorrect = item.id === nextCorrectId;
                       return (
                         <div
                           key={item.id}
                           className="bg-gradient-to-br from-[#0a1a3a]/80 to-[#071D49]/70 backdrop-blur-md border border-[#071D49]/30 shadow-md shadow-[#071D49]/40 hover:border-[#1a4fff] hover:shadow-xl hover:shadow-[#1a4fff]/40 transition-all duration-300 rounded-2xl cursor-move select-none h-[90px]"
-                          draggable
+                          draggable={isNextCorrect}
                           onDragStart={(e) => handleDragStart(e, item)}
-                          onTouchStart={(e) => handleTouchStart(e, item)}
-                          onTouchMove={handleTouchMove}
-                          onTouchEnd={handleTouchEnd}
+                          onTouchStart={(e) => isNextCorrect && handleTouchStart(e, item)}
+                          onTouchMove={isNextCorrect ? handleTouchMove : undefined}
+                          onTouchEnd={isNextCorrect ? handleTouchEnd : undefined}
                           style={isDraggingTouch && touchDragItem?.id === item.id ? {
                             position: 'fixed',
                             left: `${touchPosition.x - 60}px`,
