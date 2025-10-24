@@ -10,6 +10,25 @@ function VideoModule({ src, resumen, onContentIsEnded }) {
     const location = useLocation();
     const lastTimeRef = useRef(0); // aquí guardamos la última posición permitida
 
+
+    useEffect(() => {
+        let attempts = 0;
+        const maxAttempts = 3;
+
+        const cancelSpeech = () => {
+            if (window.speechSynthesis) {
+                window.speechSynthesis.cancel();
+                console.log(`✅ SpeechSynthesis cancelado intento ${attempts + 1}`);
+            }
+            attempts += 1;
+            if (attempts < maxAttempts) {
+                setTimeout(cancelSpeech, 200); // reintenta cada 200ms
+            }
+        };
+
+        cancelSpeech();
+    }, []);
+
     // Efecto para auto-reproducir cuando el componente se monta (con delay de 2 segundos)
     useEffect(() => {
         const video = videoRef.current;

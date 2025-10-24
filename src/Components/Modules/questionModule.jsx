@@ -1,4 +1,4 @@
-import React, { useState, useEffect,useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { CheckCircle, XCircle, Send, RotateCcw } from 'lucide-react';
 import { TrainingLogiTransContext } from '../../Context';
 
@@ -12,6 +12,25 @@ function QuestionModule({ question, answer, onContentIsEnded, onAttempt, onCorre
 
   // 🔹 Barajar respuestas una sola vez al cargar la pregunta
   const respuestasIniciales = useRef([]);
+
+  useEffect(() => {
+    let attempts = 0;
+    const maxAttempts = 3;
+
+    const cancelSpeech = () => {
+      if (window.speechSynthesis) {
+        window.speechSynthesis.cancel();
+        console.log(`✅ SpeechSynthesis cancelado intento ${attempts + 1}`);
+      }
+      attempts += 1;
+      if (attempts < maxAttempts) {
+        setTimeout(cancelSpeech, 200); // reintenta cada 200ms
+      }
+    };
+
+    cancelSpeech();
+  }, []);
+
 
   useEffect(() => {
     if (answer && answer.length > 0 && respuestasIniciales.current.length === 0) {
@@ -96,7 +115,7 @@ function QuestionModule({ question, answer, onContentIsEnded, onAttempt, onCorre
                 ${!isSubmitted && isSelected ? 'bg-blue-900/30 border-blue-500 shadow-lg shadow-blue-500/20' : ''}
                 ${showCorrect ? 'bg-green-900/30 border-green-500 shadow-lg shadow-green-500/20' : ''}
                 ${showIncorrect ? 'bg-red-900/30 border-red-500 shadow-lg shadow-red-500/20' : ''}
-                ${!showIncorrect && !showCorrect  &&  !isSelected? 'border-zinc-700/50':''}
+                ${!showIncorrect && !showCorrect && !isSelected ? 'border-zinc-700/50' : ''}
                 ${isSubmitted ? 'cursor-not-allowed' : 'cursor-pointer'} group`}
             >
               <div className='flex items-center justify-between'>

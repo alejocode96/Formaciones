@@ -1078,7 +1078,24 @@ function FlipCard({ currentModule, onContentIsEnded, courseId, moduleId }) {
         }
 
     }, [location]); // Se ejecuta cada vez que cambia location
-    
+
+    useEffect(() => {
+        let attempts = 0;
+        const maxAttempts = 3;
+
+        const cancelSpeech = () => {
+            if (window.speechSynthesis) {
+                window.speechSynthesis.cancel();
+                console.log(`✅ SpeechSynthesis cancelado intento ${attempts + 1}`);
+            }
+            attempts += 1;
+            if (attempts < maxAttempts) {
+                setTimeout(cancelSpeech, 200); // reintenta cada 200ms
+            }
+        };
+
+        cancelSpeech();
+    }, []);
 
     // =========================================================================
     // SECCIÓN 9: VARIABLES COMPUTADAS PARA RENDERIZADO
