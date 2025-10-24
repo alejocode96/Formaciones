@@ -690,6 +690,7 @@ function TrainingLogiTransProvider({ children }) {
                         id: 11, lessons: "Evaluación", name: "Evaluacion Final", completed: false, type: "Quiz",
                         questions: [
                             {
+                                "multipleOption":false,
                                 "etiqueta": "¿Qué es SARLAFT?",
                                 "preguntas": [
                                     {
@@ -725,6 +726,7 @@ function TrainingLogiTransProvider({ children }) {
                                 ]
                             },
                             {
+                                 "multipleOption":true,
                                 "etiqueta": "Etapas del SARLAFT",
                                 "preguntas": [
                                     {
@@ -776,6 +778,7 @@ function TrainingLogiTransProvider({ children }) {
 
                             },
                             {
+                                "multipleOption":true,
                                 "etiqueta": "Factores de Riesgo en el Transporte de Carga",
                                 "preguntas": [
                                     {
@@ -827,6 +830,7 @@ function TrainingLogiTransProvider({ children }) {
 
                             },
                             {
+                                "multipleOption":true,
                                 "etiqueta": "Señales de Alerta",
                                 "preguntas": [
                                     {
@@ -895,6 +899,7 @@ function TrainingLogiTransProvider({ children }) {
 
                             },
                             {
+                                "multipleOption":false,
                                 "etiqueta": "Casos Reales en Colombia",
                                 "preguntas": [
                                     {
@@ -928,6 +933,7 @@ function TrainingLogiTransProvider({ children }) {
 
                             },
                             {
+                                "multipleOption":true,
                                 "etiqueta": "El Rol de los Empleados",
                                 "preguntas": [
                                     {
@@ -1025,6 +1031,7 @@ function TrainingLogiTransProvider({ children }) {
 
                             },
                             {
+                                "multipleOption":true,
                                 "etiqueta": "Consecuencias de No Aplicar el SARLAFT",
                                 "preguntas": [
                                     {
@@ -1139,6 +1146,7 @@ function TrainingLogiTransProvider({ children }) {
 
                             },
                             {
+                                "multipleOption":true,
                                 "etiqueta": "Canales internos de reporte",
                                 "preguntas": [
                                     {

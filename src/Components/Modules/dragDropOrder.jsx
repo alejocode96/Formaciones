@@ -28,12 +28,12 @@ function DragDropOrder({ currentModule, onContentIsEnded, courseId, moduleId }) 
   const [audioFailed, setAudioFailed] = useState(false);
   const [isPlayingAudio, setIsPlayingAudio] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
-  
+
   // 🔥 CAMBIO CRÍTICO: Ya NO inicializamos con valores, esperamos cargar el progreso primero
   const [draggableItems, setDraggableItems] = useState([]);
   const [dropZones, setDropZones] = useState([]);
   const [isInitialized, setIsInitialized] = useState(false); // Nuevo estado
-  
+
   const [draggedItem, setDraggedItem] = useState(null);
   const [showError, setShowError] = useState(false);
   const [showModal, setShowModal] = useState(false);
@@ -120,57 +120,57 @@ function DragDropOrder({ currentModule, onContentIsEnded, courseId, moduleId }) 
   };
 
   // 🔥 INICIALIZACIÓN CON PROGRESO GUARDADO
- // 🔥 INICIALIZACIÓN CON PROGRESO GUARDADO
-useEffect(() => {
-  const savedProgress = loadProgress();
-  setCompletedItems(savedProgress);
-  console.log('✅ Items completados cargados:', savedProgress);
+  // 🔥 INICIALIZACIÓN CON PROGRESO GUARDADO
+  useEffect(() => {
+    const savedProgress = loadProgress();
+    setCompletedItems(savedProgress);
+    console.log('✅ Items completados cargados:', savedProgress);
 
-  // Separar items completados y pendientes
-  const completedIds = new Set(savedProgress);
-  const pendingCards = cards.filter(card => !completedIds.has(card.id));
-  const completedCards = cards.filter(card => completedIds.has(card.id));
+    // Separar items completados y pendientes
+    const completedIds = new Set(savedProgress);
+    const pendingCards = cards.filter(card => !completedIds.has(card.id));
+    const completedCards = cards.filter(card => completedIds.has(card.id));
 
-  // Inicializar draggableItems solo con los pendientes (mezclados)
-  setDraggableItems(shuffleArray(pendingCards));
+    // Inicializar draggableItems solo con los pendientes (mezclados)
+    setDraggableItems(shuffleArray(pendingCards));
 
-  // 🔥 NUEVO: Inicializar dropZones YA REORGANIZADOS
-  const allZones = cards.map((card, index) => {
-    const isCompleted = completedIds.has(card.id);
-    return {
-      zone: isCompleted ? card : null,
-      originalIndex: index
-    };
-  });
+    // 🔥 NUEVO: Inicializar dropZones YA REORGANIZADOS
+    const allZones = cards.map((card, index) => {
+      const isCompleted = completedIds.has(card.id);
+      return {
+        zone: isCompleted ? card : null,
+        originalIndex: index
+      };
+    });
 
-  // Separar en incompletos y completados ANTES de setear el estado
-  const incompleteZones = [];
-  const completedZones = [];
+    // Separar en incompletos y completados ANTES de setear el estado
+    const incompleteZones = [];
+    const completedZones = [];
 
-  allZones.forEach(slot => {
-    if (slot.zone && completedIds.has(slot.zone.id)) {
-      completedZones.push(slot);
-    } else {
-      incompleteZones.push(slot);
-    }
-  });
+    allZones.forEach(slot => {
+      if (slot.zone && completedIds.has(slot.zone.id)) {
+        completedZones.push(slot);
+      } else {
+        incompleteZones.push(slot);
+      }
+    });
 
-  // Mantener orden original por originalIndex
-  incompleteZones.sort((a, b) => a.originalIndex - b.originalIndex);
-  completedZones.sort((a, b) => a.originalIndex - b.originalIndex);
+    // Mantener orden original por originalIndex
+    incompleteZones.sort((a, b) => a.originalIndex - b.originalIndex);
+    completedZones.sort((a, b) => a.originalIndex - b.originalIndex);
 
-  // Unir: primero incompletos, luego completados
-  const organizedZones = [...incompleteZones, ...completedZones];
+    // Unir: primero incompletos, luego completados
+    const organizedZones = [...incompleteZones, ...completedZones];
 
-  setDropZones(organizedZones);
-  setIsInitialized(true);
-  
-  console.log('🎯 Estado inicializado con progreso:', {
-    completados: completedCards.length,
-    pendientes: pendingCards.length,
-    zonesOrganizadas: organizedZones.length
-  });
-}, [courseId, moduleId]);
+    setDropZones(organizedZones);
+    setIsInitialized(true);
+
+    console.log('🎯 Estado inicializado con progreso:', {
+      completados: completedCards.length,
+      pendientes: pendingCards.length,
+      zonesOrganizadas: organizedZones.length
+    });
+  }, [courseId, moduleId]);
 
   useEffect(() => {
     if (vocesCargadas && !introStarted) {
@@ -277,11 +277,14 @@ useEffect(() => {
     utterance.lang = mejorVoz.lang || 'es-ES';
     utterance.rate = 0.9;
     utterance.pitch = 1;
+
     utterance.wasCancelled = false;
     pausedTextRef.current.text = text;
     currentUtteranceRef.current = utterance;
     let startTime = Date.now();
-    const estimatedDuration = (text.length / 15) * 1000;
+    const baseRate = 0.9; // tu rate actual
+    const charsPerSecond = 14 * baseRate; // velocidad ajustada
+    const estimatedDuration = (text.length / charsPerSecond) * 1000;
 
     utterance.onstart = () => {
       setIsPlayingAudio(true);
@@ -484,8 +487,19 @@ useEffect(() => {
     if (!draggedItem) return;
 
     const currentSlot = dropZones[index];
-    const expectedItem = correctOrder[currentSlot.originalIndex];
+    
+    // 🔥 FIX: Encontrar el primer slot vacío para validar el orden correcto
+    const firstEmptyIndex = dropZones.findIndex(slot => !slot.zone);
 
+    // Solo permitir drop si es el primer slot vacío
+    if (index !== firstEmptyIndex) {
+      setShowError(true);
+      setTimeout(() => setShowError(false), 3000);
+      setDraggedItem(null);
+      return;
+    }
+
+    const expectedItem = correctOrder[currentSlot.originalIndex];
     if (draggedItem.id === expectedItem && !currentSlot.zone) {
       const newDropZones = [...dropZones];
       newDropZones[index] = { ...currentSlot, zone: draggedItem };
@@ -594,14 +608,32 @@ useEffect(() => {
 
     setShowModal(false);
 
-    if (synth.speaking) {
+    if (synth && (synth.speaking || synth.pending)) {
+      console.log('🛑 Cerrando modal y deteniendo audio...');
+
+      // Marcar utterance actual como cancelada
       if (currentUtteranceRef.current) currentUtteranceRef.current.wasCancelled = true;
-      synth.cancel();
+
+      // Pausar y cancelar para asegurar que no quede en cola
+      try { synth.pause(); } catch (e) { }
+      setTimeout(() => {
+        try { synth.cancel(); } catch (e) { }
+      }, 50);
+
       setIsPlayingAudio(false);
       setIsPaused(false);
-    }
-    if (progressIntervalRef.current) clearInterval(progressIntervalRef.current);
 
+      // Refuerzo: limpiar cualquier intervalo de progreso
+      if (progressIntervalRef.current) {
+        clearInterval(progressIntervalRef.current);
+        progressIntervalRef.current = null;
+      }
+
+      // Reiniciar motor de voz para móviles
+      synth.getVoices();
+    }
+
+    // Reorganización de drop zones si la actividad no se completó
     if (!audioCompletedRef.current && currentItem) {
       const isAlreadyCompleted = completedItems.includes(currentItem.id);
       if (!isAlreadyCompleted) {
@@ -623,6 +655,7 @@ useEffect(() => {
       }, 50);
     }
 
+    // Reset final de estado
     setTimeout(() => {
       setCurrentItem(null);
       setAudioProgress(0);
@@ -630,6 +663,7 @@ useEffect(() => {
       pausedByVisibilityRef.current = false;
     }, 100);
   };
+
 
   const reorganizeDropZones = () => {
     setIsReorganizing(true);
@@ -927,7 +961,7 @@ useEffect(() => {
                 const isCompleted = slot.zone && completedItems.includes(slot.zone.id);
                 if (!isCompleted) return null; // solo mostrar completados
 
-                const stepNumber = index + 1;
+                const stepNumber =  slot.originalIndex + 1;
                 return (
                   <div
                     key={`completed-${index}`}
@@ -1190,7 +1224,7 @@ useEffect(() => {
 
       {/* Mensaje de error */}
       {showError && (
-        <div data-aos="fade-up" className="fixed bottom-14 lg:bottom-4  right-4 px-6 py-3 bg-red-500/50 border border-red-500/50 rounded-lg flex items-center gap-2 animate-pulse z-50">
+        <div data-aos="fade-up" className="fixed bottom-14 lg:bottom-4  right-1 lg:right-4 px-6 py-3 bg-red-500/50 border border-red-500/50 rounded-lg flex items-center gap-2 animate-pulse z-50">
           <AlertCircle className="w-4 h-4 text-red-400 flex-shrink-0" />
           <p className="text-red-200 text-xs">Orden incorrecto. Sigue la secuencia correcta.</p>
         </div>
@@ -1198,7 +1232,7 @@ useEffect(() => {
 
       {/* Popup de audio */}
       {showAudioPopup && (
-        <div data-aos="fade-up" className="fixed bottom-14 lg:bottom-4  right-4 bg-gray-800 text-white px-6 py-3 rounded-xl shadow-lg text-sm text-center animate-pulse z-[9999]">
+        <div data-aos="fade-up" className="fixed bottom-14 lg:bottom-4  right-1 lg:right-4  bg-gray-800 text-white px-6 py-3 rounded-xl shadow-lg text-sm text-center animate-pulse z-[9999]">
           🔊 <strong>Estamos intentando reproducir el audio...</strong><br />
           Si el problema persiste, cierra esta etapa y vuelve a cargarla.
         </div>

@@ -921,7 +921,7 @@ function FlipCardReverse({ currentModule, onContentIsEnded, courseId, moduleId }
                         return (
                             <div
                                 key={card.id}
-                                className={`h-95 md:h-96 perspective-1000 ${isLast ? "col-span-1 lg:col-span-2" : ""}`}
+                                className={`h-100 md:h-96 perspective-1000 ${isLast ? "col-span-1 lg:col-span-2" : ""}`}
                             >
                                 {/* Contenedor con efecto 3D flip */}
                                 <div
@@ -1072,7 +1072,7 @@ function FlipCardReverse({ currentModule, onContentIsEnded, courseId, moduleId }
 
             {/* Indicador de reproducción de intro */}
             {isPlayingIntro && (
-                <div data-aos="fade-up" className="fixed bottom-14 lg:bottom-4 right-4 bg-zinc-800/90 backdrop-blur-sm px-4 py-3 rounded-lg border border-zinc-700 shadow-xl z-50 animate-pulse">
+                <div data-aos="fade-up" className="fixed bottom-14 lg:bottom-4 right-1 lg:right-4 bg-zinc-800/90 backdrop-blur-sm px-4 py-3 rounded-lg border border-zinc-700 shadow-xl z-50 animate-pulse">
                     <div className="flex items-center gap-3">
                         <div className="flex gap-1">
                             <span className="w-1 h-4 bg-blue-400 rounded-full animate-pulse"></span>
@@ -1085,7 +1085,7 @@ function FlipCardReverse({ currentModule, onContentIsEnded, courseId, moduleId }
             )}
 
             {isPlayingAudio && !isPlayingIntro && (
-                <div data-aos="fade-up" className="fixed bottom-14 lg:bottom-4 right-4 bg-zinc-800/90 backdrop-blur-sm px-4 py-3 rounded-lg border border-zinc-700 shadow-xl z-50 animate-pulse">
+                <div data-aos="fade-up" className="fixed bottom-14 lg:bottom-4 right-1 lg:right-4 bg-zinc-800/90 backdrop-blur-sm px-4 py-3 rounded-lg border border-zinc-700 shadow-xl z-50 animate-pulse">
                     <div className="flex items-center gap-3">
                         <div className="flex gap-1">
                             <span className="w-1 h-4 bg-blue-400 rounded-full animate-pulse"></span>
@@ -1100,7 +1100,7 @@ function FlipCardReverse({ currentModule, onContentIsEnded, courseId, moduleId }
             
             {showAudioPopup && (
                 <div data-aos="fade-up"
-                    className="fixed bottom-14 lg:bottom-4 right-4 bg-gray-800 text-white px-6 py-3 rounded-xl shadow-lg text-sm text-center animate-pulse z-[9999]"
+                    className="fixed bottom-14 lg:bottom-4 right-1 lg:right-4 bg-gray-800 text-white px-6 py-3 rounded-xl shadow-lg text-sm text-center animate-pulse z-[9999]"
                 >
                     🔊 <strong>Estamos intentando reproducir el audio...</strong><br />
                     Si el problema persiste, cierra esta etapa y vuelve a cargarla.
