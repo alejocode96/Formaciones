@@ -992,119 +992,20 @@ function FlipCard({ currentModule, onContentIsEnded, courseId, moduleId }) {
     }, []);
 
 
-
-    // 🔥 CRÍTICO: Detener audio al cambiar de ruta (React Router)
     useEffect(() => {
-        // Función de limpieza que se ejecuta ANTES de cambiar de ruta
         return () => {
-            const synth = synthRef.current;
-
-            console.log('🚨 CAMBIO DE RUTA DETECTADO - Limpieza inmediata...');
-
-            // 🔥 PASO 1: Marcar como navegando INMEDIATAMENTE
-            isNavigatingRef.current = true;
-
-            // 🔥 PASO 2: Cancelar síntesis PRIMERO (3 veces para móviles)
-            if (synth) {
-                try {
-                    // Forzar resume antes de cancelar (importante en móviles)
-                    if (synth.paused) {
-                        synth.resume();
-                    }
-
-                    // Triple cancelación para móviles
-                    synth.cancel();
-                    setTimeout(() => synth.cancel(), 10);
-                    setTimeout(() => synth.cancel(), 50);
-
-                    console.log('✅ Síntesis cancelada (móviles)');
-                } catch (error) {
-                    console.error('Error cancelando síntesis:', error);
-                }
+            if (synthRef.current) {
+                synthRef.current.cancel(); // cancelar cualquier audio
             }
-
-            // 🔥 PASO 3: Limpiar intervalo
-            if (progressIntervalRef.current) {
-                clearInterval(progressIntervalRef.current);
-                progressIntervalRef.current = null;
-            }
-
-            // 🔥 PASO 4: Limpiar utterance
-            if (currentUtteranceRef.current) {
-                currentUtteranceRef.current.wasCancelled = true;
-                currentUtteranceRef.current.onend = null;
-                currentUtteranceRef.current.onboundary = null;
-                currentUtteranceRef.current.onerror = null;
-                currentUtteranceRef.current.onstart = null;
-                currentUtteranceRef.current.onpause = null;
-                currentUtteranceRef.current.onresume = null;
-                currentUtteranceRef.current = null;
-            }
-
-            // 🔥 PASO 5: Resetear referencias
-            pausedTextRef.current.text = '';
+            currentUtteranceRef.current = null; // limpiar referencia
+            audioRetryRef.current = 0;
             audioStateRef.current = { isPlaying: false, wasPaused: false };
-            pausedByVisibilityRef.current = false;
-            audioCompletedRef.current = false;
-
-            // 🔥 PASO 6: Resetear estados (importante hacerlo al final)
-            setIsPlayingAudio(false);
-            setIsPaused(false);
-            setAudioProgress(0);
-            setAudioCompletado(false);
-
-            console.log('✅ Limpieza de navegación completada');
-
-            // 🔥 PASO 7: Resetear bandera después de un delay
-            setTimeout(() => {
-                isNavigatingRef.current = false;
-                console.log('✅ Bandera de navegación reseteada');
-            }, 500);
+            console.log("🛑 Audio cancelado y referencias limpiadas al desmontar");
         };
-    }, [location.pathname]); // 🔥 IMPORTANTE: usar location.pathname
+    }, [location]); // si quieres hacerlo al cambiar de ruta
 
-    // 🔥 AGREGAR al final de la SECCIÓN 3 (después de las referencias)
-    // Hook adicional para forzar limpieza en móviles
-    useEffect(() => {
-        // Detectar si es móvil
-        const isMobileDevice = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
 
-        if (!isMobileDevice) return;
 
-        // En móviles, limpiar audio cada vez que cambia la ubicación
-        const synth = synthRef.current;
-
-        if (synth && synth.speaking) {
-            console.log('📱 MÓVIL: Forzando limpieza de audio...');
-            synth.cancel();
-            setTimeout(() => synth.cancel(), 50);
-            setTimeout(() => synth.cancel(), 150);
-        }
-
-    }, [location]); // Se ejecuta cada vez que cambia location
-
-    useEffect(() => {
-
-        // Opción 2: Limpieza directa (backup)
-        const synth = window.speechSynthesis;
-        if (synth) {
-            try {
-                if (synth.paused) synth.resume();
-                synth.cancel();
-
-                // Múltiples cancelaciones
-                requestAnimationFrame(() => synth.cancel());
-                setTimeout(() => synth.cancel(), 10);
-                setTimeout(() => synth.cancel(), 50);
-                setTimeout(() => synth.cancel(), 100);
-                setTimeout(() => synth.cancel(), 200);
-
-                console.log('✅ Audio limpiado desde VideoModule');
-            } catch (error) {
-                console.error('Error limpiando audio:', error);
-            }
-        }
-    }, []); // Solo al montar
 
 
     // =========================================================================
