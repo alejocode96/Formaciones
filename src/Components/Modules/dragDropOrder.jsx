@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Volume2, CheckCircle, X, Target, AlertCircle } from 'lucide-react';
 import { motion, AnimatePresence } from "framer-motion";
-
+import { useAudioCancel } from '../../Hooks/useAudioCancel';
 function DragDropOrder({ currentModule, onContentIsEnded, courseId, moduleId }) {
-  // 📦 DATOS
+  useAudioCancel();
   let cards = currentModule.cards;
   const maxRetries = 10;
   const correctOrder = cards.map(card => card.id);
@@ -815,21 +815,6 @@ function DragDropOrder({ currentModule, onContentIsEnded, courseId, moduleId }) 
   }, [synthRef, currentUtteranceRef]);
 
 
- useEffect(() => {
-  const cancelAudio = () => {
-    if (window.speechSynthesis) {
-      window.speechSynthesis.cancel();
-      console.log("✅ SpeechSynthesis cancelado (voiceschanged)");
-    }
-  };
-
-  window.speechSynthesis.addEventListener("voiceschanged", cancelAudio);
-  cancelAudio(); // intento inicial
-
-  return () => {
-    window.speechSynthesis.removeEventListener("voiceschanged", cancelAudio);
-  };
-}, []);
 
 
   const allCompleted = completedItems.length === cards.length;

@@ -1,6 +1,9 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Volume2, VolumeX, ChevronRight, ChevronLeft, BookOpen, Target, Lightbulb, Wrench, Lock, CheckCircle, X } from 'lucide-react';
 import { useLocation } from 'react-router-dom';
+
+import { useAudioCancel } from '../../Hooks/useAudioCancel';
+
 /**
  * =============================================================================
  * FLIPCARD COMPONENT
@@ -10,7 +13,7 @@ import { useLocation } from 'react-router-dom';
  * con reproducción de audio automática y seguimiento de progreso.
  */
 function FlipCard({ currentModule, onContentIsEnded, courseId, moduleId }) {
-
+    useAudioCancel();
     // =========================================================================
     // SECCIÓN 1: DATOS Y CONFIGURACIÓN INICIAL
     // =========================================================================
@@ -1079,21 +1082,7 @@ function FlipCard({ currentModule, onContentIsEnded, courseId, moduleId }) {
 
     }, [location]); // Se ejecuta cada vez que cambia location
 
-    useEffect(() => {
-  const cancelAudio = () => {
-    if (window.speechSynthesis) {
-      window.speechSynthesis.cancel();
-      console.log("✅ SpeechSynthesis cancelado (voiceschanged)");
-    }
-  };
 
-  window.speechSynthesis.addEventListener("voiceschanged", cancelAudio);
-  cancelAudio(); // intento inicial
-
-  return () => {
-    window.speechSynthesis.removeEventListener("voiceschanged", cancelAudio);
-  };
-}, []);
 
 
     // =========================================================================

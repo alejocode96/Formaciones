@@ -1,9 +1,11 @@
 import React, { useRef, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { TrainingLogiTransContext } from '../../Context';
+import { useAudioCancel } from '../../Hooks/useAudioCancel';
+
 
 function VideoModule({ src, resumen, onContentIsEnded }) {
-
+    useAudioCancel();
     const { } = React.useContext(TrainingLogiTransContext);
 
     const videoRef = useRef(null);
@@ -11,21 +13,6 @@ function VideoModule({ src, resumen, onContentIsEnded }) {
     const lastTimeRef = useRef(0); // aquí guardamos la última posición permitida
 
 
- useEffect(() => {
-  const cancelAudio = () => {
-    if (window.speechSynthesis) {
-      window.speechSynthesis.cancel();
-      console.log("✅ SpeechSynthesis cancelado (voiceschanged)");
-    }
-  };
-
-  window.speechSynthesis.addEventListener("voiceschanged", cancelAudio);
-  cancelAudio(); // intento inicial
-
-  return () => {
-    window.speechSynthesis.removeEventListener("voiceschanged", cancelAudio);
-  };
-}, []);
 
 
     // Efecto para auto-reproducir cuando el componente se monta (con delay de 2 segundos)

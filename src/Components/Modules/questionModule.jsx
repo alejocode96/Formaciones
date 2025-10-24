@@ -1,8 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { CheckCircle, XCircle, Send, RotateCcw } from 'lucide-react';
 import { TrainingLogiTransContext } from '../../Context';
+import { useAudioCancel } from '../../Hooks/useAudioCancel';
+
 
 function QuestionModule({ question, answer, onContentIsEnded, onAttempt, onCorrectAnswer, isCompleted = false }) {
+  useAudioCancel();
   const { } = React.useContext(TrainingLogiTransContext);
   const [selectedAnswer, setSelectedAnswer] = useState(null);
   const [isSubmitted, setIsSubmitted] = useState(false);
@@ -13,21 +16,7 @@ function QuestionModule({ question, answer, onContentIsEnded, onAttempt, onCorre
   // 🔹 Barajar respuestas una sola vez al cargar la pregunta
   const respuestasIniciales = useRef([]);
 
-  useEffect(() => {
-    const cancelAudio = () => {
-      if (window.speechSynthesis) {
-        window.speechSynthesis.cancel();
-        console.log("✅ SpeechSynthesis cancelado (voiceschanged)");
-      }
-    };
 
-    window.speechSynthesis.addEventListener("voiceschanged", cancelAudio);
-    cancelAudio(); // intento inicial
-
-    return () => {
-      window.speechSynthesis.removeEventListener("voiceschanged", cancelAudio);
-    };
-  }, []);
 
 
 

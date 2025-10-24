@@ -2,7 +2,9 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useLocation } from 'react-router-dom';
 import { TrainingLogiTransContext } from '../../Context';
 import { Volume2, VolumeX, ChevronRight, ChevronLeft, BookOpen, Target, Lightbulb, Wrench, Lock, CheckCircle, X } from 'lucide-react';
+import { useAudioCancel } from '../../Hooks/useAudioCancel';
 
+/**
 import AOS from 'aos';
 import 'aos/dist/aos.css';
 
@@ -23,6 +25,7 @@ import 'aos/dist/aos.css';
  * @param {String} moduleId - ID del módulo actual
  */
 function FlipCardReverse({ currentModule, onContentIsEnded, courseId, moduleId }) {
+    useAudioCancel();
     // 📦 DATOS: Array de tarjetas del módulo actual
     let cards = currentModule.cards;
     const maxRetries = 10;
@@ -823,21 +826,7 @@ function FlipCardReverse({ currentModule, onContentIsEnded, courseId, moduleId }
         }
     };
 
-   useEffect(() => {
-  const cancelAudio = () => {
-    if (window.speechSynthesis) {
-      window.speechSynthesis.cancel();
-      console.log("✅ SpeechSynthesis cancelado (voiceschanged)");
-    }
-  };
 
-  window.speechSynthesis.addEventListener("voiceschanged", cancelAudio);
-  cancelAudio(); // intento inicial
-
-  return () => {
-    window.speechSynthesis.removeEventListener("voiceschanged", cancelAudio);
-  };
-}, []);
 
     // ==============================================================
     // 🎯 VARIABLES DE CONTROL DE RENDERIZADO
