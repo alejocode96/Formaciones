@@ -589,29 +589,45 @@ function FlipCardReverse({ currentModule, onContentIsEnded, courseId, moduleId }
      * está abandonando realmente la página/módulo.
      */
     useEffect(() => {
-        const handleBeforeUnload = () => {
-            const synth = synthRef.current;
-            if (synth.speaking) {
-                console.log('🛑 Cerrando página: cancelando audio...');
-                // 🚩 Marcar como cancelado para que NO se guarde el progreso
-                if (currentUtteranceRef.current)
+        const synth = synthRef?.current || window.speechSynthesis;
+
+        const cancelSpeech = (reason = "") => {
+            if (!synth) return;
+            if (synth.speaking || synth.pending) {
+                console.log(`🛑 ${reason} — cancelando audio y limpiando cola...`);
+                if (currentUtteranceRef?.current) {
                     currentUtteranceRef.current.wasCancelled = true;
+                }
                 synth.cancel();
             }
         };
 
-        window.addEventListener('beforeunload', handleBeforeUnload);
+        // 1️⃣ Al cerrar o recargar la página
+        const handleBeforeUnload = () => cancelSpeech("Cierre o recarga detectado");
 
-        // Cleanup al desmontar el componente
+        // 2️⃣ Al ocultar la página (móviles o pestaña en background)
+        const handleVisibilityChange = () => {
+            if (document.hidden) cancelSpeech("Cambio de visibilidad (móvil o background)");
+        };
+
+        // 3️⃣ Al cambiar de ruta interna (si usas React Router)
+        const handlePopState = () => cancelSpeech("Cambio de ruta interna");
+
+        // Escuchar eventos globales
+        window.addEventListener("beforeunload", handleBeforeUnload);
+        document.addEventListener("visibilitychange", handleVisibilityChange);
+        window.addEventListener("pagehide", handleBeforeUnload); // iOS Safari
+        window.addEventListener("popstate", handlePopState);
+
+        // Limpieza al desmontar componente
         return () => {
-            const synth = synthRef.current;
-            if (synth.speaking) {
-                console.log('🧹 Componente desmontado: cancelando audio...');
-                synth.cancel();
-            }
-            window.removeEventListener('beforeunload', handleBeforeUnload);
+            cancelSpeech("Desmontando componente");
+            window.removeEventListener("beforeunload", handleBeforeUnload);
+            document.removeEventListener("visibilitychange", handleVisibilityChange);
+            window.removeEventListener("pagehide", handleBeforeUnload);
+            window.removeEventListener("popstate", handlePopState);
         };
-    }, []);
+    }, [synthRef, currentUtteranceRef]);
 
     /**
      * 🎬 useEffect: Reproducir audio de introducción
@@ -921,7 +937,7 @@ function FlipCardReverse({ currentModule, onContentIsEnded, courseId, moduleId }
                         return (
                             <div
                                 key={card.id}
-                                className={`h-100 md:h-96 perspective-1000 ${isLast ? "col-span-1 lg:col-span-2" : ""}`}
+                                className={`min-h-[100px] h-auto md:min-h-[100px] md:h-auto lg:h-96 perspective-1000 ${isLast ? "col-span-1 lg:col-span-2" : ""}`}
                             >
                                 {/* Contenedor con efecto 3D flip */}
                                 <div
@@ -1097,7 +1113,7 @@ function FlipCardReverse({ currentModule, onContentIsEnded, courseId, moduleId }
                 </div>
             )}
 
-            
+
             {showAudioPopup && (
                 <div data-aos="fade-up"
                     className="fixed bottom-14 lg:bottom-4 right-1 lg:right-4 bg-gray-800 text-white px-6 py-3 rounded-xl shadow-lg text-sm text-center animate-pulse z-[9999]"

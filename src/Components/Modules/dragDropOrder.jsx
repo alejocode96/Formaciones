@@ -120,7 +120,7 @@ function DragDropOrder({ currentModule, onContentIsEnded, courseId, moduleId }) 
   };
 
   // 🔥 INICIALIZACIÓN CON PROGRESO GUARDADO
-  // 🔥 INICIALIZACIÓN CON PROGRESO GUARDADO
+
   useEffect(() => {
     const savedProgress = loadProgress();
     setCompletedItems(savedProgress);
@@ -772,6 +772,48 @@ function DragDropOrder({ currentModule, onContentIsEnded, courseId, moduleId }) 
       </div>
     );
   }
+
+  useEffect(() => {
+    const synth = synthRef?.current || window.speechSynthesis;
+
+    const cancelSpeech = (reason = "") => {
+      if (!synth) return;
+      if (synth.speaking || synth.pending) {
+        console.log(`🛑 ${reason} — cancelando audio y limpiando cola...`);
+        if (currentUtteranceRef?.current) {
+          currentUtteranceRef.current.wasCancelled = true;
+        }
+        synth.cancel();
+      }
+    };
+
+    // 1️⃣ Al cerrar o recargar la página
+    const handleBeforeUnload = () => cancelSpeech("Cierre o recarga detectado");
+
+    // 2️⃣ Al ocultar la página (móviles o pestaña en background)
+    const handleVisibilityChange = () => {
+      if (document.hidden) cancelSpeech("Cambio de visibilidad (móvil o background)");
+    };
+
+    // 3️⃣ Al cambiar de ruta interna (si usas React Router)
+    const handlePopState = () => cancelSpeech("Cambio de ruta interna");
+
+    // Escuchar eventos globales
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    window.addEventListener("pagehide", handleBeforeUnload); // iOS Safari
+    window.addEventListener("popstate", handlePopState);
+
+    // Limpieza al desmontar componente
+    return () => {
+      cancelSpeech("Desmontando componente");
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+      window.removeEventListener("pagehide", handleBeforeUnload);
+      window.removeEventListener("popstate", handlePopState);
+    };
+  }, [synthRef, currentUtteranceRef]);
+
 
   const allCompleted = completedItems.length === cards.length;
   const isPlayingIntro = introStarted && !introPlayed && isPlayingAudio;
