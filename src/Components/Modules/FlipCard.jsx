@@ -223,29 +223,43 @@ function FlipCard({ currentModule, onContentIsEnded, courseId, moduleId }) {
                 setAudioCompletado(false);
 
 
-                // 🔥 PASO 5: Cancelar síntesis (triple cancelación para móviles)
+                // 🔥 PASO 5: Cancelar síntesis (optimizado para móviles)
                 if (synth && (synth.speaking || synth.pending)) {
-                    try { synth.resume(); } catch (e) { }
+                    try {
+                        // Forzar resume antes de cancelar
+                        if (synth.paused) synth.resume();
+                    } catch (e) { }
+
                     try { synth.cancel(); } catch (e) { }
 
-                    // 🔥 Primera cancelación
+                    // 🔥 Cancelación inmediata para móviles
                     setTimeout(() => {
                         try { synth.cancel(); } catch (e) { }
                         console.log('✅ Primera cancelación completada');
+                    }, 10);
 
-                        // 🔥 Segunda cancelación (crítico para móviles)
+                    // 🔥 Segunda cancelación
+                    setTimeout(() => {
+                        try { synth.cancel(); } catch (e) { }
+                        console.log('✅ Segunda cancelación completada');
+                    }, 100);
+
+                    // 🔥 Tercera cancelación (crítico para móviles)
+                    setTimeout(() => {
+                        try { synth.cancel(); } catch (e) { }
+                        console.log('✅ Tercera cancelación completada');
+
                         setTimeout(() => {
-                            try { synth.cancel(); } catch (e) { }
-                            console.log('✅ Segunda cancelación completada');
-
-                            // 🔥 Pequeña espera antes de permitir nuevo audio
-                            setTimeout(() => {
-                                isNavigatingRef.current = false;
-                                resolve();
-                            }, 100);
-                        }, 150);
-                    }, 300);
-
+                            isNavigatingRef.current = false;
+                            resolve();
+                        }, 100);
+                    }, 250);
+                } else {
+                    console.log('✅ No había audio reproduciéndose');
+                    setTimeout(() => {
+                        isNavigatingRef.current = false;
+                        resolve();
+                    }, 100);
                 }
             } catch (error) {
                 console.error('❌ Error en stopAudio:', error);
@@ -944,83 +958,74 @@ function FlipCard({ currentModule, onContentIsEnded, courseId, moduleId }) {
     useEffect(() => {
         const handleBeforeUnload = () => {
             const synth = synthRef.current;
-            if (synth.speaking) {
+            if (synth && synth.speaking) {
                 console.log('🛑 Cerrando página: cancelando audio...');
-                if (currentUtteranceRef.current)
+                if (currentUtteranceRef.current) {
                     currentUtteranceRef.current.wasCancelled = true;
+                }
+                // Cancelación múltiple
                 synth.cancel();
-            }
-        };
-
-        // 🔥 NUEVO: Handler para navegación móvil (botón atrás)
-        const handlePopState = () => {
-            console.log('🔙 Navegación atrás detectada - Deteniendo audio...');
-            const synth = synthRef.current;
-            if (synth && synth.speaking) {
-                try {
-                    synth.cancel();
-                    // Cancelación múltiple para móviles
-                    setTimeout(() => synth.cancel(), 50);
-                    setTimeout(() => synth.cancel(), 150);
-                } catch (e) {
-                    console.error('Error cancelando en popstate:', e);
-                }
-            }
-        };
-
-        // 🔥 NUEVO: Handler para cuando la página pierde el foco completamente (móviles)
-        const handlePageHide = () => {
-            console.log('📴 Página ocultada completamente - Deteniendo audio...');
-            const synth = synthRef.current;
-            if (synth && synth.speaking) {
-                try {
-                    synth.cancel();
-                } catch (e) {
-                    console.error('Error cancelando en pagehide:', e);
-                }
+                setTimeout(() => synth.cancel(), 10);
+                setTimeout(() => synth.cancel(), 50);
             }
         };
 
         window.addEventListener('beforeunload', handleBeforeUnload);
-        window.addEventListener('popstate', handlePopState);
-        window.addEventListener('pagehide', handlePageHide);
 
         return () => {
+            window.removeEventListener('beforeunload', handleBeforeUnload);
+
+            // Limpieza final al desmontar el componente
             const synth = synthRef.current;
-            if (synth.speaking) {
-                console.log('🧹 Componente desmontado: cancelando audio...');
+            if (synth && synth.speaking) {
+                console.log('🧹 Componente desmontado: limpieza final...');
                 synth.cancel();
             }
             if (progressIntervalRef.current) {
                 clearInterval(progressIntervalRef.current);
             }
-            window.removeEventListener('beforeunload', handleBeforeUnload);
-            window.removeEventListener('popstate', handlePopState);
-            window.removeEventListener('pagehide', handlePageHide);
         };
     }, []);
 
 
 
-    // 🔥 CRÍTICO: Detener audio SOLO al desmontar o cambiar ruta
+    // 🔥 CRÍTICO: Detener audio al cambiar de ruta (React Router)
     useEffect(() => {
-        // NO ejecutar nada aquí, solo limpieza al desmontar
-
+        // Función de limpieza que se ejecuta ANTES de cambiar de ruta
         return () => {
             const synth = synthRef.current;
 
-            console.log('🧹 Componente desmontándose - Limpieza total...');
+            console.log('🚨 CAMBIO DE RUTA DETECTADO - Limpieza inmediata...');
 
-            // Marcar como navegando
+            // 🔥 PASO 1: Marcar como navegando INMEDIATAMENTE
             isNavigatingRef.current = true;
 
-            // Limpiar intervalo
+            // 🔥 PASO 2: Cancelar síntesis PRIMERO (3 veces para móviles)
+            if (synth) {
+                try {
+                    // Forzar resume antes de cancelar (importante en móviles)
+                    if (synth.paused) {
+                        synth.resume();
+                    }
+
+                    // Triple cancelación para móviles
+                    synth.cancel();
+                    setTimeout(() => synth.cancel(), 10);
+                    setTimeout(() => synth.cancel(), 50);
+
+                    console.log('✅ Síntesis cancelada (móviles)');
+                } catch (error) {
+                    console.error('Error cancelando síntesis:', error);
+                }
+            }
+
+            // 🔥 PASO 3: Limpiar intervalo
             if (progressIntervalRef.current) {
                 clearInterval(progressIntervalRef.current);
                 progressIntervalRef.current = null;
             }
 
-            // Limpiar utterance
+            // 🔥 PASO 4: Limpiar utterance
             if (currentUtteranceRef.current) {
                 currentUtteranceRef.current.wasCancelled = true;
                 currentUtteranceRef.current.onend = null;
@@ -1032,37 +1037,48 @@ function FlipCard({ currentModule, onContentIsEnded, courseId, moduleId }) {
                 currentUtteranceRef.current = null;
             }
 
-            // Cancelar síntesis de voz
-            if (synth && (synth.speaking || synth.pending)) {
-                try {
-                    synth.cancel();
-                    // 🔥 En móviles, hacer doble cancelación por si acaso
-                    setTimeout(() => {
-                        try {
-                            synth.cancel();
-                        } catch (e) { }
-                    }, 50);
-                } catch (error) {
-                    console.error('Error cancelando síntesis:', error);
-                }
-            }
-
-            // Resetear referencias
+            // 🔥 PASO 5: Resetear referencias
             pausedTextRef.current.text = '';
             audioStateRef.current = { isPlaying: false, wasPaused: false };
             pausedByVisibilityRef.current = false;
             audioCompletedRef.current = false;
 
-            // 🔥 IMPORTANTE: Resetear la bandera después de la limpieza
+            // 🔥 PASO 6: Resetear estados (importante hacerlo al final)
+            setIsPlayingAudio(false);
+            setIsPaused(false);
+            setAudioProgress(0);
+            setAudioCompletado(false);
+
+            console.log('✅ Limpieza de navegación completada');
+
+            // 🔥 PASO 7: Resetear bandera después de un delay
             setTimeout(() => {
                 isNavigatingRef.current = false;
-            }, 300);
-
-            console.log('✅ Limpieza completa finalizada');
+                console.log('✅ Bandera de navegación reseteada');
+            }, 500);
         };
-    }, [location]);
+    }, [location.pathname]); // 🔥 IMPORTANTE: usar location.pathname
 
+    // 🔥 AGREGAR al final de la SECCIÓN 3 (después de las referencias)
+    // Hook adicional para forzar limpieza en móviles
+    useEffect(() => {
+        // Detectar si es móvil
+        const isMobileDevice = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
 
+        if (!isMobileDevice) return;
+
+        // En móviles, limpiar audio cada vez que cambia la ubicación
+        const synth = synthRef.current;
+
+        if (synth && synth.speaking) {
+            console.log('📱 MÓVIL: Forzando limpieza de audio...');
+            synth.cancel();
+            setTimeout(() => synth.cancel(), 50);
+            setTimeout(() => synth.cancel(), 150);
+        }
+
+    }, [location]); // Se ejecuta cada vez que cambia location
+    
 
     // =========================================================================
     // SECCIÓN 9: VARIABLES COMPUTADAS PARA RENDERIZADO
