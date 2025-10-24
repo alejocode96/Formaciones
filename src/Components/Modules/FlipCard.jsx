@@ -222,27 +222,30 @@ function FlipCard({ currentModule, onContentIsEnded, courseId, moduleId }) {
                 setAudioProgress(0);
                 setAudioCompletado(false);
 
-                // 🔥 PASO 5: Cancelar síntesis
+
+                // 🔥 PASO 5: Cancelar síntesis (triple cancelación para móviles)
                 if (synth && (synth.speaking || synth.pending)) {
                     try { synth.resume(); } catch (e) { }
                     try { synth.cancel(); } catch (e) { }
 
+                    // 🔥 Primera cancelación
                     setTimeout(() => {
                         try { synth.cancel(); } catch (e) { }
-                        console.log('✅ Audio cancelado completamente');
+                        console.log('✅ Primera cancelación completada');
 
-                        // 🔥 Pequeña espera antes de permitir nuevo audio
+                        // 🔥 Segunda cancelación (crítico para móviles)
                         setTimeout(() => {
-                            isNavigatingRef.current = false;
-                            resolve();
-                        }, 100);
+                            try { synth.cancel(); } catch (e) { }
+                            console.log('✅ Segunda cancelación completada');
+
+                            // 🔥 Pequeña espera antes de permitir nuevo audio
+                            setTimeout(() => {
+                                isNavigatingRef.current = false;
+                                resolve();
+                            }, 100);
+                        }, 150);
                     }, 300);
-                } else {
-                    console.log('✅ No había audio reproduciéndose');
-                    setTimeout(() => {
-                        isNavigatingRef.current = false;
-                        resolve();
-                    }, 100);
+
                 }
             } catch (error) {
                 console.error('❌ Error en stopAudio:', error);
@@ -253,11 +256,32 @@ function FlipCard({ currentModule, onContentIsEnded, courseId, moduleId }) {
     };
 
     const speak = (text, onEnd, onError) => {
-        // 🔥 PREVENIR ejecución si estamos navegando
+        // 🔥 PREVENIR ejecución si estamos navegando (con límite de reintentos)
         if (isNavigatingRef.current) {
-            console.warn('⚠️ Navegación en progreso, esperando...');
-            setTimeout(() => speak(text, onEnd, onError), 200);
-            return;
+            // Verificar si llevamos más de 2 segundos navegando (posible bug)
+            const maxWaitTime = 2000; // 2 segundos máximo
+            const recheckInterval = 200;
+
+            // Si ha pasado mucho tiempo, forzar reset
+            if (!speak.startWaitTime) {
+                speak.startWaitTime = Date.now();
+            }
+
+            const elapsed = Date.now() - speak.startWaitTime;
+
+            if (elapsed > maxWaitTime) {
+                console.warn('⚠️ Tiempo de espera excedido, forzando inicio de audio...');
+                isNavigatingRef.current = false;
+                speak.startWaitTime = null;
+                // Continuar con la ejecución normal
+            } else {
+                console.warn(`⚠️ Navegación en progreso, esperando... (${Math.round(elapsed / 1000)}s)`);
+                setTimeout(() => speak(text, onEnd, onError), recheckInterval);
+                return;
+            }
+        } else {
+            // Reset del timer si no estamos navegando
+            speak.startWaitTime = null;
         }
 
         if (!vocesCargadas || !mejorVoz) {
@@ -304,7 +328,7 @@ function FlipCard({ currentModule, onContentIsEnded, courseId, moduleId }) {
         const baseRate = 0.9;
         let totalEstimated = 2000;
         sentences.forEach(s => {
-            const cps = 21 * baseRate;
+            const cps = 14 * baseRate;
             const punctuationBonus = (s.match(/[,;:]/g) || []).length * 180;
             const time = (s.length / cps) * 1000 + punctuationBonus;
             totalEstimated += time;
@@ -811,7 +835,7 @@ function FlipCard({ currentModule, onContentIsEnded, courseId, moduleId }) {
                             const currentText = pausedTextRef.current.text;
                             if (currentText && audioProgress < 98 && !progressIntervalRef.current) {
                                 const baseRate = 0.9;
-                                const cps = 21 * baseRate;
+                                const cps = 14 * baseRate;
                                 const correctionFactor = 1.08;
                                 const estimatedDuration = ((currentText.length / cps) * 1000 * correctionFactor) + 2000;
 
@@ -883,7 +907,7 @@ function FlipCard({ currentModule, onContentIsEnded, courseId, moduleId }) {
                         const currentText = pausedTextRef.current.text;
                         if (currentText && audioProgress < 98 && !progressIntervalRef.current) {
                             const baseRate = 0.9;
-                            const cps = 21 * baseRate;
+                            const cps = 14 * baseRate;
                             const correctionFactor = 1.08;
                             const estimatedDuration = ((currentText.length / cps) * 1000 * correctionFactor) + 2000;
 
@@ -928,7 +952,38 @@ function FlipCard({ currentModule, onContentIsEnded, courseId, moduleId }) {
             }
         };
 
+        // 🔥 NUEVO: Handler para navegación móvil (botón atrás)
+        const handlePopState = () => {
+            console.log('🔙 Navegación atrás detectada - Deteniendo audio...');
+            const synth = synthRef.current;
+            if (synth && synth.speaking) {
+                try {
+                    synth.cancel();
+                    // Cancelación múltiple para móviles
+                    setTimeout(() => synth.cancel(), 50);
+                    setTimeout(() => synth.cancel(), 150);
+                } catch (e) {
+                    console.error('Error cancelando en popstate:', e);
+                }
+            }
+        };
+
+        // 🔥 NUEVO: Handler para cuando la página pierde el foco completamente (móviles)
+        const handlePageHide = () => {
+            console.log('📴 Página ocultada completamente - Deteniendo audio...');
+            const synth = synthRef.current;
+            if (synth && synth.speaking) {
+                try {
+                    synth.cancel();
+                } catch (e) {
+                    console.error('Error cancelando en pagehide:', e);
+                }
+            }
+        };
+
         window.addEventListener('beforeunload', handleBeforeUnload);
+        window.addEventListener('popstate', handlePopState);
+        window.addEventListener('pagehide', handlePageHide);
 
         return () => {
             const synth = synthRef.current;
@@ -940,25 +995,70 @@ function FlipCard({ currentModule, onContentIsEnded, courseId, moduleId }) {
                 clearInterval(progressIntervalRef.current);
             }
             window.removeEventListener('beforeunload', handleBeforeUnload);
+            window.removeEventListener('popstate', handlePopState);
+            window.removeEventListener('pagehide', handlePageHide);
         };
     }, []);
 
 
 
+    // 🔥 CRÍTICO: Detener audio SOLO al desmontar o cambiar ruta
     useEffect(() => {
-        // Solo limpieza al desmontar o cambiar ruta
+        // NO ejecutar nada aquí, solo limpieza al desmontar
+
         return () => {
             const synth = synthRef.current;
-            if (synth.speaking) {
-                console.log('🧹 Navegación: cancelando audio...');
-                if (currentUtteranceRef.current) {
-                    currentUtteranceRef.current.wasCancelled = true;
-                }
-                synth.cancel();
-            }
+
+            console.log('🧹 Componente desmontándose - Limpieza total...');
+
+            // Marcar como navegando
+            isNavigatingRef.current = true;
+
+            // Limpiar intervalo
             if (progressIntervalRef.current) {
                 clearInterval(progressIntervalRef.current);
+                progressIntervalRef.current = null;
             }
+
+            // Limpiar utterance
+            if (currentUtteranceRef.current) {
+                currentUtteranceRef.current.wasCancelled = true;
+                currentUtteranceRef.current.onend = null;
+                currentUtteranceRef.current.onboundary = null;
+                currentUtteranceRef.current.onerror = null;
+                currentUtteranceRef.current.onstart = null;
+                currentUtteranceRef.current.onpause = null;
+                currentUtteranceRef.current.onresume = null;
+                currentUtteranceRef.current = null;
+            }
+
+            // Cancelar síntesis de voz
+            if (synth && (synth.speaking || synth.pending)) {
+                try {
+                    synth.cancel();
+                    // 🔥 En móviles, hacer doble cancelación por si acaso
+                    setTimeout(() => {
+                        try {
+                            synth.cancel();
+                        } catch (e) { }
+                    }, 50);
+                } catch (error) {
+                    console.error('Error cancelando síntesis:', error);
+                }
+            }
+
+            // Resetear referencias
+            pausedTextRef.current.text = '';
+            audioStateRef.current = { isPlaying: false, wasPaused: false };
+            pausedByVisibilityRef.current = false;
+            audioCompletedRef.current = false;
+
+            // 🔥 IMPORTANTE: Resetear la bandera después de la limpieza
+            setTimeout(() => {
+                isNavigatingRef.current = false;
+            }, 300);
+
+            console.log('✅ Limpieza completa finalizada');
         };
     }, [location]);
 
