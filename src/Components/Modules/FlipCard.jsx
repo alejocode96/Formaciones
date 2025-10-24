@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Volume2, VolumeX, ChevronRight, ChevronLeft, BookOpen, Target, Lightbulb, Wrench, Lock, CheckCircle, X } from 'lucide-react';
-import { useLocation } from "react-router-dom";
+import { useLocation } from 'react-router-dom';
 /**
  * =============================================================================
  * FLIPCARD COMPONENT
@@ -252,9 +252,6 @@ function FlipCard({ currentModule, onContentIsEnded, courseId, moduleId }) {
         });
     };
 
-
-
-
     const speak = (text, onEnd, onError) => {
         // 🔥 PREVENIR ejecución si estamos navegando
         if (isNavigatingRef.current) {
@@ -307,7 +304,7 @@ function FlipCard({ currentModule, onContentIsEnded, courseId, moduleId }) {
         const baseRate = 0.9;
         let totalEstimated = 2000;
         sentences.forEach(s => {
-            const cps = 14 * baseRate;
+            const cps = 21 * baseRate;
             const punctuationBonus = (s.match(/[,;:]/g) || []).length * 180;
             const time = (s.length / cps) * 1000 + punctuationBonus;
             totalEstimated += time;
@@ -646,8 +643,6 @@ function FlipCard({ currentModule, onContentIsEnded, courseId, moduleId }) {
     };
 
 
-
-
     // =========================================================================
     // SECCIÓN 7: FUNCIONES AUXILIARES
     // =========================================================================
@@ -776,7 +771,6 @@ function FlipCard({ currentModule, onContentIsEnded, courseId, moduleId }) {
         return () => window.removeEventListener('resize', checkMobile);
     }, []);
 
-
     useEffect(() => {
         const handleVisibilityChange = () => {
             const synth = synthRef.current;
@@ -817,7 +811,7 @@ function FlipCard({ currentModule, onContentIsEnded, courseId, moduleId }) {
                             const currentText = pausedTextRef.current.text;
                             if (currentText && audioProgress < 98 && !progressIntervalRef.current) {
                                 const baseRate = 0.9;
-                                const cps = 14 * baseRate;
+                                const cps = 21 * baseRate;
                                 const correctionFactor = 1.08;
                                 const estimatedDuration = ((currentText.length / cps) * 1000 * correctionFactor) + 2000;
 
@@ -889,7 +883,7 @@ function FlipCard({ currentModule, onContentIsEnded, courseId, moduleId }) {
                         const currentText = pausedTextRef.current.text;
                         if (currentText && audioProgress < 98 && !progressIntervalRef.current) {
                             const baseRate = 0.9;
-                            const cps = 14 * baseRate;
+                            const cps = 21 * baseRate;
                             const correctionFactor = 1.08;
                             const estimatedDuration = ((currentText.length / cps) * 1000 * correctionFactor) + 2000;
 
@@ -951,70 +945,23 @@ function FlipCard({ currentModule, onContentIsEnded, courseId, moduleId }) {
 
 
 
-
-    // ✅ Cancela y limpia todo el audio
-    const cancelarAudio = () => {
-        try {
-            if (synthRef.current.speaking || synthRef.current.pending) {
-                synthRef.current.cancel();
-            }
-            currentUtteranceRef.current = null;
-        } catch (error) {
-            console.error("Error al cancelar audio:", error);
-        }
-    };
-
-    // ✅ Detectar navegación dentro de la SPA (React Router)
     useEffect(() => {
-        cancelarAudio(); // cada vez que cambies de ruta, limpia todo
-    }, [location.pathname]);
-
-
-    // ✅ Cancelar audio al navegar, cerrar pestaña o perder foco
-    useEffect(() => {
-        const handleVisibilityChange = () => {
-            if (document.hidden) {
-                console.log("📴 Página oculta → cancelar audio");
-                cancelarAudio();
-            }
-        };
-
-        const handlePageHide = () => {
-            console.log("📴 Página oculta (pagehide) → cancelar audio");
-            cancelarAudio();
-        };
-
-        const handleBlur = () => {
-            console.log("👋 Ventana perdió foco → cancelar audio");
-            cancelarAudio();
-        };
-
-        const handleFocusOut = () => {
-            console.log("👋 Focus out detectado → cancelar audio");
-            cancelarAudio();
-        };
-
-        const handleUnload = () => {
-            console.log("🚪 beforeunload → cancelar audio");
-            cancelarAudio();
-        };
-
-        // ✅ Listeners universales (cubren Android, iOS y desktop)
-        document.addEventListener("visibilitychange", handleVisibilityChange);
-        window.addEventListener("pagehide", handlePageHide);
-        window.addEventListener("blur", handleBlur);
-        window.addEventListener("focusout", handleFocusOut);
-        window.addEventListener("beforeunload", handleUnload);
-
+        // Solo limpieza al desmontar o cambiar ruta
         return () => {
-            document.removeEventListener("visibilitychange", handleVisibilityChange);
-            window.removeEventListener("pagehide", handlePageHide);
-            window.removeEventListener("blur", handleBlur);
-            window.removeEventListener("focusout", handleFocusOut);
-            window.removeEventListener("beforeunload", handleUnload);
-            cancelarAudio();
+            const synth = synthRef.current;
+            if (synth.speaking) {
+                console.log('🧹 Navegación: cancelando audio...');
+                if (currentUtteranceRef.current) {
+                    currentUtteranceRef.current.wasCancelled = true;
+                }
+                synth.cancel();
+            }
+            if (progressIntervalRef.current) {
+                clearInterval(progressIntervalRef.current);
+            }
         };
-    }, []);
+    }, [location]);
+
 
 
     // =========================================================================
