@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { useLocation } from 'react-router-dom';
 import { Volume2, VolumeX, ChevronRight, ChevronLeft, BookOpen, Target, Lightbulb, Wrench, Lock, CheckCircle, X } from 'lucide-react';
 
 /**
@@ -14,7 +15,7 @@ function FlipCard({ currentModule, onContentIsEnded, courseId, moduleId }) {
     // =========================================================================
     // SECCIÓN 1: DATOS Y CONFIGURACIÓN INICIAL
     // =========================================================================
-
+    const location = useLocation();
     const cards = currentModule.cards;
     const maxRetries = 10;
 
@@ -59,7 +60,7 @@ function FlipCard({ currentModule, onContentIsEnded, courseId, moduleId }) {
     const progressIntervalRef = useRef(null);
     const pausedByVisibilityRef = useRef(false);
     const audioCompletedRef = useRef(false);
-
+    const isNavigatingRef = useRef(false);
     // Referencia para mantener el estado del audio entre renderizados
     const audioStateRef = useRef({
         isPlaying: false,
@@ -177,51 +178,76 @@ function FlipCard({ currentModule, onContentIsEnded, courseId, moduleId }) {
     // SECCIÓN 5: FUNCIONES DE AUDIO - Síntesis de voz
     // =========================================================================
 
+
     const stopAudio = () => {
         return new Promise((resolve) => {
             const synth = synthRef.current;
+
             try {
+                console.log('🛑 Iniciando stopAudio...');
+
+                // 🔥 PASO 1: Marcar como navegando para prevenir nuevos intervalos
+                isNavigatingRef.current = true;
+
+                // 🔥 PASO 2: Limpiar intervalo INMEDIATAMENTE
+                if (progressIntervalRef.current) {
+                    clearInterval(progressIntervalRef.current);
+                    progressIntervalRef.current = null;
+                    console.log('✅ Intervalo limpiado');
+                }
+
+                // 🔥 PASO 3: Limpiar utterance COMPLETAMENTE
+                if (currentUtteranceRef.current) {
+                    currentUtteranceRef.current.wasCancelled = true;
+                    currentUtteranceRef.current.onend = null;
+                    currentUtteranceRef.current.onboundary = null;
+                    currentUtteranceRef.current.onerror = null;
+                    currentUtteranceRef.current.onstart = null;
+                    currentUtteranceRef.current.onpause = null;
+                    currentUtteranceRef.current.onresume = null;
+                    currentUtteranceRef.current = null;
+                    console.log('✅ Utterance limpiado');
+                }
+
+                // 🔥 PASO 4: Resetear TODOS los estados INMEDIATAMENTE
+                pausedTextRef.current.text = '';
+                audioStateRef.current = {
+                    isPlaying: false,
+                    wasPaused: false
+                };
+                pausedByVisibilityRef.current = false;
+                audioCompletedRef.current = false;
+
+                setIsPlayingAudio(false);
+                setIsPaused(false);
+                setAudioProgress(0);
+                setAudioCompletado(false);
+
+                // 🔥 PASO 5: Cancelar síntesis
                 if (synth && (synth.speaking || synth.pending)) {
-                    console.log('🛑 Deteniendo audio...');
-
-                    try { synth.pause(); } catch (e) { }
-
-                    setTimeout(() => { try { synth.cancel(); } catch (e) { } }, 80);
+                    try { synth.resume(); } catch (e) { }
+                    try { synth.cancel(); } catch (e) { }
 
                     setTimeout(() => {
-                        try {
-                            synth.cancel();
-                            console.log('✅ Cancel 2, audio detenido');
+                        try { synth.cancel(); } catch (e) { }
+                        console.log('✅ Audio cancelado completamente');
 
-                            // 🧹 Limpieza total
-                            if (progressIntervalRef.current) {
-                                clearInterval(progressIntervalRef.current);
-                                progressIntervalRef.current = null;
-                            }
-                            setAudioProgress(0);
-                            audioStateRef.current.isPlaying = false;
-                            audioStateRef.current.wasPaused = false;
-                            audioRetryRef.current = 0;
-                            setIsPlayingAudio(false);
-                            setIsPaused(false);
-
+                        // 🔥 Pequeña espera antes de permitir nuevo audio
+                        setTimeout(() => {
+                            isNavigatingRef.current = false;
                             resolve();
-                        } catch (error) {
-                            console.error('❌ Error al cancelar audio:', error);
-                            resolve();
-                        }
-                    }, 320);
+                        }, 100);
+                    }, 300);
                 } else {
-                    // Si no hay audio en reproducción, igual reiniciamos
-                    if (progressIntervalRef.current) {
-                        clearInterval(progressIntervalRef.current);
-                        progressIntervalRef.current = null;
-                    }
-                    setAudioProgress(0);
-                    resolve();
+                    console.log('✅ No había audio reproduciéndose');
+                    setTimeout(() => {
+                        isNavigatingRef.current = false;
+                        resolve();
+                    }, 100);
                 }
             } catch (error) {
-                console.error('Error deteniendo audio:', error);
+                console.error('❌ Error en stopAudio:', error);
+                isNavigatingRef.current = false;
                 resolve();
             }
         });
@@ -229,7 +255,15 @@ function FlipCard({ currentModule, onContentIsEnded, courseId, moduleId }) {
 
 
 
+
     const speak = (text, onEnd, onError) => {
+        // 🔥 PREVENIR ejecución si estamos navegando
+        if (isNavigatingRef.current) {
+            console.warn('⚠️ Navegación en progreso, esperando...');
+            setTimeout(() => speak(text, onEnd, onError), 200);
+            return;
+        }
+
         if (!vocesCargadas || !mejorVoz) {
             console.warn('⚠️ Voces aún no cargadas');
             setAudioFailed(true);
@@ -240,6 +274,7 @@ function FlipCard({ currentModule, onContentIsEnded, courseId, moduleId }) {
 
         const synth = synthRef.current;
 
+        // 🔥 Limpieza previa ABSOLUTA
         if (synth.speaking) {
             try {
                 synth.cancel();
@@ -249,10 +284,15 @@ function FlipCard({ currentModule, onContentIsEnded, courseId, moduleId }) {
             }
         }
 
+        // 🔥 CRÍTICO: Asegurar que no hay intervalo previo
         if (progressIntervalRef.current) {
             clearInterval(progressIntervalRef.current);
             progressIntervalRef.current = null;
+            console.log('🧹 Intervalo previo limpiado');
         }
+
+        // Dividir texto por frases
+        const sentences = text.split(/(?<=[.,!?¡¿])/).map(s => s.trim()).filter(Boolean);
 
         const utterance = new SpeechSynthesisUtterance(text);
         utterance.voice = mejorVoz;
@@ -264,40 +304,75 @@ function FlipCard({ currentModule, onContentIsEnded, courseId, moduleId }) {
         pausedTextRef.current.text = text;
         currentUtteranceRef.current = utterance;
 
-        let startTime = Date.now();
-        const estimatedDuration = (text.length / 16) * 1000;
+        // Cálculo de duración estimada
+        const baseRate = 0.9;
+        let totalEstimated = 2000;
+        sentences.forEach(s => {
+            const cps = 21 * baseRate;
+            const punctuationBonus = (s.match(/[,;:]/g) || []).length * 180;
+            const time = (s.length / cps) * 1000 + punctuationBonus;
+            totalEstimated += time;
+        });
+
+        let startTime = null; // 🔥 Inicializar en null
+        let currentSentence = 0;
 
         utterance.onstart = () => {
-            setIsPlayingAudio(true);
-            setIsPaused(false);
-            setAudioProgress(0);
-            audioStateRef.current.isPlaying = true;
-            audioStateRef.current.wasPaused = false;
-            audioRetryRef.current = 0;
-            audioCompletedRef.current = false;
-            startTime = Date.now();
-
-            progressIntervalRef.current = setInterval(() => {
-                const elapsed = Date.now() - startTime;
-                const progress = Math.min((elapsed / estimatedDuration) * 100, 100);
-                setAudioProgress(progress);
-            }, 100);
-
-            console.log('▶️ Audio iniciado');
-            setShowAudioPopup(false);
-        };
-
-        utterance.onend = () => {
+            // 🔥 CRÍTICO: Verificar que NO hay intervalo activo
             if (progressIntervalRef.current) {
                 clearInterval(progressIntervalRef.current);
                 progressIntervalRef.current = null;
             }
-            setAudioProgress(100);
+
+            setIsPlayingAudio(true);
+            setIsPaused(false);
+            setAudioProgress(0);
+            startTime = Date.now(); // 🔥 Establecer AQUÍ, no antes
+
+            audioStateRef.current.isPlaying = true;
+            audioStateRef.current.wasPaused = false;
+            audioRetryRef.current = 0;
+            audioCompletedRef.current = false;
+
+            // 🔥 CREAR intervalo SOLO si no existe
+            if (!progressIntervalRef.current) {
+                progressIntervalRef.current = setInterval(() => {
+                    if (!startTime) return; // 🔥 Protección extra
+
+                    const elapsed = Date.now() - startTime;
+                    const progress = Math.min((elapsed / totalEstimated) * 100, 98);
+                    setAudioProgress(progress);
+                }, 100);
+
+                console.log('▶️ Audio iniciado con nuevo intervalo');
+            }
+
+            setShowAudioPopup(false);
+        };
+
+        utterance.onboundary = (event) => {
+            if (event.name === 'sentence' || event.name === 'word') {
+                currentSentence++;
+            }
+        };
+
+        utterance.onend = () => {
+            console.log('🏁 utterance.onend disparado');
+
+            // 🔥 Limpiar intervalo PRIMERO
+            if (progressIntervalRef.current) {
+                clearInterval(progressIntervalRef.current);
+                progressIntervalRef.current = null;
+                console.log('✅ Intervalo limpiado en onend');
+            }
+
             setIsPlayingAudio(false);
             setIsPaused(false);
+            setAudioProgress(100); // 🔥 Forzar a 100%
             currentUtteranceRef.current = null;
             audioStateRef.current.isPlaying = false;
             audioStateRef.current.wasPaused = false;
+
             console.log('✅ Audio finalizado');
             setShowAudioPopup(false);
 
@@ -309,6 +384,13 @@ function FlipCard({ currentModule, onContentIsEnded, courseId, moduleId }) {
 
         utterance.onerror = (e) => {
             const isInterrupted = e.error === 'interrupted';
+
+            // 🔥 Limpiar intervalo en error también
+            if (progressIntervalRef.current) {
+                clearInterval(progressIntervalRef.current);
+                progressIntervalRef.current = null;
+            }
+
             setShowAudioPopup(true);
             console.error('❌ Error de síntesis:', e.error);
 
@@ -332,12 +414,19 @@ function FlipCard({ currentModule, onContentIsEnded, courseId, moduleId }) {
 
         utterance.onpause = () => {
             console.log('⏸️ Audio pausado');
+            if (progressIntervalRef.current) {
+                clearInterval(progressIntervalRef.current);
+                progressIntervalRef.current = null;
+            }
         };
 
         utterance.onresume = () => {
             setIsPaused(false);
             audioStateRef.current.wasPaused = false;
-            console.log('▶️ Audio reanudado (evento)');
+            console.log('▶️ Audio reanudado');
+
+            // 🔥 NO recrear intervalo aquí, solo marcar estado
+            // El intervalo se maneja en visibilitychange y blur/focus
         };
 
         try {
@@ -419,13 +508,18 @@ function FlipCard({ currentModule, onContentIsEnded, courseId, moduleId }) {
 
     const cerrarEtapa = () => {
         stopAudio();
+        resetAudioState();
         setEtapaAbierta(null);
         setSeccionActiva('objetivo');
         setAudioCompletado(false);
         setAudioProgress(0);
+        progressIntervalRef.current = null;
     };
 
     const irSeccionAnterior = async () => {
+        console.log('⬅️ Navegando a sección anterior...');
+
+        // 🔥 Esperar a que se detenga completamente el audio
         await stopAudio();
 
         const etapa = cards.find(e => e.id === etapaAbierta);
@@ -437,8 +531,6 @@ function FlipCard({ currentModule, onContentIsEnded, courseId, moduleId }) {
         if (indexActual > 0) {
             const seccionAnterior = secciones[indexActual - 1];
             setSeccionActiva(seccionAnterior);
-            setAudioCompletado(false);
-            setAudioProgress(0);
 
             if (seccionAnterior === 'objetivo') {
                 speakAndSave(etapa.audioObjetivo, etapaAbierta, 'objetivo', etapa.titulo, () => {
@@ -455,9 +547,11 @@ function FlipCard({ currentModule, onContentIsEnded, courseId, moduleId }) {
         }
     };
 
-
     const irSeccionSiguiente = async () => {
-        await stopAudio(); // Espera la cancelación
+        console.log('➡️ Navegando a sección siguiente...');
+
+        // 🔥 Esperar a que se detenga completamente el audio
+        await stopAudio();
 
         const etapa = cards.find(e => e.id === etapaAbierta);
         if (!etapa) return;
@@ -468,7 +562,6 @@ function FlipCard({ currentModule, onContentIsEnded, courseId, moduleId }) {
         if (indexActual < secciones.length - 1) {
             const seccionSiguiente = secciones[indexActual + 1];
             setSeccionActiva(seccionSiguiente);
-            setAudioCompletado(false);
 
             const seccionData = etapa.secciones.find(s => s.id === seccionSiguiente);
             if (seccionData) {
@@ -479,16 +572,16 @@ function FlipCard({ currentModule, onContentIsEnded, courseId, moduleId }) {
         }
     };
 
-
     const irASeccion = async (seccionId) => {
+        console.log(`🎯 Navegando a sección: ${seccionId}`);
+
         const key = `${etapaAbierta}-${seccionId}`;
         if (seccionId !== 'objetivo' && !seccionesVistas[key]) return;
 
+        // 🔥 Esperar a que se detenga completamente el audio
         await stopAudio();
 
         setSeccionActiva(seccionId);
-        setAudioCompletado(false);
-        setAudioProgress(0);
 
         const etapa = cards.find(e => e.id === etapaAbierta);
         if (!etapa) return;
@@ -506,6 +599,54 @@ function FlipCard({ currentModule, onContentIsEnded, courseId, moduleId }) {
             }
         }
     };
+
+    const resetAudioState = () => {
+        console.log('🧹 Ejecutando resetAudioState...');
+        const synth = synthRef.current;
+
+        // 🔥 Limpiar intervalo
+        if (progressIntervalRef.current) {
+            clearInterval(progressIntervalRef.current);
+            progressIntervalRef.current = null;
+        }
+
+        // 🔥 Cancelar síntesis
+        try {
+            if (synth && synth.speaking) {
+                synth.resume(); // Forzar resume antes de cancel
+                synth.cancel();
+            }
+        } catch (e) {
+            console.warn('⚠️ Error cancelando síntesis al resetear:', e);
+        }
+
+        // 🔥 Limpiar utterance
+        if (currentUtteranceRef.current) {
+            currentUtteranceRef.current.wasCancelled = true;
+            currentUtteranceRef.current.onend = null;
+            currentUtteranceRef.current.onboundary = null;
+            currentUtteranceRef.current.onerror = null;
+            currentUtteranceRef.current.onstart = null;
+            currentUtteranceRef.current.onpause = null;
+            currentUtteranceRef.current.onresume = null;
+            currentUtteranceRef.current = null;
+        }
+
+        // 🔥 Resetear TODOS los estados y referencias
+        pausedTextRef.current.text = '';
+        audioStateRef.current = { isPlaying: false, wasPaused: false };
+        pausedByVisibilityRef.current = false;
+        audioCompletedRef.current = false;
+
+        setAudioProgress(0);
+        setIsPlayingAudio(false);
+        setIsPaused(false);
+        setAudioCompletado(false);
+
+        console.log('✅ Estado de audio reseteado completamente');
+    };
+
+
 
 
     // =========================================================================
@@ -641,40 +782,63 @@ function FlipCard({ currentModule, onContentIsEnded, courseId, moduleId }) {
             const synth = synthRef.current;
 
             if (document.hidden) {
-                if (synth.speaking && !synth.paused) {
+                // Solo pausar si realmente está reproduciendo
+                if (synth.speaking && !synth.paused && audioStateRef.current.isPlaying) {
                     console.log('👁️ Página oculta: pausando audio...');
                     synth.pause();
                     setIsPaused(true);
                     audioStateRef.current.wasPaused = true;
+                    pausedByVisibilityRef.current = true;
+
+                    // 🔥 Limpiar intervalo
                     if (progressIntervalRef.current) {
                         clearInterval(progressIntervalRef.current);
                         progressIntervalRef.current = null;
                     }
                 }
             } else {
-                if (audioStateRef.current.wasPaused && audioStateRef.current.isPlaying) {
-                    console.log('👁️ Página visible: intentando reanudar audio...');
+                // Solo reanudar si fue pausado por visibilidad
+                if (pausedByVisibilityRef.current &&
+                    audioStateRef.current.isPlaying &&
+                    currentUtteranceRef.current &&
+                    !currentUtteranceRef.current.wasCancelled &&
+                    !isNavigatingRef.current) { // 🔥 No reanudar si estamos navegando
+
+                    console.log('👁️ Página visible: reanudando audio...');
+
                     setTimeout(() => {
                         try {
                             synth.resume();
                             setIsPaused(false);
                             audioStateRef.current.wasPaused = false;
-                            console.log('✅ Resume ejecutado');
+                            pausedByVisibilityRef.current = false;
 
+                            // 🔥 Recrear intervalo SOLO si no existe
                             const currentText = pausedTextRef.current.text;
-                            if (currentText) {
-                                const estimatedDuration = (currentText.length / 15) * 1000;
-                                let startTime = Date.now() - (audioProgress / 100 * estimatedDuration);
+                            if (currentText && audioProgress < 98 && !progressIntervalRef.current) {
+                                const baseRate = 0.9;
+                                const cps = 21 * baseRate;
+                                const correctionFactor = 1.08;
+                                const estimatedDuration = ((currentText.length / cps) * 1000 * correctionFactor) + 2000;
+
+                                const startTime = Date.now() - (audioProgress / 100 * estimatedDuration);
+
                                 progressIntervalRef.current = setInterval(() => {
                                     const elapsed = Date.now() - startTime;
-                                    const progress = Math.min((elapsed / estimatedDuration) * 100, 99);
+                                    const progress = Math.min((elapsed / estimatedDuration) * 100, 98);
                                     setAudioProgress(progress);
                                 }, 100);
+
+                                console.log('✅ Intervalo recreado en visibilitychange');
                             }
+
                         } catch (error) {
                             console.error('❌ Error al reanudar:', error);
+                            pausedByVisibilityRef.current = false;
                         }
                     }, 100);
+                } else {
+                    pausedByVisibilityRef.current = false;
                 }
             }
         };
@@ -684,17 +848,19 @@ function FlipCard({ currentModule, onContentIsEnded, courseId, moduleId }) {
         return () => {
             document.removeEventListener('visibilitychange', handleVisibilityChange);
         };
-    }, [audioProgress]);
+    }, [audioProgress]);// 🔥 Dependencia necesaria
 
     useEffect(() => {
         const handleBlur = () => {
             const synth = synthRef.current;
-            if (synth.speaking && !synth.paused) {
+
+            if (synth.speaking && !synth.paused && audioStateRef.current.isPlaying) {
                 console.log('🔇 Ventana perdió el foco: pausando...');
                 synth.pause();
                 setIsPaused(true);
                 audioStateRef.current.wasPaused = true;
                 pausedByVisibilityRef.current = true;
+
                 if (progressIntervalRef.current) {
                     clearInterval(progressIntervalRef.current);
                     progressIntervalRef.current = null;
@@ -704,30 +870,47 @@ function FlipCard({ currentModule, onContentIsEnded, courseId, moduleId }) {
 
         const handleFocus = () => {
             const synth = synthRef.current;
-            if (pausedByVisibilityRef.current && audioStateRef.current.isPlaying) {
-                console.log('🔊 Ventana recuperó el foco: intentando reanudar...');
+
+            if (pausedByVisibilityRef.current &&
+                audioStateRef.current.isPlaying &&
+                currentUtteranceRef.current &&
+                !currentUtteranceRef.current.wasCancelled &&
+                !isNavigatingRef.current) { // 🔥 No reanudar si estamos navegando
+
+                console.log('🔊 Ventana recuperó el foco: reanudando...');
+
                 setTimeout(() => {
                     try {
                         synth.resume();
                         setIsPaused(false);
                         audioStateRef.current.wasPaused = false;
                         pausedByVisibilityRef.current = false;
-                        console.log('✅ Resume ejecutado');
 
                         const currentText = pausedTextRef.current.text;
-                        if (currentText) {
-                            const estimatedDuration = (currentText.length / 15) * 1000;
-                            let startTime = Date.now() - (audioProgress / 100 * estimatedDuration);
+                        if (currentText && audioProgress < 98 && !progressIntervalRef.current) {
+                            const baseRate = 0.9;
+                            const cps = 21 * baseRate;
+                            const correctionFactor = 1.08;
+                            const estimatedDuration = ((currentText.length / cps) * 1000 * correctionFactor) + 2000;
+
+                            const startTime = Date.now() - (audioProgress / 100 * estimatedDuration);
+
                             progressIntervalRef.current = setInterval(() => {
                                 const elapsed = Date.now() - startTime;
-                                const progress = Math.min((elapsed / estimatedDuration) * 100, 99);
+                                const progress = Math.min((elapsed / estimatedDuration) * 100, 98);
                                 setAudioProgress(progress);
                             }, 100);
+
+                            console.log('✅ Intervalo recreado en focus');
                         }
+
                     } catch (error) {
                         console.error('❌ Error al reanudar:', error);
+                        pausedByVisibilityRef.current = false;
                     }
                 }, 100);
+            } else {
+                pausedByVisibilityRef.current = false;
             }
         };
 
@@ -793,6 +976,57 @@ function FlipCard({ currentModule, onContentIsEnded, courseId, moduleId }) {
         };
     }, []);
 
+
+    // 🔥 NUEVO: Cancelar audio cuando cambia la ruta (CRÍTICO PARA MÓVILES)
+    useEffect(() => {
+        const synth = synthRef.current;
+
+        // Este código se ejecuta cuando la ruta cambia
+        console.log('📍 Ruta actual:', location.pathname);
+
+        // Cleanup: se ejecuta ANTES de cambiar a la nueva ruta
+        return () => {
+            console.log('🚨 Cambiando de ruta - Cancelando audio...');
+
+            // Marcar como cancelado
+            if (currentUtteranceRef.current) {
+                currentUtteranceRef.current.wasCancelled = true;
+            }
+
+            // Cancelación TRIPLE para móviles
+            try {
+                if (synth && (synth.speaking || synth.pending)) {
+                    synth.pause();
+                    synth.cancel();
+
+                    // Segunda cancelación
+                    setTimeout(() => {
+                        try { synth.cancel(); } catch (e) { }
+                    }, 10);
+
+                    // Tercera cancelación
+                    setTimeout(() => {
+                        try { synth.cancel(); } catch (e) { }
+                    }, 50);
+                }
+            } catch (error) {
+                console.error('Error cancelando audio:', error);
+            }
+
+            // Limpiar intervalos
+            if (progressIntervalRef.current) {
+                clearInterval(progressIntervalRef.current);
+                progressIntervalRef.current = null;
+            }
+
+            // Resetear estados
+            setIsPlayingAudio(false);
+            setIsPaused(false);
+            setAudioProgress(0);
+            audioStateRef.current.isPlaying = false;
+            audioStateRef.current.wasPaused = false;
+        };
+    }, [location.pathname]);
     // =========================================================================
     // SECCIÓN 9: VARIABLES COMPUTADAS PARA RENDERIZADO
     // =========================================================================
@@ -1170,7 +1404,7 @@ function FlipCard({ currentModule, onContentIsEnded, courseId, moduleId }) {
 
             {/* Indicador de reproducción de intro */}
             {isPlayingIntro && (
-                <div data-aos="fade-up" className="fixed bottom-14 lg:bottom-4 right-4 bg-zinc-800/90 backdrop-blur-sm px-4 py-3 rounded-lg border border-zinc-700 shadow-xl z-50 animate-pulse">
+                <div data-aos="fade-up" className="fixed bottom-14 lg:bottom-4 right-1 lg:right-4 bg-zinc-800/90 backdrop-blur-sm px-4 py-3 rounded-lg border border-zinc-700 shadow-xl z-50 animate-pulse">
                     <div className="flex items-center gap-3">
                         <div className="flex gap-1">
                             <span className="w-1 h-4 bg-blue-400 rounded-full animate-pulse"></span>
