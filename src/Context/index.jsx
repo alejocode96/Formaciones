@@ -221,7 +221,7 @@ function TrainingLogiTransProvider({ children }) {
                                     }
                                 ]
                             }
-                        ], duration: "01:26",
+                        ], duration: "10:00",
                         resumen: [
                             "**Etapas del SARLAFT**",
                             "El Sistema de Administración del Riesgo de Lavado de Activos, Financiación del Terrorismo y Proliferación de Armas de Destrucción Masiva (SARLAFT) se fundamenta en un ciclo continuo de gestión compuesto por cuatro etapas interrelacionadas: Identificación, Medición, Control y Monitoreo del Riesgo. Este ciclo busca prevenir y mitigar los riesgos asociados a actividades ilícitas dentro del sector transporte, garantizando la integridad y legalidad de las operaciones.",

@@ -261,10 +261,10 @@ function FlipCard({ currentModule, onContentIsEnded, courseId, moduleId }) {
     const speak = (text, onEnd, onError) => {
         // 🔥 PREVENIR ejecución si estamos navegando
         if (isNavigatingRef.current) {
-      console.warn('⛔ Navegación activa - Audio BLOQUEADO');
-      if (onError) onError();
-      return;
-    }
+            console.warn('⛔ Navegación activa - Audio BLOQUEADO');
+            if (onError) onError();
+            return;
+        }
 
         if (!vocesCargadas || !mejorVoz) {
             console.warn('⚠️ Voces aún no cargadas');
@@ -494,7 +494,10 @@ function FlipCard({ currentModule, onContentIsEnded, courseId, moduleId }) {
     // =========================================================================
 
     const abrirEtapa = (etapaId) => {
-        stopAudio();
+
+         stopAudio();
+        // 🔥 RESETEAR el flag DESPUÉS de detener
+        isNavigatingRef.current = false;
         setEtapaAbierta(etapaId);
         setSeccionActiva('objetivo');
         setAudioCompletado(false);
@@ -656,22 +659,22 @@ function FlipCard({ currentModule, onContentIsEnded, courseId, moduleId }) {
     // =========================================================================
 
     const iniciarIntroMovil = () => {
-    // 🔥 Verificar que no estamos navegando
-    if (isNavigatingRef.current) {
-      console.log('⚠️ Navegación en progreso, esperando...');
-      setTimeout(iniciarIntroMovil, 200);
-      return;
-    }
-    
-    if (!introStarted && vocesCargadas) {
-      setIntroStarted(true);
-      speak(
-        currentModule.audioObjetivo,
-        () => setIntroPlayed(true),
-        () => setIntroPlayed(true)
-      );
-    }
-  };
+        // 🔥 Verificar que no estamos navegando
+        if (isNavigatingRef.current) {
+            console.log('⚠️ Navegación en progreso, esperando...');
+            setTimeout(iniciarIntroMovil, 200);
+            return;
+        }
+
+        if (!introStarted && vocesCargadas) {
+            setIntroStarted(true);
+            speak(
+                currentModule.audioObjetivo,
+                () => setIntroPlayed(true),
+                () => setIntroPlayed(true)
+            );
+        }
+    };
 
     // =========================================================================
     // SECCIÓN 8: EFFECTS - Inicialización y eventos
@@ -768,29 +771,29 @@ function FlipCard({ currentModule, onContentIsEnded, courseId, moduleId }) {
     }, [vocesCargadas, isMobile]);
 
     useEffect(() => {
-    // 🔥 Verificar y resetear flag si es necesario
-    if (isNavigatingRef.current) {
-      console.warn('⚠️ Flag detectado en carga inicial, reseteando...');
-      isNavigatingRef.current = false;
-    }
-    
-    if (!isMobile && vocesCargadas && introStarted && !introPlayed) {
-      const timer = setTimeout(() => {
+        // 🔥 Verificar y resetear flag si es necesario
         if (isNavigatingRef.current) {
-          console.log('⛔ Navegación detectada, NO reproducir intro');
-          return;
+            console.warn('⚠️ Flag detectado en carga inicial, reseteando...');
+            isNavigatingRef.current = false;
         }
-        
-        speak(
-          currentModule.audioObjetivo,
-          () => setIntroPlayed(true),
-          () => setIntroPlayed(true)
-        );
-      }, 300);
-      
-      return () => clearTimeout(timer);
-    }
-  }, [isMobile, vocesCargadas, introStarted, introPlayed]);
+
+        if (!isMobile && vocesCargadas && introStarted && !introPlayed) {
+            const timer = setTimeout(() => {
+                if (isNavigatingRef.current) {
+                    console.log('⛔ Navegación detectada, NO reproducir intro');
+                    return;
+                }
+
+                speak(
+                    currentModule.audioObjetivo,
+                    () => setIntroPlayed(true),
+                    () => setIntroPlayed(true)
+                );
+            }, 300);
+
+            return () => clearTimeout(timer);
+        }
+    }, [isMobile, vocesCargadas, introStarted, introPlayed]);
 
     useEffect(() => {
         const checkMobile = () => {
@@ -1067,7 +1070,7 @@ function FlipCard({ currentModule, onContentIsEnded, courseId, moduleId }) {
         };
     }, [location.pathname, moduleId]);
 
-    
+
     // =========================================================================
     // SECCIÓN 9: VARIABLES COMPUTADAS PARA RENDERIZADO
     // =========================================================================
