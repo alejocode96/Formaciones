@@ -774,70 +774,7 @@ function DragDropOrder({ currentModule, onContentIsEnded, courseId, moduleId }) 
     );
   }
 
-  useEffect(() => {
-    const synth = synthRef?.current || window.speechSynthesis;
-
-    const cancelSpeech = (reason = "") => {
-      if (!synth) return;
-      if (synth.speaking || synth.pending) {
-        console.log(`🛑 ${reason} — cancelando audio y limpiando cola...`);
-        if (currentUtteranceRef?.current) {
-          currentUtteranceRef.current.wasCancelled = true;
-        }
-        synth.cancel();
-      }
-    };
-
-    // 1️⃣ Al cerrar o recargar la página
-    const handleBeforeUnload = () => cancelSpeech("Cierre o recarga detectado");
-
-    // 2️⃣ Al ocultar la página (móviles o pestaña en background)
-    const handleVisibilityChange = () => {
-      if (document.hidden) cancelSpeech("Cambio de visibilidad (móvil o background)");
-    };
-
-    // 3️⃣ Al cambiar de ruta interna (si usas React Router)
-    const handlePopState = () => cancelSpeech("Cambio de ruta interna");
-
-    // Escuchar eventos globales
-    window.addEventListener("beforeunload", handleBeforeUnload);
-    document.addEventListener("visibilitychange", handleVisibilityChange);
-    window.addEventListener("pagehide", handleBeforeUnload); // iOS Safari
-    window.addEventListener("popstate", handlePopState);
-
-    // Limpieza al desmontar componente
-    return () => {
-      cancelSpeech("Desmontando componente");
-      window.removeEventListener("beforeunload", handleBeforeUnload);
-      document.removeEventListener("visibilitychange", handleVisibilityChange);
-      window.removeEventListener("pagehide", handleBeforeUnload);
-      window.removeEventListener("popstate", handlePopState);
-    };
-  }, [synthRef, currentUtteranceRef]);
-
-
-  useEffect(() => {
-    
-        // Opción 2: Limpieza directa (backup)
-        const synth = window.speechSynthesis;
-        if (synth) {
-            try {
-                if (synth.paused) synth.resume();
-                synth.cancel();
-
-                // Múltiples cancelaciones
-                requestAnimationFrame(() => synth.cancel());
-                setTimeout(() => synth.cancel(), 10);
-                setTimeout(() => synth.cancel(), 50);
-                setTimeout(() => synth.cancel(), 100);
-                setTimeout(() => synth.cancel(), 200);
-
-                console.log('✅ Audio limpiado desde VideoModule');
-            } catch (error) {
-                console.error('Error limpiando audio:', error);
-            }
-        }
-    }, []); // Solo al montar
+  
 
   const allCompleted = completedItems.length === cards.length;
   const isPlayingIntro = introStarted && !introPlayed && isPlayingAudio;
