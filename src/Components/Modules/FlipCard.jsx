@@ -66,9 +66,8 @@ function FlipCard({ currentModule, onContentIsEnded, courseId, moduleId }) {
         isPlaying: false,
         wasPaused: false
     });
+    const introAudioRef = useRef(null);
     const previousModuleIdRef = useRef(moduleId);
-
-
     // =========================================================================
     // SECCIÓN 4: FUNCIONES DE LOCAL STORAGE
     // =========================================================================
@@ -259,7 +258,7 @@ function FlipCard({ currentModule, onContentIsEnded, courseId, moduleId }) {
 
 
     const speak = (text, onEnd, onError) => {
-        // 🔥 PREVENIR ejecución si estamos navegando
+        // 🔥 Bloquear si estamos navegando
         if (isNavigatingRef.current) {
             console.warn('⛔ Navegación activa - Audio BLOQUEADO');
             if (onError) onError();
@@ -273,171 +272,203 @@ function FlipCard({ currentModule, onContentIsEnded, courseId, moduleId }) {
             if (onError) onError();
             return;
         }
-        
+
         const synth = synthRef.current;
 
-        // 🔥 Limpieza previa ABSOLUTA
-        if (synth.speaking) {
+        // 🔥 VERIFICACIÓN EXTRA: Cancelar cualquier audio previo y esperar
+        if (synth.speaking || synth.pending) {
+            console.log('🛑 Cancelando audio previo antes de speak...');
             try {
                 synth.cancel();
-                console.log('⚠️ Audio anterior cancelado');
+                // Esperar un momento antes de continuar
+                setTimeout(() => continuarSpeak(), 150);
+                return;
             } catch (error) {
                 console.error('Error cancelando audio previo:', error);
             }
         }
 
-        // 🔥 CRÍTICO: Asegurar que no hay intervalo previo
-        if (progressIntervalRef.current) {
-            clearInterval(progressIntervalRef.current);
-            progressIntervalRef.current = null;
-            console.log('🧹 Intervalo previo limpiado');
-        }
+        continuarSpeak();
 
-        // Dividir texto por frases
-        const sentences = text.split(/(?<=[.,!?¡¿])/).map(s => s.trim()).filter(Boolean);
+        function continuarSpeak() {
+            // 🔥 Verificar de nuevo que no estamos navegando
+            if (isNavigatingRef.current) {
+                console.warn('⛔ Navegación detectada durante continuarSpeak');
+                if (onError) onError();
+                return;
+            }
 
-        const utterance = new SpeechSynthesisUtterance(text);
-        utterance.voice = mejorVoz;
-        utterance.lang = mejorVoz.lang || 'es-ES';
-        utterance.rate = 0.9;
-        utterance.pitch = 1;
-        utterance.wasCancelled = false;
-
-        pausedTextRef.current.text = text;
-        currentUtteranceRef.current = utterance;
-
-        // Cálculo de duración estimada
-        const baseRate = 0.9;
-        let totalEstimated = 2000;
-        sentences.forEach(s => {
-            const cps = 21 * baseRate;
-            const punctuationBonus = (s.match(/[,;:]/g) || []).length * 180;
-            const time = (s.length / cps) * 1000 + punctuationBonus;
-            totalEstimated += time;
-        });
-
-        let startTime = null; // 🔥 Inicializar en null
-        let currentSentence = 0;
-
-        utterance.onstart = () => {
-            // 🔥 CRÍTICO: Verificar que NO hay intervalo activo
+            // 🔥 CRÍTICO: Asegurar que no hay intervalo previo
             if (progressIntervalRef.current) {
                 clearInterval(progressIntervalRef.current);
                 progressIntervalRef.current = null;
+                console.log('🧹 Intervalo previo limpiado');
             }
 
-            setIsPlayingAudio(true);
-            setIsPaused(false);
-            setAudioProgress(0);
-            startTime = Date.now(); // 🔥 Establecer AQUÍ, no antes
+            // Dividir texto por frases
+            const sentences = text.split(/(?<=[.,!?¡¿])/).map(s => s.trim()).filter(Boolean);
 
-            audioStateRef.current.isPlaying = true;
-            audioStateRef.current.wasPaused = false;
-            audioRetryRef.current = 0;
-            audioCompletedRef.current = false;
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.voice = mejorVoz;
+            utterance.lang = mejorVoz.lang || 'es-ES';
+            utterance.rate = 0.9;
+            utterance.pitch = 1;
+            utterance.wasCancelled = false;
 
-            // 🔥 CREAR intervalo SOLO si no existe
-            if (!progressIntervalRef.current) {
-                progressIntervalRef.current = setInterval(() => {
-                    if (!startTime) return; // 🔥 Protección extra
+            pausedTextRef.current.text = text;
+            currentUtteranceRef.current = utterance;
 
-                    const elapsed = Date.now() - startTime;
-                    const progress = Math.min((elapsed / totalEstimated) * 100, 98);
-                    setAudioProgress(progress);
-                }, 100);
+            // Cálculo de duración estimada
+            const baseRate = 0.9;
+            let totalEstimated = 2000;
+            sentences.forEach(s => {
+                const cps = 21 * baseRate;
+                const punctuationBonus = (s.match(/[,;:]/g) || []).length * 180;
+                const time = (s.length / cps) * 1000 + punctuationBonus;
+                totalEstimated += time;
+            });
 
-                console.log('▶️ Audio iniciado con nuevo intervalo');
-            }
+            let startTime = null;
+            let currentSentence = 0;
 
-            setShowAudioPopup(false);
-        };
+            utterance.onstart = () => {
+                // 🔥 Verificar que no empezamos a navegar justo ahora
+                if (isNavigatingRef.current) {
+                    console.warn('⛔ Navegación detectada en onstart, cancelando...');
+                    synth.cancel();
+                    return;
+                }
 
-        utterance.onboundary = (event) => {
-            if (event.name === 'sentence' || event.name === 'word') {
-                currentSentence++;
-            }
-        };
+                // 🔥 CRÍTICO: Verificar que NO hay intervalo activo
+                if (progressIntervalRef.current) {
+                    clearInterval(progressIntervalRef.current);
+                    progressIntervalRef.current = null;
+                }
 
-        utterance.onend = () => {
-            console.log('🏁 utterance.onend disparado');
+                setIsPlayingAudio(true);
+                setIsPaused(false);
+                setAudioProgress(0);
+                startTime = Date.now();
 
-            // 🔥 Limpiar intervalo PRIMERO
-            if (progressIntervalRef.current) {
-                clearInterval(progressIntervalRef.current);
-                progressIntervalRef.current = null;
-                console.log('✅ Intervalo limpiado en onend');
-            }
+                audioStateRef.current.isPlaying = true;
+                audioStateRef.current.wasPaused = false;
+                audioRetryRef.current = 0;
+                audioCompletedRef.current = false;
 
-            setIsPlayingAudio(false);
-            setIsPaused(false);
-            setAudioProgress(100); // 🔥 Forzar a 100%
-            currentUtteranceRef.current = null;
-            audioStateRef.current.isPlaying = false;
-            audioStateRef.current.wasPaused = false;
+                // 🔥 CREAR intervalo SOLO si no existe
+                if (!progressIntervalRef.current) {
+                    progressIntervalRef.current = setInterval(() => {
+                        if (!startTime) return;
 
-            console.log('✅ Audio finalizado');
-            setShowAudioPopup(false);
+                        const elapsed = Date.now() - startTime;
+                        const progress = Math.min((elapsed / totalEstimated) * 100, 98);
+                        setAudioProgress(progress);
+                    }, 100);
 
-            if (!utterance.wasCancelled) {
-                audioCompletedRef.current = true;
-                if (onEnd) onEnd();
-            }
-        };
+                    console.log('▶️ Audio iniciado con nuevo intervalo');
+                }
 
-        utterance.onerror = (e) => {
-            const isInterrupted = e.error === 'interrupted';
+                setShowAudioPopup(false);
+            };
 
-            // 🔥 Limpiar intervalo en error también
-            if (progressIntervalRef.current) {
-                clearInterval(progressIntervalRef.current);
-                progressIntervalRef.current = null;
-                 isNavigatingRef.current = true;
-            }
+            utterance.onboundary = (event) => {
+                // 🔥 Verificar navegación durante reproducción
+                if (isNavigatingRef.current) {
+                    console.warn('⛔ Navegación detectada durante reproducción, cancelando...');
+                    synth.cancel();
+                    return;
+                }
 
-            setShowAudioPopup(true);
-            console.error('❌ Error de síntesis:', e.error);
+                if (event.name === 'sentence' || event.name === 'word') {
+                    currentSentence++;
+                }
+            };
 
-            if (!isInterrupted && audioRetryRef.current < maxRetries) {
-                audioRetryRef.current++;
-                console.log(`🔄 Reintentando audio (${audioRetryRef.current}/${maxRetries})...`);
+            utterance.onend = () => {
+                console.log('🏁 utterance.onend disparado');
 
-                setTimeout(() => {
-                    if (audioRetryRef.current <= maxRetries) {
-                        try {
-                            synth.speak(utterance);
-                        } catch (error) {
-                            console.error('Error en reintento:', error);
+                // 🔥 Limpiar intervalo PRIMERO
+                if (progressIntervalRef.current) {
+                    clearInterval(progressIntervalRef.current);
+                    progressIntervalRef.current = null;
+                    console.log('✅ Intervalo limpiado en onend');
+                }
+
+                setIsPlayingAudio(false);
+                setIsPaused(false);
+                setAudioProgress(100);
+                currentUtteranceRef.current = null;
+                audioStateRef.current.isPlaying = false;
+                audioStateRef.current.wasPaused = false;
+
+                console.log('✅ Audio finalizado');
+                setShowAudioPopup(false);
+
+                // 🔥 Solo llamar onEnd si no fue cancelado y no estamos navegando
+                if (!utterance.wasCancelled && !isNavigatingRef.current) {
+                    audioCompletedRef.current = true;
+                    if (onEnd) onEnd();
+                }
+            };
+
+            utterance.onerror = (e) => {
+                const isInterrupted = e.error === 'interrupted';
+                const isCanceled = e.error === 'canceled';
+
+                // 🔥 Limpiar intervalo en error también
+                if (progressIntervalRef.current) {
+                    clearInterval(progressIntervalRef.current);
+                    progressIntervalRef.current = null;
+                }
+
+                // 🔥 Si fue cancelado por navegación, NO mostrar popup ni reintentar
+                if (isCanceled && isNavigatingRef.current) {
+                    console.log('✅ Audio cancelado correctamente por navegación');
+                    return;
+                }
+
+                setShowAudioPopup(true);
+                console.error('❌ Error de síntesis:', e.error);
+
+                if (!isInterrupted && !isCanceled && audioRetryRef.current < maxRetries) {
+                    audioRetryRef.current++;
+                    console.log(`🔄 Reintentando audio (${audioRetryRef.current}/${maxRetries})...`);
+
+                    setTimeout(() => {
+                        if (audioRetryRef.current <= maxRetries && !isNavigatingRef.current) {
+                            try {
+                                synth.speak(utterance);
+                            } catch (error) {
+                                console.error('Error en reintento:', error);
+                            }
                         }
-                    }
-                }, 800);
-            } else if (audioRetryRef.current >= maxRetries) {
+                    }, 800);
+                } else if (audioRetryRef.current >= maxRetries) {
+                    handleAudioFailed(onError);
+                }
+            };
+
+            utterance.onpause = () => {
+                console.log('⏸️ Audio pausado');
+                if (progressIntervalRef.current) {
+                    clearInterval(progressIntervalRef.current);
+                    progressIntervalRef.current = null;
+                }
+            };
+
+            utterance.onresume = () => {
+                setIsPaused(false);
+                audioStateRef.current.wasPaused = false;
+                console.log('▶️ Audio reanudado');
+            };
+
+            try {
+                synth.speak(utterance);
+            } catch (error) {
+                setShowAudioPopup(true);
+                console.error('❌ Error al hablar:', error);
                 handleAudioFailed(onError);
             }
-        };
-
-        utterance.onpause = () => {
-            console.log('⏸️ Audio pausado');
-            if (progressIntervalRef.current) {
-                clearInterval(progressIntervalRef.current);
-                progressIntervalRef.current = null;
-            }
-        };
-
-        utterance.onresume = () => {
-            setIsPaused(false);
-            audioStateRef.current.wasPaused = false;
-            console.log('▶️ Audio reanudado');
-
-            // 🔥 NO recrear intervalo aquí, solo marcar estado
-            // El intervalo se maneja en visibilitychange y blur/focus
-        };
-
-        try {
-            synth.speak(utterance);
-        } catch (error) {
-            setShowAudioPopup(true);
-            console.error('❌ Error al hablar:', error);
-            handleAudioFailed(onError);
         }
     };
 
@@ -495,9 +526,7 @@ function FlipCard({ currentModule, onContentIsEnded, courseId, moduleId }) {
     // =========================================================================
 
     const abrirEtapa = (etapaId) => {
-
         stopAudio();
-        // 🔥 RESETEAR el flag DESPUÉS de detener
         isNavigatingRef.current = false;
         setEtapaAbierta(etapaId);
         setSeccionActiva('objetivo');
@@ -660,26 +689,38 @@ function FlipCard({ currentModule, onContentIsEnded, courseId, moduleId }) {
     // =========================================================================
 
     const iniciarIntroMovil = () => {
-        // 🔥 Verificar que no estamos navegando
-        if (isNavigatingRef.current) {
-            console.log('⚠️ Navegación en progreso, esperando...');
-            setTimeout(iniciarIntroMovil, 200);
-            return;
-        }
-
         if (!introStarted && vocesCargadas) {
+            console.log('📱 Iniciando intro en móvil...');
+
+            // 🔥 Asegurar que el flag esté limpio
+            if (isNavigatingRef.current) {
+                console.warn('⚠️ Flag detectado en móvil, reseteando...');
+                isNavigatingRef.current = false;
+            }
+
             setIntroStarted(true);
-            speak(
-                currentModule.audioObjetivo,
-                () => setIntroPlayed(true),
-                () => setIntroPlayed(true)
-            );
+            speak(currentModule.audioObjetivo, () => {
+                setIntroPlayed(true);
+            }, () => {
+                console.error('❌ Error en intro móvil');
+                setIntroPlayed(true);
+            });
         }
     };
 
     // =========================================================================
     // SECCIÓN 8: EFFECTS - Inicialización y eventos
     // =========================================================================
+
+    useEffect(() => {
+        console.log('🎯 Componente FlipCard montado - Reseteando flags');
+        isNavigatingRef.current = false;
+        previousModuleIdRef.current = moduleId;
+
+        return () => {
+            console.log('🧹 Componente FlipCard desmontado');
+        };
+    }, []);
 
     useEffect(() => {
         const synth = window.speechSynthesis;
@@ -772,24 +813,32 @@ function FlipCard({ currentModule, onContentIsEnded, courseId, moduleId }) {
     }, [vocesCargadas, isMobile]);
 
     useEffect(() => {
-        // 🔥 Verificar y resetear flag si es necesario
-        if (isNavigatingRef.current) {
-            console.warn('⚠️ Flag detectado en carga inicial, reseteando...');
-            isNavigatingRef.current = false;
-        }
-
         if (!isMobile && vocesCargadas && introStarted && !introPlayed) {
+            console.log('🎬 Intentando reproducir intro en desktop...');
+
+            // 🔥 Verificar si la bandera está mal
+            if (isNavigatingRef.current) {
+                console.warn('⚠️ Flag de navegación detectado, pero estamos en carga inicial');
+                console.log('🔧 Reseteando flag y continuando...');
+                isNavigatingRef.current = false;
+            }
+
+            // Esperar un momento para que el componente se estabilice
             const timer = setTimeout(() => {
+                // Verificar de nuevo (por si acaso hubo navegación real)
                 if (isNavigatingRef.current) {
-                    console.log('⛔ Navegación detectada, NO reproducir intro');
+                    console.log('⛔ Navegación REAL detectada, NO reproducir intro');
                     return;
                 }
 
-                speak(
-                    currentModule.audioObjetivo,
-                    () => setIntroPlayed(true),
-                    () => setIntroPlayed(true)
-                );
+                console.log('✅ Reproduciendo intro...');
+                speak(currentModule.audioObjetivo, () => {
+                    console.log('✅ Intro terminada');
+                    setIntroPlayed(true);
+                }, () => {
+                    console.error('❌ Error en intro');
+                    setIntroPlayed(true);
+                });
             }, 300);
 
             return () => clearTimeout(timer);
@@ -979,73 +1028,91 @@ function FlipCard({ currentModule, onContentIsEnded, courseId, moduleId }) {
         };
     }, []);
 
-    // 🔥 NUEVO: Resetear flag al montar y cancelar audio al cambiar de ruta
-    useEffect(() => {
-        console.log('🎯 DragDropOrder montado - Reseteando flags');
-        isNavigatingRef.current = false;
-        previousModuleIdRef.current = moduleId;
 
-        return () => {
-            console.log('🧹 DragDropOrder desmontado');
-        };
-    }, []);
-
-    // 🔥 NUEVO: Detectar cambio de módulo/ruta y cancelar audio
+    // 🔥 SOLUCIÓN DEFINITIVA: Detectar cambio de módulo/ruta y cancelar TODO
     useEffect(() => {
         const synth = synthRef.current;
         const currentModuleId = moduleId;
 
+        // Si el módulo cambió, cancelar INMEDIATAMENTE
         if (previousModuleIdRef.current !== currentModuleId) {
-            console.log(`🚨 CAMBIO DE MÓDULO: ${previousModuleIdRef.current} → ${currentModuleId}`);
+            console.log(`🚨 CAMBIO DE MÓDULO DETECTADO: ${previousModuleIdRef.current} → ${currentModuleId}`);
+
+            // Actualizar referencia
             previousModuleIdRef.current = currentModuleId;
 
+            // Cancelación BRUTAL para móviles
             isNavigatingRef.current = true;
 
+            // Marcar utterances como cancelados
             if (currentUtteranceRef.current) {
                 currentUtteranceRef.current.wasCancelled = true;
             }
+            if (introAudioRef.current) {
+                introAudioRef.current.wasCancelled = true;
+            }
 
+            // Limpiar intervalo
             if (progressIntervalRef.current) {
                 clearInterval(progressIntervalRef.current);
                 progressIntervalRef.current = null;
             }
 
+            // CANCELACIÓN MÚLTIPLE AGRESIVA
             const cancelarAudio = () => {
                 try {
                     if (synth) {
                         synth.pause();
                         synth.cancel();
                     }
-                } catch (e) { }
+                } catch (e) {
+                    console.error('Error cancelando:', e);
+                }
             };
 
-            cancelarAudio();
+            // Cancelar 6 veces en intervalos cortos
+            cancelarAudio(); // Inmediato
             setTimeout(cancelarAudio, 10);
             setTimeout(cancelarAudio, 50);
             setTimeout(cancelarAudio, 100);
             setTimeout(cancelarAudio, 200);
+            setTimeout(cancelarAudio, 300);
 
+            // Resetear TODOS los estados
             setIsPlayingAudio(false);
             setIsPaused(false);
             setAudioProgress(0);
+            setAudioCompletado(false);
             audioStateRef.current.isPlaying = false;
             audioStateRef.current.wasPaused = false;
             pausedTextRef.current.text = '';
             currentUtteranceRef.current = null;
+            introAudioRef.current = null;
 
+            console.log('✅ Audio cancelado por cambio de módulo');
+
+            // Permitir operaciones después de 200ms
             setTimeout(() => {
                 isNavigatingRef.current = false;
-            }, 300);
+                console.log('✅ Flag de navegación reseteado (200ms)');
+            }, 200);
         }
 
+        // Cleanup cuando cambia la ruta completa
         return () => {
-            console.log('🧹 Cleanup por cambio de ruta');
+            console.log('🧹 Cleanup por cambio de ruta:', location.pathname);
+
             isNavigatingRef.current = true;
 
+            // Marcar como cancelados
             if (currentUtteranceRef.current) {
                 currentUtteranceRef.current.wasCancelled = true;
             }
+            if (introAudioRef.current) {
+                introAudioRef.current.wasCancelled = true;
+            }
 
+            // Cancelación brutal
             try {
                 if (synth && (synth.speaking || synth.pending)) {
                     synth.pause();
@@ -1053,14 +1120,19 @@ function FlipCard({ currentModule, onContentIsEnded, courseId, moduleId }) {
                     setTimeout(() => { try { synth.cancel(); } catch (e) { } }, 10);
                     setTimeout(() => { try { synth.cancel(); } catch (e) { } }, 50);
                     setTimeout(() => { try { synth.cancel(); } catch (e) { } }, 100);
+                    setTimeout(() => { try { synth.cancel(); } catch (e) { } }, 200);
                 }
-            } catch (error) { }
+            } catch (error) {
+                console.error('Error en cleanup:', error);
+            }
 
+            // Limpiar intervalos
             if (progressIntervalRef.current) {
                 clearInterval(progressIntervalRef.current);
                 progressIntervalRef.current = null;
             }
 
+            // Resetear estados
             setIsPlayingAudio(false);
             setIsPaused(false);
             setAudioProgress(0);
@@ -1068,10 +1140,9 @@ function FlipCard({ currentModule, onContentIsEnded, courseId, moduleId }) {
             audioStateRef.current.wasPaused = false;
             pausedTextRef.current.text = '';
             currentUtteranceRef.current = null;
+            introAudioRef.current = null;
         };
-    }, [location.pathname, moduleId]);
-
-
+    }, [location.pathname, moduleId]); // 🔥 Dos dependencias: ruta Y módulo
     // =========================================================================
     // SECCIÓN 9: VARIABLES COMPUTADAS PARA RENDERIZADO
     // =========================================================================
