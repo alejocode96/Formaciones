@@ -66,6 +66,7 @@ function FlipCard({ currentModule, onContentIsEnded, courseId, moduleId }) {
         isPlaying: false,
         wasPaused: false
     });
+    const introAudioRef = useRef(null);
 
     // =========================================================================
     // SECCIÓN 4: FUNCIONES DE LOCAL STORAGE
@@ -259,9 +260,8 @@ function FlipCard({ currentModule, onContentIsEnded, courseId, moduleId }) {
     const speak = (text, onEnd, onError) => {
         // 🔥 PREVENIR ejecución si estamos navegando
         if (isNavigatingRef.current) {
-            console.warn('⚠️ Navegación en progreso, esperando...');
-            setTimeout(() => speak(text, onEnd, onError), 200);
-            return;
+            console.warn('⚠️ Navegación en progreso, audio bloqueado');
+            return; // 🔥 Retornar inmediatamente, sin reintentos
         }
 
         if (!vocesCargadas || !mejorVoz) {
@@ -757,14 +757,81 @@ function FlipCard({ currentModule, onContentIsEnded, courseId, moduleId }) {
     }, [vocesCargadas, isMobile]);
 
     useEffect(() => {
-        if (!isMobile && vocesCargadas && introStarted && !introPlayed) {
-            console.log('🎬 Reproduciendo intro...');
-            speak(currentModule.audioObjetivo, () => {
-                console.log('✅ Intro terminada');
-                setIntroPlayed(true);
-            });
+        // 🔥 NO reproducir si estamos navegando
+        if (isNavigatingRef.current) {
+            console.log('⚠️ Navegación en progreso, esperando para reproducir intro...');
+            return;
         }
-    }, [isMobile, vocesCargadas, introStarted, introPlayed]);
+
+        // 🔥 NO reproducir si ya hay audio reproduciéndose
+        const synth = synthRef.current;
+        if (synth && synth.speaking) {
+            console.log('⚠️ Ya hay audio reproduciéndose, esperando...');
+            return;
+        }
+
+        if (!isMobile && vocesCargadas && introStarted && !introPlayed) {
+            console.log('🎬 Reproduciendo intro en desktop...');
+
+            // 🔥 Pequeño delay para asegurar que el componente está listo
+            const timer = setTimeout(() => {
+                // Verificar nuevamente que no estamos navegando
+                if (isNavigatingRef.current) {
+                    console.log('⚠️ Cancelada reproducción de intro por navegación');
+                    return;
+                }
+
+                const utterance = new SpeechSynthesisUtterance(currentModule.audioObjetivo);
+                utterance.voice = mejorVoz;
+                utterance.lang = mejorVoz.lang || 'es-ES';
+                utterance.rate = 0.9;
+                utterance.pitch = 1;
+                utterance.wasCancelled = false;
+
+                // 🔥 Guardar referencia específica de la intro
+                introAudioRef.current = utterance;
+                currentUtteranceRef.current = utterance;
+
+                utterance.onstart = () => {
+                    console.log('▶️ Intro iniciada exitosamente');
+                    setIsPlayingAudio(true);
+                    audioStateRef.current.isPlaying = true;
+                };
+
+                utterance.onend = () => {
+                    console.log('✅ Intro terminada completamente');
+                    setIntroPlayed(true);
+                    setIsPlayingAudio(false);
+                    audioStateRef.current.isPlaying = false;
+                    introAudioRef.current = null;
+                    currentUtteranceRef.current = null;
+                };
+
+                utterance.onerror = (e) => {
+                    console.error('❌ Error en intro:', e.error);
+
+                    // 🔥 Solo marcar como completada si NO fue por cancelación
+                    if (e.error !== 'canceled' && e.error !== 'interrupted') {
+                        setIntroPlayed(true);
+                    }
+
+                    setIsPlayingAudio(false);
+                    audioStateRef.current.isPlaying = false;
+                    introAudioRef.current = null;
+                };
+
+                try {
+                    synth.speak(utterance);
+                } catch (error) {
+                    console.error('Error al reproducir intro:', error);
+                    setIntroPlayed(true);
+                }
+            }, 500); // 🔥 Delay de 500ms para asegurar que el componente está listo
+
+            // Cleanup del timer
+            return () => clearTimeout(timer);
+        }
+    }, [isMobile, vocesCargadas, introStarted, introPlayed, mejorVoz, currentModule.audioObjetivo]);
 
     useEffect(() => {
         const checkMobile = () => {
@@ -978,37 +1045,71 @@ function FlipCard({ currentModule, onContentIsEnded, courseId, moduleId }) {
 
 
     // 🔥 NUEVO: Cancelar audio cuando cambia la ruta (CRÍTICO PARA MÓVILES)
+    // 🔥 NUEVO: Cancelar audio cuando cambia la ruta (CRÍTICO PARA MÓVILES)
     useEffect(() => {
         const synth = synthRef.current;
 
-        // Este código se ejecuta cuando la ruta cambia
         console.log('📍 Ruta actual:', location.pathname);
 
         // Cleanup: se ejecuta ANTES de cambiar a la nueva ruta
         return () => {
-            console.log('🚨 Cambiando de ruta - Cancelando audio...');
+            console.log('🚨 CAMBIO DE RUTA DETECTADO - Cancelando audios...');
 
-            // Marcar como cancelado
+            // 🔥 SOLO cancelar si hay audio reproduciéndose
+            const hayAudioActivo = synth && (synth.speaking || synth.pending);
+
+            if (!hayAudioActivo) {
+                console.log('✅ No hay audio activo, limpieza rápida');
+                return;
+            }
+
+            console.log('🛑 Audio activo detectado, cancelando...');
+
+            // 🔥 Marcar que estamos navegando
+            isNavigatingRef.current = true;
+
+            // Marcar utterances como cancelados
             if (currentUtteranceRef.current) {
                 currentUtteranceRef.current.wasCancelled = true;
             }
 
-            // Cancelación TRIPLE para móviles
+            if (introAudioRef.current) {
+                introAudioRef.current.wasCancelled = true;
+            }
+
+            // Cancelación AGRESIVA múltiple para móviles
             try {
-                if (synth && (synth.speaking || synth.pending)) {
-                    synth.pause();
-                    synth.cancel();
+                synth.pause();
+                synth.cancel();
 
-                    // Segunda cancelación
-                    setTimeout(() => {
-                        try { synth.cancel(); } catch (e) { }
-                    }, 10);
+                setTimeout(() => {
+                    try {
+                        synth.cancel();
+                        console.log('✅ Segunda cancelación');
+                    } catch (e) { }
+                }, 10);
 
-                    // Tercera cancelación
-                    setTimeout(() => {
-                        try { synth.cancel(); } catch (e) { }
-                    }, 50);
-                }
+                setTimeout(() => {
+                    try {
+                        synth.cancel();
+                        console.log('✅ Tercera cancelación');
+                    } catch (e) { }
+                }, 50);
+
+                setTimeout(() => {
+                    try {
+                        synth.cancel();
+                        console.log('✅ Cuarta cancelación (final)');
+                    } catch (e) { }
+                }, 100);
+
+                setTimeout(() => {
+                    try {
+                        synth.cancel();
+                        console.log('✅ Quinta cancelación (seguridad móvil)');
+                    } catch (e) { }
+                }, 200);
+
             } catch (error) {
                 console.error('Error cancelando audio:', error);
             }
@@ -1019,12 +1120,24 @@ function FlipCard({ currentModule, onContentIsEnded, courseId, moduleId }) {
                 progressIntervalRef.current = null;
             }
 
-            // Resetear estados
+            // Resetear estados de audio
             setIsPlayingAudio(false);
             setIsPaused(false);
             setAudioProgress(0);
             audioStateRef.current.isPlaying = false;
             audioStateRef.current.wasPaused = false;
+            pausedTextRef.current.text = '';
+
+            // 🔥 NO marcar intro como completada aquí
+            // Solo limpiar referencias
+            currentUtteranceRef.current = null;
+            introAudioRef.current = null;
+
+            // Permitir nuevas operaciones después de la navegación
+            setTimeout(() => {
+                isNavigatingRef.current = false;
+                console.log('✅ Navegación completada, sistema listo');
+            }, 300);
         };
     }, [location.pathname]);
     // =========================================================================
