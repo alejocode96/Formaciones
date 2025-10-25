@@ -527,7 +527,7 @@ function FlipCard({ currentModule, onContentIsEnded, courseId, moduleId }) {
 
     const abrirEtapa = (etapaId) => {
         stopAudio();
-        isNavigatingRef.current = false;
+         isNavigatingRef.current = false;
         setEtapaAbierta(etapaId);
         setSeccionActiva('objetivo');
         setAudioCompletado(false);
@@ -689,38 +689,38 @@ function FlipCard({ currentModule, onContentIsEnded, courseId, moduleId }) {
     // =========================================================================
 
     const iniciarIntroMovil = () => {
-        if (!introStarted && vocesCargadas) {
-            console.log('📱 Iniciando intro en móvil...');
-
-            // 🔥 Asegurar que el flag esté limpio
-            if (isNavigatingRef.current) {
-                console.warn('⚠️ Flag detectado en móvil, reseteando...');
-                isNavigatingRef.current = false;
-            }
-
-            setIntroStarted(true);
-            speak(currentModule.audioObjetivo, () => {
-                setIntroPlayed(true);
-            }, () => {
-                console.error('❌ Error en intro móvil');
-                setIntroPlayed(true);
-            });
+    if (!introStarted && vocesCargadas) {
+        console.log('📱 Iniciando intro en móvil...');
+        
+        // 🔥 Asegurar que el flag esté limpio
+        if (isNavigatingRef.current) {
+            console.warn('⚠️ Flag detectado en móvil, reseteando...');
+            isNavigatingRef.current = false;
         }
-    };
+        
+        setIntroStarted(true);
+        speak(currentModule.audioObjetivo, () => {
+            setIntroPlayed(true);
+        }, () => {
+            console.error('❌ Error en intro móvil');
+            setIntroPlayed(true);
+        });
+    }
+};
 
     // =========================================================================
     // SECCIÓN 8: EFFECTS - Inicialización y eventos
     // =========================================================================
 
     useEffect(() => {
-        console.log('🎯 Componente FlipCard montado - Reseteando flags');
-        isNavigatingRef.current = false;
-        previousModuleIdRef.current = moduleId;
-
-        return () => {
-            console.log('🧹 Componente FlipCard desmontado');
-        };
-    }, []);
+    console.log('🎯 Componente FlipCard montado - Reseteando flags');
+    isNavigatingRef.current = false;
+    previousModuleIdRef.current = moduleId;
+    
+    return () => {
+        console.log('🧹 Componente FlipCard desmontado');
+    };
+}, []); 
 
     useEffect(() => {
         const synth = window.speechSynthesis;
@@ -813,37 +813,37 @@ function FlipCard({ currentModule, onContentIsEnded, courseId, moduleId }) {
     }, [vocesCargadas, isMobile]);
 
     useEffect(() => {
-        if (!isMobile && vocesCargadas && introStarted && !introPlayed) {
-            console.log('🎬 Intentando reproducir intro en desktop...');
-
-            // 🔥 Verificar si la bandera está mal
-            if (isNavigatingRef.current) {
-                console.warn('⚠️ Flag de navegación detectado, pero estamos en carga inicial');
-                console.log('🔧 Reseteando flag y continuando...');
-                isNavigatingRef.current = false;
-            }
-
-            // Esperar un momento para que el componente se estabilice
-            const timer = setTimeout(() => {
-                // Verificar de nuevo (por si acaso hubo navegación real)
-                if (isNavigatingRef.current) {
-                    console.log('⛔ Navegación REAL detectada, NO reproducir intro');
-                    return;
-                }
-
-                console.log('✅ Reproduciendo intro...');
-                speak(currentModule.audioObjetivo, () => {
-                    console.log('✅ Intro terminada');
-                    setIntroPlayed(true);
-                }, () => {
-                    console.error('❌ Error en intro');
-                    setIntroPlayed(true);
-                });
-            }, 300);
-
-            return () => clearTimeout(timer);
+    if (!isMobile && vocesCargadas && introStarted && !introPlayed) {
+        console.log('🎬 Intentando reproducir intro en desktop...');
+        
+        // 🔥 Verificar si la bandera está mal
+        if (isNavigatingRef.current) {
+            console.warn('⚠️ Flag de navegación detectado, pero estamos en carga inicial');
+            console.log('🔧 Reseteando flag y continuando...');
+            isNavigatingRef.current = false;
         }
-    }, [isMobile, vocesCargadas, introStarted, introPlayed]);
+        
+        // Esperar un momento para que el componente se estabilice
+        const timer = setTimeout(() => {
+            // Verificar de nuevo (por si acaso hubo navegación real)
+            if (isNavigatingRef.current) {
+                console.log('⛔ Navegación REAL detectada, NO reproducir intro');
+                return;
+            }
+            
+            console.log('✅ Reproduciendo intro...');
+            speak(currentModule.audioObjetivo, () => {
+                console.log('✅ Intro terminada');
+                setIntroPlayed(true);
+            }, () => {
+                console.error('❌ Error en intro');
+                setIntroPlayed(true);
+            });
+        }, 300);
+        
+        return () => clearTimeout(timer);
+    }
+}, [isMobile, vocesCargadas, introStarted, introPlayed]);
 
     useEffect(() => {
         const checkMobile = () => {
@@ -1092,10 +1092,10 @@ function FlipCard({ currentModule, onContentIsEnded, courseId, moduleId }) {
             console.log('✅ Audio cancelado por cambio de módulo');
 
             // Permitir operaciones después de 200ms
-            setTimeout(() => {
-                isNavigatingRef.current = false;
-                console.log('✅ Flag de navegación reseteado (200ms)');
-            }, 200);
+setTimeout(() => {
+    isNavigatingRef.current = false;
+    console.log('✅ Flag de navegación reseteado (200ms)');
+}, 200);
         }
 
         // Cleanup cuando cambia la ruta completa

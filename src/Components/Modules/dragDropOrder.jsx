@@ -46,7 +46,7 @@ function DragDropOrder({ currentModule, onContentIsEnded, courseId, moduleId }) 
   const [touchPosition, setTouchPosition] = useState({ x: 0, y: 0 });
   const [isDraggingTouch, setIsDraggingTouch] = useState(false);
   const [isReorganizing, setIsReorganizing] = useState(false);
-
+  const [unlockedCards, setUnlockedCards] = useState(false);
   // 🔗 REFERENCIAS
   const synthRef = useRef(window.speechSynthesis);
   const pausedTextRef = useRef({ text: "" });
@@ -58,6 +58,7 @@ function DragDropOrder({ currentModule, onContentIsEnded, courseId, moduleId }) 
   const audioStateRef = useRef({ isPlaying: false, wasPaused: false });
   const dropZoneRefs = useRef({});
   const previousModuleIdRef = useRef(moduleId); // 🔥 NUEVO
+  const introAudioRef = useRef(null);
   const isNavigatingRef = useRef(false); // 🔥 NUEVO
   // 💾 LOCALSTORAGE
   const getProgressKey = () => `userProgress`;
@@ -264,55 +265,90 @@ function DragDropOrder({ currentModule, onContentIsEnded, courseId, moduleId }) 
   }, []);
 
   // 🔥 NUEVO: Detectar cambio de módulo/ruta y cancelar audio
+  // 🔥 SOLUCIÓN DEFINITIVA: Detectar cambio de módulo/ruta y cancelar TODO
   useEffect(() => {
     const synth = synthRef.current;
     const currentModuleId = moduleId;
 
+    // Si el módulo cambió, cancelar INMEDIATAMENTE
     if (previousModuleIdRef.current !== currentModuleId) {
-      console.log(`🚨 CAMBIO DE MÓDULO: ${previousModuleIdRef.current} → ${currentModuleId}`);
+      console.log(`🚨 CAMBIO DE MÓDULO DETECTADO: ${previousModuleIdRef.current} → ${currentModuleId}`);
+
+      // Actualizar referencia
       previousModuleIdRef.current = currentModuleId;
 
+      // Cancelación BRUTAL para móviles
       isNavigatingRef.current = true;
 
+      // Marcar utterances como cancelados
       if (currentUtteranceRef.current) {
         currentUtteranceRef.current.wasCancelled = true;
       }
+      if (introAudioRef.current) {
+        introAudioRef.current.wasCancelled = true;
+      }
 
+      // Limpiar intervalo
+      if (progressIntervalRef.current) {
+        clearInterval(progressIntervalRef.current);
+        progressIntervalRef.current = null;
+      }
+
+      // CANCELACIÓN MÚLTIPLE AGRESIVA
       const cancelarAudio = () => {
         try {
           if (synth) {
             synth.pause();
             synth.cancel();
           }
-        } catch (e) { }
+        } catch (e) {
+          console.error('Error cancelando:', e);
+        }
       };
 
-      cancelarAudio();
+      // Cancelar 6 veces en intervalos cortos
+      cancelarAudio(); // Inmediato
       setTimeout(cancelarAudio, 10);
       setTimeout(cancelarAudio, 50);
       setTimeout(cancelarAudio, 100);
       setTimeout(cancelarAudio, 200);
+      setTimeout(cancelarAudio, 300);
 
+      // Resetear TODOS los estados
       setIsPlayingAudio(false);
       setIsPaused(false);
+      setAudioProgress(0);
+      setAudioCompletado(false);
       audioStateRef.current.isPlaying = false;
       audioStateRef.current.wasPaused = false;
       pausedTextRef.current.text = '';
       currentUtteranceRef.current = null;
+      introAudioRef.current = null;
 
+      console.log('✅ Audio cancelado por cambio de módulo');
+
+      // Permitir operaciones después de 200ms
       setTimeout(() => {
         isNavigatingRef.current = false;
-      }, 300);
+        console.log('✅ Flag de navegación reseteado (200ms)');
+      }, 200);
     }
 
+    // Cleanup cuando cambia la ruta completa
     return () => {
-      console.log('🧹 Cleanup por cambio de ruta');
+      console.log('🧹 Cleanup por cambio de ruta:', location.pathname);
+
       isNavigatingRef.current = true;
 
+      // Marcar como cancelados
       if (currentUtteranceRef.current) {
         currentUtteranceRef.current.wasCancelled = true;
       }
+      if (introAudioRef.current) {
+        introAudioRef.current.wasCancelled = true;
+      }
 
+      // Cancelación brutal
       try {
         if (synth && (synth.speaking || synth.pending)) {
           synth.pause();
@@ -320,26 +356,38 @@ function DragDropOrder({ currentModule, onContentIsEnded, courseId, moduleId }) 
           setTimeout(() => { try { synth.cancel(); } catch (e) { } }, 10);
           setTimeout(() => { try { synth.cancel(); } catch (e) { } }, 50);
           setTimeout(() => { try { synth.cancel(); } catch (e) { } }, 100);
+          setTimeout(() => { try { synth.cancel(); } catch (e) { } }, 200);
         }
-      } catch (error) { }
+      } catch (error) {
+        console.error('Error en cleanup:', error);
+      }
 
+      // Limpiar intervalos
+      if (progressIntervalRef.current) {
+        clearInterval(progressIntervalRef.current);
+        progressIntervalRef.current = null;
+      }
+
+      // Resetear estados
       setIsPlayingAudio(false);
       setIsPaused(false);
+      setAudioProgress(0);
       audioStateRef.current.isPlaying = false;
       audioStateRef.current.wasPaused = false;
       pausedTextRef.current.text = '';
       currentUtteranceRef.current = null;
+      introAudioRef.current = null;
     };
   }, [location.pathname, moduleId]);
 
   // 🎧 FUNCIÓN DE REPRODUCCIÓN
   const speak = (text, onEnd, onError) => {
-     // 🔥 Bloquear si estamos navegando
-        if (isNavigatingRef.current) {
-            console.warn('⛔ Navegación activa - Audio BLOQUEADO');
-            if (onError) onError();
-            return;
-        }
+    // 🔥 Bloquear si estamos navegando
+    if (isNavigatingRef.current) {
+      console.warn('⛔ Navegación activa - Audio BLOQUEADO');
+      if (onError) onError();
+      return;
+    }
 
     if (!vocesCargadas || !mejorVoz) {
       setShowAudioPopup(true);
@@ -540,45 +588,47 @@ function DragDropOrder({ currentModule, onContentIsEnded, courseId, moduleId }) 
     };
   }, []);
 
- useEffect(() => {
-        // 🔥 Verificar y resetear flag si es necesario
+  useEffect(() => {
+    // 🔥 Verificar y resetear flag si es necesario
+    if (isNavigatingRef.current) {
+      console.warn('⚠️ Flag detectado en carga inicial, reseteando...');
+      isNavigatingRef.current = false;
+    }
+
+    if (!isMobile && vocesCargadas && introStarted && !introPlayed) {
+      console.log('🎬 Reproduciendo intro...');
+
+      const timer = setTimeout(() => {
         if (isNavigatingRef.current) {
-            console.warn('⚠️ Flag detectado en carga inicial, reseteando...');
-            isNavigatingRef.current = false;
+          console.log('⛔ Navegación detectada, NO reproducir intro');
+          return;
         }
-        
-        if (!isMobile && vocesCargadas && introStarted && !introPlayed) {
-            console.log('🎬 Reproduciendo intro...');
-            
-            const timer = setTimeout(() => {
-                if (isNavigatingRef.current) {
-                    console.log('⛔ Navegación detectada, NO reproducir intro');
-                    return;
-                }
-                
-                speak(
-                    currentModule.audioObjetivo,
-                    // onEnd
-                    () => {
-                        console.log('✅ Intro terminada');
-                        setIntroPlayed(true);
-                        setUnlockedCards(prev => {
-                            if (prev && prev.length > 1) return prev;
-                            return [1];
-                        });
-                    },
-                    // onError
-                    () => {
-                        console.log('❌ Intro falló después de reintentos');
-                        setIntroPlayed(true);
-                        setUnlockedCards([1]);
-                    }
-                );
-            }, 300);
-            
-            return () => clearTimeout(timer);
-        }
-    }, [isMobile, vocesCargadas, introStarted, introPlayed]);
+
+        speak(
+          currentModule.audioObjetivo,
+          // onEnd
+          () => {
+            console.log('✅ Intro terminada');
+            setIntroPlayed(true);
+            setUnlockedCards(prev => {
+              if (prev && prev.length > 1) return prev;
+              return [1];
+            });
+          },
+          // onError
+          () => {
+            console.log('❌ Intro falló después de reintentos');
+            setIntroPlayed(true);
+            setUnlockedCards([1]);
+          }
+        );
+      }, 300);
+
+      return () => clearTimeout(timer);
+    }
+  }, [isMobile, vocesCargadas, introStarted, introPlayed]);
+
+
 
   useEffect(() => {
     const checkMobile = () => {
@@ -839,12 +889,12 @@ function DragDropOrder({ currentModule, onContentIsEnded, courseId, moduleId }) 
   };
 
   const iniciarIntroMovil = () => {
-     // 🔥 Verificar que no estamos navegando
-        if (isNavigatingRef.current) {
-            console.log('⚠️ Navegación en progreso, esperando...');
-            setTimeout(iniciarIntroMovil, 200);
-            return;
-        }
+    // 🔥 Verificar que no estamos navegando
+    if (isNavigatingRef.current) {
+      console.log('⚠️ Navegación en progreso, esperando...');
+      setTimeout(iniciarIntroMovil, 200);
+      return;
+    }
 
     if (!introStarted && vocesCargadas) {
       setIntroStarted(true);
@@ -855,6 +905,17 @@ function DragDropOrder({ currentModule, onContentIsEnded, courseId, moduleId }) 
       );
     }
   };
+
+
+  useEffect(() => {
+    console.log('🎯 Componente dragDrop montado - Reseteando flags');
+    isNavigatingRef.current = false;
+    previousModuleIdRef.current = moduleId;
+
+    return () => {
+      console.log('🧹 Componente FlipCard desmontado');
+    };
+  }, []);
 
   const getPreviewText = (content) => {
     const cleaned = content.replace(/\n/g, ' ').replace(/\s+/g, ' ').trim();

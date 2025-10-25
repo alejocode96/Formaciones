@@ -64,6 +64,7 @@ function FlipCardReverse({ currentModule, onContentIsEnded, courseId, moduleId }
     });
     const previousModuleIdRef = useRef(moduleId); // 🔥 NUEVO
     const isNavigatingRef = useRef(false); // 🔥 NUEVO
+    const introAudioRef = useRef(null);
     // ==============================================================
     // 💾 FUNCIONES DE PERSISTENCIA (localStorage)
     // ==============================================================
@@ -355,7 +356,7 @@ function FlipCardReverse({ currentModule, onContentIsEnded, courseId, moduleId }
      * @param {Function} onEnd - Callback que se ejecuta al terminar (solo si no fue cancelado)
      */
     const speak = (text, onEnd, onError) => {
-         // 🔥 Bloquear si estamos navegando
+        // 🔥 Bloquear si estamos navegando
         if (isNavigatingRef.current) {
             console.warn('⛔ Navegación activa - Audio BLOQUEADO');
             if (onError) onError();
@@ -499,55 +500,86 @@ function FlipCardReverse({ currentModule, onContentIsEnded, courseId, moduleId }
     }, []);
 
     // 🔥 NUEVO: Detectar cambio de módulo/ruta y cancelar audio
+    // 🔥 SOLUCIÓN DEFINITIVA: Detectar cambio de módulo/ruta y cancelar TODO
     useEffect(() => {
         const synth = synthRef.current;
         const currentModuleId = moduleId;
 
+        // Si el módulo cambió, cancelar INMEDIATAMENTE
         if (previousModuleIdRef.current !== currentModuleId) {
-            console.log(`🚨 CAMBIO DE MÓDULO: ${previousModuleIdRef.current} → ${currentModuleId}`);
+            console.log(`🚨 CAMBIO DE MÓDULO DETECTADO: ${previousModuleIdRef.current} → ${currentModuleId}`);
+
+            // Actualizar referencia
             previousModuleIdRef.current = currentModuleId;
 
+            // Cancelación BRUTAL para móviles
             isNavigatingRef.current = true;
 
+            // Marcar utterances como cancelados
             if (currentUtteranceRef.current) {
                 currentUtteranceRef.current.wasCancelled = true;
             }
+            if (introAudioRef.current) {
+                introAudioRef.current.wasCancelled = true;
+            }
 
+           
+
+            // CANCELACIÓN MÚLTIPLE AGRESIVA
             const cancelarAudio = () => {
                 try {
                     if (synth) {
                         synth.pause();
                         synth.cancel();
                     }
-                } catch (e) { }
+                } catch (e) {
+                    console.error('Error cancelando:', e);
+                }
             };
 
-            cancelarAudio();
+            // Cancelar 6 veces en intervalos cortos
+            cancelarAudio(); // Inmediato
             setTimeout(cancelarAudio, 10);
             setTimeout(cancelarAudio, 50);
             setTimeout(cancelarAudio, 100);
             setTimeout(cancelarAudio, 200);
+            setTimeout(cancelarAudio, 300);
 
+            // Resetear TODOS los estados
             setIsPlayingAudio(false);
             setIsPaused(false);
+           
+            setAudioCompletado(false);
             audioStateRef.current.isPlaying = false;
             audioStateRef.current.wasPaused = false;
             pausedTextRef.current.text = '';
             currentUtteranceRef.current = null;
+            introAudioRef.current = null;
 
+            console.log('✅ Audio cancelado por cambio de módulo');
+
+            // Permitir operaciones después de 200ms
             setTimeout(() => {
                 isNavigatingRef.current = false;
-            }, 300);
+                console.log('✅ Flag de navegación reseteado (200ms)');
+            }, 200);
         }
 
+        // Cleanup cuando cambia la ruta completa
         return () => {
-            console.log('🧹 Cleanup por cambio de ruta');
+            console.log('🧹 Cleanup por cambio de ruta:', location.pathname);
+
             isNavigatingRef.current = true;
 
+            // Marcar como cancelados
             if (currentUtteranceRef.current) {
                 currentUtteranceRef.current.wasCancelled = true;
             }
+            if (introAudioRef.current) {
+                introAudioRef.current.wasCancelled = true;
+            }
 
+            // Cancelación brutal
             try {
                 if (synth && (synth.speaking || synth.pending)) {
                     synth.pause();
@@ -555,15 +587,23 @@ function FlipCardReverse({ currentModule, onContentIsEnded, courseId, moduleId }
                     setTimeout(() => { try { synth.cancel(); } catch (e) { } }, 10);
                     setTimeout(() => { try { synth.cancel(); } catch (e) { } }, 50);
                     setTimeout(() => { try { synth.cancel(); } catch (e) { } }, 100);
+                    setTimeout(() => { try { synth.cancel(); } catch (e) { } }, 200);
                 }
-            } catch (error) { }
+            } catch (error) {
+                console.error('Error en cleanup:', error);
+            }
 
+           
+
+            // Resetear estados
             setIsPlayingAudio(false);
             setIsPaused(false);
+          
             audioStateRef.current.isPlaying = false;
             audioStateRef.current.wasPaused = false;
             pausedTextRef.current.text = '';
             currentUtteranceRef.current = null;
+            introAudioRef.current = null;
         };
     }, [location.pathname, moduleId]);
 
@@ -722,16 +762,16 @@ function FlipCardReverse({ currentModule, onContentIsEnded, courseId, moduleId }
             console.warn('⚠️ Flag detectado en carga inicial, reseteando...');
             isNavigatingRef.current = false;
         }
-        
+
         if (!isMobile && vocesCargadas && introStarted && !introPlayed) {
             console.log('🎬 Reproduciendo intro...');
-            
+
             const timer = setTimeout(() => {
                 if (isNavigatingRef.current) {
                     console.log('⛔ Navegación detectada, NO reproducir intro');
                     return;
                 }
-                
+
                 speak(
                     currentModule.audioObjetivo,
                     // onEnd
@@ -751,7 +791,7 @@ function FlipCardReverse({ currentModule, onContentIsEnded, courseId, moduleId }
                     }
                 );
             }, 300);
-            
+
             return () => clearTimeout(timer);
         }
     }, [isMobile, vocesCargadas, introStarted, introPlayed]);

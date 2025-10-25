@@ -350,7 +350,7 @@ function TrainingLogiTransProvider({ children }) {
                                 audioText: 'Conclusión. En resumen: Aunque trabajamos con un cliente formal y de alta reputación, el riesgo no desaparece. Como empresa transportadora, debemos estar alertas y comprometidos con el control de cada etapa de la operación: Conocer a los actores involucrados, como clientes, conductores y aliados. Verificar el servicio que prestamos y el tipo de carga movilizada. Revisar la documentación asociada al transporte. Evaluar las rutas y zonas donde operamos. La prevención del riesgo es tarea de todos. Cada colaborador tiene un papel clave en garantizar que nuestras operaciones sean transparentes, seguras y alineadas con las políticas SARLAFT.'
                             }
                         ],
-                        duration: "01:26",
+                        duration: "06:00",
                         resumen: [
                             "El Sistema de Administración del Riesgo de Lavado de Activos y Financiación del Terrorismo (SARLAFT) busca que las empresas identifiquen, prevengan y controlen los riesgos que puedan afectar sus operaciones frente al uso indebido de recursos o actividades ilegales.",
                             "Aunque Cementos Argos es un cliente formal y de gran reputación, nuestras operaciones logísticas pueden verse expuestas a amenazas si terceros intentan aprovecharlas con fines ilícitos.",
@@ -469,10 +469,10 @@ function TrainingLogiTransProvider({ children }) {
                             "En conjunto, las señales de alerta constituyen una herramienta clave para la gestión integral del riesgo, reforzando el compromiso institucional con la transparencia, la legalidad y la responsabilidad empresarial.",
 
                         ],
-                        duration: "01:26",
+                        duration: "02:30",
                     },
                     {
-                        id: 7, lessons: "Fundamentos", name: "Casos Reales en Colombia", completed: false, type: "Video", duration: "01:26", path: casosSARLAFT,
+                        id: 7, lessons: "Fundamentos", name: "Casos Reales en Colombia", completed: false, type: "Video", duration: "00:43", path: casosSARLAFT,
                         resumen: [
                             "**Casos Reales en Colombia**",
                             "En Colombia, múltiples casos recientes han evidenciado la relevancia del Sistema de Administración del Riesgo de Lavado de Activos y Financiación del Terrorismo (SARLAFT) como herramienta clave para prevenir delitos financieros.",
