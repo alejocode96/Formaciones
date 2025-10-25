@@ -273,7 +273,7 @@ function FlipCard({ currentModule, onContentIsEnded, courseId, moduleId }) {
             if (onError) onError();
             return;
         }
-
+        
         const synth = synthRef.current;
 
         // 🔥 Limpieza previa ABSOLUTA
@@ -391,6 +391,7 @@ function FlipCard({ currentModule, onContentIsEnded, courseId, moduleId }) {
             if (progressIntervalRef.current) {
                 clearInterval(progressIntervalRef.current);
                 progressIntervalRef.current = null;
+                 isNavigatingRef.current = true;
             }
 
             setShowAudioPopup(true);
@@ -495,7 +496,7 @@ function FlipCard({ currentModule, onContentIsEnded, courseId, moduleId }) {
 
     const abrirEtapa = (etapaId) => {
 
-         stopAudio();
+        stopAudio();
         // 🔥 RESETEAR el flag DESPUÉS de detener
         isNavigatingRef.current = false;
         setEtapaAbierta(etapaId);
