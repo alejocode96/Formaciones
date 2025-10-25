@@ -2,9 +2,10 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Volume2, CheckCircle, X, Target, AlertCircle } from 'lucide-react';
 import { motion, AnimatePresence } from "framer-motion";
 
-
+import { useLocation } from 'react-router-dom';
 function DragDropOrder({ currentModule, onContentIsEnded, courseId, moduleId }) {
-
+  // 🔥 NUEVO: Detección de cambio de ruta
+  const location = useLocation();
   let cards = currentModule.cards;
   const maxRetries = 10;
   const correctOrder = cards.map(card => card.id);
@@ -56,7 +57,8 @@ function DragDropOrder({ currentModule, onContentIsEnded, courseId, moduleId }) 
   const audioCompletedRef = useRef(false);
   const audioStateRef = useRef({ isPlaying: false, wasPaused: false });
   const dropZoneRefs = useRef({});
-
+  const previousModuleIdRef = useRef(moduleId); // 🔥 NUEVO
+  const isNavigatingRef = useRef(false); // 🔥 NUEVO
   // 💾 LOCALSTORAGE
   const getProgressKey = () => `userProgress`;
 
@@ -250,8 +252,95 @@ function DragDropOrder({ currentModule, onContentIsEnded, courseId, moduleId }) 
     };
   }, []);
 
+  // 🔥 NUEVO: Resetear flag al montar
+  useEffect(() => {
+    console.log('🎯 FlipCardReverse montado - Reseteando flags');
+    isNavigatingRef.current = false;
+    previousModuleIdRef.current = moduleId;
+
+    return () => {
+      console.log('🧹 FlipCardReverse desmontado');
+    };
+  }, []);
+
+  // 🔥 NUEVO: Detectar cambio de módulo/ruta y cancelar audio
+  useEffect(() => {
+    const synth = synthRef.current;
+    const currentModuleId = moduleId;
+
+    if (previousModuleIdRef.current !== currentModuleId) {
+      console.log(`🚨 CAMBIO DE MÓDULO: ${previousModuleIdRef.current} → ${currentModuleId}`);
+      previousModuleIdRef.current = currentModuleId;
+
+      isNavigatingRef.current = true;
+
+      if (currentUtteranceRef.current) {
+        currentUtteranceRef.current.wasCancelled = true;
+      }
+
+      const cancelarAudio = () => {
+        try {
+          if (synth) {
+            synth.pause();
+            synth.cancel();
+          }
+        } catch (e) { }
+      };
+
+      cancelarAudio();
+      setTimeout(cancelarAudio, 10);
+      setTimeout(cancelarAudio, 50);
+      setTimeout(cancelarAudio, 100);
+      setTimeout(cancelarAudio, 200);
+
+      setIsPlayingAudio(false);
+      setIsPaused(false);
+      audioStateRef.current.isPlaying = false;
+      audioStateRef.current.wasPaused = false;
+      pausedTextRef.current.text = '';
+      currentUtteranceRef.current = null;
+
+      setTimeout(() => {
+        isNavigatingRef.current = false;
+      }, 300);
+    }
+
+    return () => {
+      console.log('🧹 Cleanup por cambio de ruta');
+      isNavigatingRef.current = true;
+
+      if (currentUtteranceRef.current) {
+        currentUtteranceRef.current.wasCancelled = true;
+      }
+
+      try {
+        if (synth && (synth.speaking || synth.pending)) {
+          synth.pause();
+          synth.cancel();
+          setTimeout(() => { try { synth.cancel(); } catch (e) { } }, 10);
+          setTimeout(() => { try { synth.cancel(); } catch (e) { } }, 50);
+          setTimeout(() => { try { synth.cancel(); } catch (e) { } }, 100);
+        }
+      } catch (error) { }
+
+      setIsPlayingAudio(false);
+      setIsPaused(false);
+      audioStateRef.current.isPlaying = false;
+      audioStateRef.current.wasPaused = false;
+      pausedTextRef.current.text = '';
+      currentUtteranceRef.current = null;
+    };
+  }, [location.pathname, moduleId]);
+
   // 🎧 FUNCIÓN DE REPRODUCCIÓN
   const speak = (text, onEnd, onError) => {
+     // 🔥 Bloquear si estamos navegando
+        if (isNavigatingRef.current) {
+            console.warn('⛔ Navegación activa - Audio BLOQUEADO');
+            if (onError) onError();
+            return;
+        }
+
     if (!vocesCargadas || !mejorVoz) {
       setShowAudioPopup(true);
       return;
@@ -451,15 +540,45 @@ function DragDropOrder({ currentModule, onContentIsEnded, courseId, moduleId }) 
     };
   }, []);
 
-  useEffect(() => {
-    if (!isMobile && vocesCargadas && introStarted && !introPlayed) {
-      speak(
-        currentModule.audioObjetivo,
-        () => setIntroPlayed(true),
-        () => setIntroPlayed(true)
-      );
-    }
-  }, [isMobile, vocesCargadas, introStarted, introPlayed]);
+ useEffect(() => {
+        // 🔥 Verificar y resetear flag si es necesario
+        if (isNavigatingRef.current) {
+            console.warn('⚠️ Flag detectado en carga inicial, reseteando...');
+            isNavigatingRef.current = false;
+        }
+        
+        if (!isMobile && vocesCargadas && introStarted && !introPlayed) {
+            console.log('🎬 Reproduciendo intro...');
+            
+            const timer = setTimeout(() => {
+                if (isNavigatingRef.current) {
+                    console.log('⛔ Navegación detectada, NO reproducir intro');
+                    return;
+                }
+                
+                speak(
+                    currentModule.audioObjetivo,
+                    // onEnd
+                    () => {
+                        console.log('✅ Intro terminada');
+                        setIntroPlayed(true);
+                        setUnlockedCards(prev => {
+                            if (prev && prev.length > 1) return prev;
+                            return [1];
+                        });
+                    },
+                    // onError
+                    () => {
+                        console.log('❌ Intro falló después de reintentos');
+                        setIntroPlayed(true);
+                        setUnlockedCards([1]);
+                    }
+                );
+            }, 300);
+            
+            return () => clearTimeout(timer);
+        }
+    }, [isMobile, vocesCargadas, introStarted, introPlayed]);
 
   useEffect(() => {
     const checkMobile = () => {
@@ -720,6 +839,13 @@ function DragDropOrder({ currentModule, onContentIsEnded, courseId, moduleId }) 
   };
 
   const iniciarIntroMovil = () => {
+     // 🔥 Verificar que no estamos navegando
+        if (isNavigatingRef.current) {
+            console.log('⚠️ Navegación en progreso, esperando...');
+            setTimeout(iniciarIntroMovil, 200);
+            return;
+        }
+
     if (!introStarted && vocesCargadas) {
       setIntroStarted(true);
       speak(
@@ -774,7 +900,7 @@ function DragDropOrder({ currentModule, onContentIsEnded, courseId, moduleId }) 
     );
   }
 
-  
+
 
   const allCompleted = completedItems.length === cards.length;
   const isPlayingIntro = introStarted && !introPlayed && isPlayingAudio;
