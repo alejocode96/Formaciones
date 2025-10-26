@@ -419,6 +419,12 @@ function DragDropOrder({ currentModule, onContentIsEnded, courseId, moduleId }) 
     utterance.wasCancelled = false;
     pausedTextRef.current.text = text;
     currentUtteranceRef.current = utterance;
+
+    // 🔥 NUEVO: Si hay introAudioRef activo, también asignarlo ahí
+    if (introAudioRef.current?.isIntro) {
+      introAudioRef.current = utterance;
+    }
+
     let startTime = Date.now();
     const baseRate = 0.9; // tu rate actual
     const charsPerSecond = 14 * baseRate; // velocidad ajustada
@@ -458,6 +464,14 @@ function DragDropOrder({ currentModule, onContentIsEnded, courseId, moduleId }) 
 
     utterance.onerror = (e) => {
       const isInterrupted = e.error === 'interrupted';
+      const isCanceled = e.error === 'canceled';
+
+      // 🔥 NUEVO: Si fue cancelado por navegación, NO mostrar popup ni reintentar
+      if (isCanceled && isNavigatingRef.current) {
+        console.log('✅ Audio cancelado correctamente por navegación');
+        return;
+      }
+
       if (!isInterrupted && audioRetryRef.current < maxRetries) {
         audioRetryRef.current++;
         setShowAudioPopup(true);
@@ -482,6 +496,7 @@ function DragDropOrder({ currentModule, onContentIsEnded, courseId, moduleId }) 
       setIsPaused(false);
       audioStateRef.current.wasPaused = false;
     };
+
 
     try {
       synthRef.current.speak(utterance);
@@ -589,37 +604,38 @@ function DragDropOrder({ currentModule, onContentIsEnded, courseId, moduleId }) 
   }, []);
 
   useEffect(() => {
-    // 🔥 Verificar y resetear flag si es necesario
-    if (isNavigatingRef.current) {
-      console.warn('⚠️ Flag detectado en carga inicial, reseteando...');
-      isNavigatingRef.current = false;
-    }
-
     if (!isMobile && vocesCargadas && introStarted && !introPlayed) {
-      console.log('🎬 Reproduciendo intro...');
+      console.log('🎬 Intentando reproducir intro en desktop...');
+
+      // 🔥 Verificar si la bandera está mal
+      if (isNavigatingRef.current) {
+        console.warn('⚠️ Flag de navegación detectado, pero estamos en carga inicial');
+        console.log('🔧 Reseteando flag y continuando...');
+        isNavigatingRef.current = false;
+      }
 
       const timer = setTimeout(() => {
+        // Verificar de nuevo (por si acaso hubo navegación real)
         if (isNavigatingRef.current) {
-          console.log('⛔ Navegación detectada, NO reproducir intro');
+          console.log('⛔ Navegación REAL detectada, NO reproducir intro');
           return;
         }
 
+        // 🔥 CRÍTICO: Marcar que vamos a reproducir intro
+        introAudioRef.current = { isIntro: true };
+
+        console.log('✅ Reproduciendo intro desktop...');
         speak(
           currentModule.audioObjetivo,
-          // onEnd
           () => {
-            console.log('✅ Intro terminada');
+            console.log('✅ Intro desktop terminada');
             setIntroPlayed(true);
-            setUnlockedCards(prev => {
-              if (prev && prev.length > 1) return prev;
-              return [1];
-            });
+            introAudioRef.current = null; // 🔥 NUEVO: Limpiar referencia
           },
-          // onError
           () => {
-            console.log('❌ Intro falló después de reintentos');
+            console.error('❌ Error en intro desktop');
             setIntroPlayed(true);
-            setUnlockedCards([1]);
+            introAudioRef.current = null; // 🔥 NUEVO: Limpiar referencia
           }
         );
       }, 300);
@@ -627,7 +643,6 @@ function DragDropOrder({ currentModule, onContentIsEnded, courseId, moduleId }) 
       return () => clearTimeout(timer);
     }
   }, [isMobile, vocesCargadas, introStarted, introPlayed]);
-
 
 
   useEffect(() => {
@@ -889,7 +904,6 @@ function DragDropOrder({ currentModule, onContentIsEnded, courseId, moduleId }) 
   };
 
   const iniciarIntroMovil = () => {
-    // 🔥 Verificar que no estamos navegando
     if (isNavigatingRef.current) {
       console.log('⚠️ Navegación en progreso, esperando...');
       setTimeout(iniciarIntroMovil, 200);
@@ -897,11 +911,24 @@ function DragDropOrder({ currentModule, onContentIsEnded, courseId, moduleId }) 
     }
 
     if (!introStarted && vocesCargadas) {
+      console.log('📱 Iniciando intro en móvil...');
       setIntroStarted(true);
+
+      // 🔥 NUEVO: Marcar que vamos a reproducir intro
+      introAudioRef.current = { isIntro: true };
+
       speak(
         currentModule.audioObjetivo,
-        () => setIntroPlayed(true),
-        () => setIntroPlayed(true)
+        () => {
+          console.log('✅ Intro móvil terminada');
+          setIntroPlayed(true);
+          introAudioRef.current = null; // 🔥 NUEVO: Limpiar referencia
+        },
+        () => {
+          console.error('❌ Error en intro móvil');
+          setIntroPlayed(true);
+          introAudioRef.current = null; // 🔥 NUEVO: Limpiar referencia
+        }
       );
     }
   };

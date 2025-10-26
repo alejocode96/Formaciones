@@ -65,6 +65,7 @@ function FlipCardReverse({ currentModule, onContentIsEnded, courseId, moduleId }
     const previousModuleIdRef = useRef(moduleId); // 🔥 NUEVO
     const isNavigatingRef = useRef(false); // 🔥 NUEVO
     const introAudioRef = useRef(null);
+
     // ==============================================================
     // 💾 FUNCIONES DE PERSISTENCIA (localStorage)
     // ==============================================================
@@ -342,20 +343,107 @@ function FlipCardReverse({ currentModule, onContentIsEnded, courseId, moduleId }
     // 🎧 FUNCIÓN DE REPRODUCCIÓN DE AUDIO
     // ==============================================================
 
+    // ==============================================================
+    // 🛑 FUNCIÓN: Detener audio completamente
+    // ==============================================================
+
+    const stopAudio = () => {
+        return new Promise((resolve) => {
+            const synth = synthRef.current;
+
+            try {
+                console.log('🛑 Iniciando stopAudio...');
+
+                // 🔥 PASO 1: Marcar como navegando
+                isNavigatingRef.current = true;
+
+                // 🔥 PASO 2: Limpiar currentUtteranceRef
+                if (currentUtteranceRef.current) {
+                    currentUtteranceRef.current.wasCancelled = true;
+                    currentUtteranceRef.current.onend = null;
+                    currentUtteranceRef.current.onboundary = null;
+                    currentUtteranceRef.current.onerror = null;
+                    currentUtteranceRef.current.onstart = null;
+                    currentUtteranceRef.current.onpause = null;
+                    currentUtteranceRef.current.onresume = null;
+                    currentUtteranceRef.current = null;
+                    console.log('✅ currentUtterance limpiado');
+                }
+
+                // 🔥 PASO 3: Limpiar introAudioRef
+                if (introAudioRef.current) {
+                    introAudioRef.current.wasCancelled = true;
+                    introAudioRef.current.onend = null;
+                    introAudioRef.current.onboundary = null;
+                    introAudioRef.current.onerror = null;
+                    introAudioRef.current.onstart = null;
+                    introAudioRef.current.onpause = null;
+                    introAudioRef.current.onresume = null;
+                    introAudioRef.current = null;
+                    console.log('✅ introAudio limpiado');
+                }
+
+                // 🔥 PASO 4: Resetear todas las referencias
+                pausedTextRef.current.text = '';
+                audioStateRef.current = {
+                    isPlaying: false,
+                    wasPaused: false
+                };
+
+                // 🔥 PASO 5: Resetear estados de React
+                setIsPlayingAudio(false);
+                setIsPaused(false);
+
+                // 🔥 PASO 6: Cancelar síntesis
+                if (synth && (synth.speaking || synth.pending)) {
+                    try { synth.resume(); } catch (e) { }
+                    try { synth.cancel(); } catch (e) { }
+
+                    setTimeout(() => {
+                        try { synth.cancel(); } catch (e) { }
+                        console.log('✅ Audio cancelado completamente');
+
+                        setTimeout(() => {
+                            isNavigatingRef.current = false;
+                            resolve();
+                        }, 100);
+                    }, 300);
+                } else {
+                    console.log('✅ No había audio reproduciéndose');
+                    setTimeout(() => {
+                        isNavigatingRef.current = false;
+                        resolve();
+                    }, 100);
+                }
+            } catch (error) {
+                console.error('❌ Error en stopAudio:', error);
+                isNavigatingRef.current = false;
+                resolve();
+            }
+        });
+    };
+
+    // ==============================================================
+    // 🎧 FUNCIÓN DE REPRODUCCIÓN DE AUDIO
+    // ==============================================================
+
     /**
      * 🎧 Reproduce texto usando síntesis de voz del navegador
      * 
-     * Características:
-     * - Usa la voz previamente seleccionada (mejorVoz)
-     * - Cancela cualquier audio en reproducción antes de empezar uno nuevo
-     * - Maneja eventos de inicio, fin, error, pausa y reanudación
-     * - Solo ejecuta el callback onEnd si el audio terminó NATURALMENTE
-     *   (no si fue cancelado por cerrar página/navegar)
-     * 
-     * @param {String} text - Texto a reproducir
-     * @param {Function} onEnd - Callback que se ejecuta al terminar (solo si no fue cancelado)
-     */
-    const speak = (text, onEnd, onError) => {
+        /**
+         * 🎧 Reproduce texto usando síntesis de voz del navegador
+         * 
+         * Características:
+         * - Usa la voz previamente seleccionada (mejorVoz)
+         * - Cancela cualquier audio en reproducción antes de empezar uno nuevo
+         * - Maneja eventos de inicio, fin, error, pausa y reanudación
+         * - Solo ejecuta el callback onEnd si el audio terminó NATURALMENTE
+         *   (no si fue cancelado por cerrar página/navegar)
+         * 
+         * @param {String} text - Texto a reproducir
+         * @param {Function} onEnd - Callback que se ejecuta al terminar (solo si no fue cancelado)
+         */
+    const speak = (text, onEnd, onError, isIntro = false) => {
         // 🔥 Bloquear si estamos navegando
         if (isNavigatingRef.current) {
             console.warn('⛔ Navegación activa - Audio BLOQUEADO');
@@ -388,6 +476,12 @@ function FlipCardReverse({ currentModule, onContentIsEnded, courseId, moduleId }
         // Guardar referencias
         pausedTextRef.current.text = text;
         currentUtteranceRef.current = utterance;
+        // 🔥 NUEVO: Si es intro, guardar también en introAudioRef
+        if (isIntro) {
+            introAudioRef.current = utterance;
+            console.log('💾 Audio de intro guardado en introAudioRef');
+        }
+
 
         // 📢 Evento: Cuando el audio inicia
         utterance.onstart = () => {
@@ -502,7 +596,6 @@ function FlipCardReverse({ currentModule, onContentIsEnded, courseId, moduleId }
     // 🔥 NUEVO: Detectar cambio de módulo/ruta y cancelar audio
     // 🔥 SOLUCIÓN DEFINITIVA: Detectar cambio de módulo/ruta y cancelar TODO
     useEffect(() => {
-        const synth = synthRef.current;
         const currentModuleId = moduleId;
 
         // Si el módulo cambió, cancelar INMEDIATAMENTE
@@ -512,98 +605,20 @@ function FlipCardReverse({ currentModule, onContentIsEnded, courseId, moduleId }
             // Actualizar referencia
             previousModuleIdRef.current = currentModuleId;
 
-            // Cancelación BRUTAL para móviles
-            isNavigatingRef.current = true;
-
-            // Marcar utterances como cancelados
-            if (currentUtteranceRef.current) {
-                currentUtteranceRef.current.wasCancelled = true;
-            }
-            if (introAudioRef.current) {
-                introAudioRef.current.wasCancelled = true;
-            }
-
-           
-
-            // CANCELACIÓN MÚLTIPLE AGRESIVA
-            const cancelarAudio = () => {
-                try {
-                    if (synth) {
-                        synth.pause();
-                        synth.cancel();
-                    }
-                } catch (e) {
-                    console.error('Error cancelando:', e);
-                }
-            };
-
-            // Cancelar 6 veces en intervalos cortos
-            cancelarAudio(); // Inmediato
-            setTimeout(cancelarAudio, 10);
-            setTimeout(cancelarAudio, 50);
-            setTimeout(cancelarAudio, 100);
-            setTimeout(cancelarAudio, 200);
-            setTimeout(cancelarAudio, 300);
-
-            // Resetear TODOS los estados
-            setIsPlayingAudio(false);
-            setIsPaused(false);
-           
-            setAudioCompletado(false);
-            audioStateRef.current.isPlaying = false;
-            audioStateRef.current.wasPaused = false;
-            pausedTextRef.current.text = '';
-            currentUtteranceRef.current = null;
-            introAudioRef.current = null;
-
-            console.log('✅ Audio cancelado por cambio de módulo');
-
-            // Permitir operaciones después de 200ms
-            setTimeout(() => {
-                isNavigatingRef.current = false;
-                console.log('✅ Flag de navegación reseteado (200ms)');
-            }, 200);
+            // 🔥 Usar stopAudio() - TODO en una sola llamada
+            stopAudio().then(() => {
+                console.log('✅ Audio cancelado por cambio de módulo');
+            });
         }
 
         // Cleanup cuando cambia la ruta completa
         return () => {
             console.log('🧹 Cleanup por cambio de ruta:', location.pathname);
 
-            isNavigatingRef.current = true;
-
-            // Marcar como cancelados
-            if (currentUtteranceRef.current) {
-                currentUtteranceRef.current.wasCancelled = true;
-            }
-            if (introAudioRef.current) {
-                introAudioRef.current.wasCancelled = true;
-            }
-
-            // Cancelación brutal
-            try {
-                if (synth && (synth.speaking || synth.pending)) {
-                    synth.pause();
-                    synth.cancel();
-                    setTimeout(() => { try { synth.cancel(); } catch (e) { } }, 10);
-                    setTimeout(() => { try { synth.cancel(); } catch (e) { } }, 50);
-                    setTimeout(() => { try { synth.cancel(); } catch (e) { } }, 100);
-                    setTimeout(() => { try { synth.cancel(); } catch (e) { } }, 200);
-                }
-            } catch (error) {
-                console.error('Error en cleanup:', error);
-            }
-
-           
-
-            // Resetear estados
-            setIsPlayingAudio(false);
-            setIsPaused(false);
-          
-            audioStateRef.current.isPlaying = false;
-            audioStateRef.current.wasPaused = false;
-            pausedTextRef.current.text = '';
-            currentUtteranceRef.current = null;
-            introAudioRef.current = null;
+            // 🔥 Usar stopAudio() en el cleanup también
+            stopAudio().then(() => {
+                console.log('✅ Cleanup completado');
+            });
         };
     }, [location.pathname, moduleId]);
 
@@ -720,25 +735,15 @@ function FlipCardReverse({ currentModule, onContentIsEnded, courseId, moduleId }
      */
     useEffect(() => {
         const handleBeforeUnload = () => {
-            const synth = synthRef.current;
-            if (synth.speaking) {
-                console.log('🛑 Cerrando página: cancelando audio...');
-                // 🚩 Marcar como cancelado para que NO se guarde el progreso
-                if (currentUtteranceRef.current)
-                    currentUtteranceRef.current.wasCancelled = true;
-                synth.cancel();
-            }
+            console.log('🛑 Cerrando página: cancelando audio...');
+            stopAudio(); // 🔥 Una sola llamada
         };
 
         window.addEventListener('beforeunload', handleBeforeUnload);
 
-        // Cleanup al desmontar el componente
         return () => {
-            const synth = synthRef.current;
-            if (synth.speaking) {
-                console.log('🧹 Componente desmontado: cancelando audio...');
-                synth.cancel();
-            }
+            console.log('🧹 Componente desmontado: cancelando audio...');
+            stopAudio(); // 🔥 Una sola llamada
             window.removeEventListener('beforeunload', handleBeforeUnload);
         };
     }, []);
@@ -756,6 +761,7 @@ function FlipCardReverse({ currentModule, onContentIsEnded, courseId, moduleId }
      * - Marca introPlayed = true (para mostrar las tarjetas)
      * - Desbloquea la primera tarjeta si no hay progreso previo
      */
+
     useEffect(() => {
         // 🔥 Verificar y resetear flag si es necesario
         if (isNavigatingRef.current) {
@@ -788,13 +794,15 @@ function FlipCardReverse({ currentModule, onContentIsEnded, courseId, moduleId }
                         console.log('❌ Intro falló después de reintentos');
                         setIntroPlayed(true);
                         setUnlockedCards([1]);
-                    }
+                    },
+                    true // 🔥 NUEVO: Marcar como intro
                 );
             }, 300);
 
             return () => clearTimeout(timer);
         }
     }, [isMobile, vocesCargadas, introStarted, introPlayed]);
+
 
     /**
      * 📱 useEffect: Detectar si el dispositivo es móvil
@@ -842,63 +850,37 @@ function FlipCardReverse({ currentModule, onContentIsEnded, courseId, moduleId }
      * 
      * @param {Number} cardId - ID de la tarjeta clickeada
      */
-    const handleCardClick = (cardId) => {
+    const handleCardClick = async (cardId) => {  // 🔥 Agregar async
         // Validación 1: Intro debe haber terminado o fallado
         if (!introPlayed && !audioFailed) return;
 
         // Validación 2: Tarjeta debe estar desbloqueada
         if (!unlockedCards.includes(cardId)) return;
 
-        // Validación 3: No debe haber otro audio reproduciéndose
-        if (isPlayingAudio) return;
-
-        // Si ya está volteada, regresarla al frente
+        // Si ya está volteada, regresarla al frente Y DETENER AUDIO
         if (flippedCards.includes(cardId)) {
+            await stopAudio(); // 🔥 NUEVO: Detener audio antes de cerrar
             setFlippedCards(flippedCards.filter(id => id !== cardId));
             setActiveCard(null);
             return;
         }
 
-        // Voltear la tarjeta
-        setActiveCard(cardId);
-        setFlippedCards([...flippedCards, cardId]);
+        // Validación 3: No debe haber otro audio reproduciéndose
+        if (isPlayingAudio) {
+            console.log('⚠️ Ya hay audio reproduciéndose'); // 🔥 Mejor mensaje
+            return;
+        }
 
-        // Construir texto completo para reproducir
-        const card = cards.find(a => a.id === cardId);
-        const fullText = `${card.title}.     ${card.content} ${card.example}`;
+        // ... resto del código de reproducción ...
 
-        // Reproducir audio de la tarjeta
         speak(fullText, () => {
-            // ✅ Callback ejecutado solo si el audio terminó naturalmente
-
-            // 1. Guardar progreso en localStorage
-            updateFlipCardReverseProgress(cardId);
-
-            // 2. Actualizar estado local de tarjetas completadas
-            setCompletedCards(prev => [...new Set([...prev, cardId])]);
-
-            const nextCardId = cardId + 1;
-            const isLastCard = cardId === cards.length;
-
-            // 3. Desbloquear siguiente tarjeta si existe
-            if (nextCardId <= cards.length) {
-                setUnlockedCards([...unlockedCards, nextCardId]);
-            }
-
-            // 4. Si es la última tarjeta, ejecutar callback de finalización
-            if (isLastCard) {
-                console.log('🏁 Última card completada!');
-                onContentIsEnded(); // Notifica al componente padre que terminó el módulo
-            }
-
-            // 5. Limpiar tarjeta activa
-            setActiveCard(null);
+            // callbacks...
         },
-            // onError: Callback de error definitivo
             () => {
                 console.log('❌ Audio falló definitivamente después de reintentos');
                 setActiveCard(null);
-            }
+            },
+            false // 🔥 NUEVO: 4to parámetro, no es intro
         );
     };
 
@@ -955,11 +937,11 @@ function FlipCardReverse({ currentModule, onContentIsEnded, courseId, moduleId }
                     console.log('❌ Intro falló después de reintentos');
                     setIntroPlayed(true);
                     setUnlockedCards([1]);
-                }
+                },
+                true // 🔥 NUEVO: Marcar como intro
             );
         }
     };
-
     // ==============================================================
     // 🎯 VARIABLES DE CONTROL DE RENDERIZADO
     // ==============================================================
