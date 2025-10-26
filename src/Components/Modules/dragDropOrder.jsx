@@ -431,7 +431,7 @@ function DragDropOrder({ currentModule, onContentIsEnded, courseId, moduleId }) 
     const estimatedDuration = (text.length / charsPerSecond) * 1000;
 
     utterance.onstart = () => {
-       let startTime = Date.now();
+      let startTime = Date.now();
       setIsPlayingAudio(true);
       setIsPaused(false);
       setAudioProgress(0);
@@ -946,10 +946,18 @@ function DragDropOrder({ currentModule, onContentIsEnded, courseId, moduleId }) 
   }, []);
 
   const getPreviewText = (content) => {
-    const cleaned = content.replace(/\n/g, ' ').replace(/\s+/g, ' ').trim();
-    if (cleaned.length <= 80) return cleaned;
-    return cleaned.substring(0, 100) + '...';
+    if (!content) return '';
+
+    // Si content es un array, unir todo en una sola cadena
+    const text = Array.isArray(content) ? content.join(' ') : content;
+
+    // Limpiar saltos de línea y espacios duplicados
+    const cleaned = text.replace(/\n/g, ' ').replace(/\s+/g, ' ').trim();
+
+    // Retornar los primeros 100 caracteres
+    return cleaned.length <= 100 ? cleaned : cleaned.substring(0, 100) + '...';
   };
+
 
   const getGridClass = () => {
     const count = draggableItems.length;
@@ -1026,12 +1034,8 @@ function DragDropOrder({ currentModule, onContentIsEnded, courseId, moduleId }) 
 
       {isPlayingIntro && (
         <div className="max-w-4xl mx-auto px-4" data-aos="fade-up">
-          <div className={`hidden lg:grid ${getGridClass()} gap-3 mb-6`} style={{ minHeight: '180px' }}>
-            {cards.map((_, i) => (
-              <div key={i} className="h-32 bg-zinc-900/50 rounded-xl animate-pulse"></div>
-            ))}
-          </div>
-          <div className="space-y-4 lg:hidden">
+
+          <div className="space-y-4 ">
             {cards.map((_, i) => (
               <div key={i} className="flex items-center gap-4">
                 <div className="w-16 md:w-20 h-16 md:h-20 bg-zinc-900/50 rounded-xl flex-shrink-0 animate-pulse"></div>
@@ -1201,7 +1205,7 @@ function DragDropOrder({ currentModule, onContentIsEnded, courseId, moduleId }) 
           {/* MOBILE/TABLET: Layout lado a lado */}
           <div className="lg:hidden">
             {/* 🔹 Pasos completados (100%) arriba */}
-            <div className="space-y-3 mb-4">
+            <div className="space-y-3 mb-4" data-aos="fade-up">
               {dropZones.map((slot, index) => {
                 const isCompleted = slot.zone && completedItems.includes(slot.zone.id);
                 if (!isCompleted) return null; // solo mostrar completados
@@ -1211,7 +1215,7 @@ function DragDropOrder({ currentModule, onContentIsEnded, courseId, moduleId }) 
                   <div
                     key={`completed-${index}`}
                     className="w-full transition-all duration-500"
-                    data-aos="fade-up" onClick={() => handleClickCompleted(slot.zone)}
+                    onClick={() => handleClickCompleted(slot.zone)}
                   >
                     <div
                       className="bg-blue-500/10 border-blue-500/50 rounded-xl p-3 shadow-md shadow-blue-500/10"
@@ -1301,8 +1305,8 @@ function DragDropOrder({ currentModule, onContentIsEnded, courseId, moduleId }) 
                     const isCompleted = slot.zone && completedItems.includes(slot.zone.id);
                     if (isCompleted) return null; // omitimos los completados aquí
 
-                    const stepNumber = index + 1;
 
+                    const stepNumber = slot.originalIndex + 1;
                     return (
                       <div key={`pending-${index}`} className="relative h-[90px]">
                         <div
@@ -1380,7 +1384,28 @@ function DragDropOrder({ currentModule, onContentIsEnded, courseId, moduleId }) 
                 <div className="p-4 overflow-y-auto max-h-[calc(90vh-180px)]">
                   <div className="prose prose-invert max-w-none mb-4">
                     <div className="whitespace-pre-line text-slate-300 text-sm leading-relaxed">
-                      {currentItem.content}
+                      {/* {currentItem.content} */}
+
+                      {currentItem.content.map((text, index) => {
+                        // 1️⃣ Reemplazar **texto** por <strong> con una clase blanca diferenciada
+                        const boldText = text.replace(
+                          /\*\*(.*?)\*\*/g,
+                          '<strong class="text-white font-semibold tracking-wide">$1</strong>'
+                        );
+
+                        // 2️⃣ Si el texto termina con punto, agregar un <br /> al final
+                        const formattedText = boldText.endsWith('.')
+                          ? `${boldText}<br /> <br />`
+                          : boldText;
+
+                        return (
+                          <p
+                            key={index}
+                            className="text-gray-300 leading-relaxed"
+                            dangerouslySetInnerHTML={{ __html: formattedText }}
+                          />
+                        );
+                      })}
                     </div>
                   </div>
 

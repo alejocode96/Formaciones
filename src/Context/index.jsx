@@ -262,9 +262,10 @@ function TrainingLogiTransProvider({ children }) {
                                 title: "Introducción",
                                 icon: "📋",
                                 order: 1,
-                                content: `El Sistema de Administración del Riesgo de Lavado de Activos y Financiación del Terrorismo (SARLAFT) nos exige identificar, prevenir y controlar los posibles riesgos que puedan afectar nuestras operaciones.
-
-                                         Aunque nuestro cliente principal es Cementos Argos, nuestras actividades logísticas también pueden ser utilizadas de manera indebida por terceros. Por eso debemos conocer los cuatro factores de riesgo del SARLAFT y cómo se manifiestan en el transporte de carga.`,
+                                content: [
+                                    'El Sistema de Administración del Riesgo de Lavado de Activos y Financiación del Terrorismo (SARLAFT) nos exige identificar, prevenir y controlar los posibles riesgos que puedan afectar nuestras operaciones.',
+                                    'Aunque nuestro cliente principal es Cementos Argos, nuestras actividades logísticas también pueden ser utilizadas de manera indebida por terceros. Por eso debemos conocer los cuatro factores de riesgo del SARLAFT y cómo se manifiestan en el transporte de carga.'
+                                ],
                                 audioText: 'El Sistema de Administración del Riesgo de Lavado de Activos y Financiación del Terrorismo, conocido como SARLAFT, nos exige identificar, prevenir y controlar los posibles riesgos que puedan afectar nuestras operaciones. Aunque nuestro cliente principal es Cementos Argos, nuestras actividades logísticas también pueden ser utilizadas de manera indebida por terceros. Por eso debemos conocer los cuatro factores de riesgo del SARLAFT y cómo se manifiestan en el transporte de carga.'
 
                             },
@@ -273,14 +274,15 @@ function TrainingLogiTransProvider({ children }) {
                                 title: "Cliente o Contraparte",
                                 icon: "👥",
                                 order: 2,
-                                content: `🔹 Quiénes son:
-                                         Nuestro cliente directo es Cementos Argos o Concretos Argos, pero en la operación también interactuamos con conductores, contratistas, aliados logísticos, proveedores y destinatarios de la carga.
+                                content: [
+                                    '**🔹 Quiénes son: **',
+                                    ' Nuestro cliente directo es Cementos Argos o Concretos Argos, pero en la operación también interactuamos con conductores, contratistas, aliados logísticos, proveedores y destinatarios de la carga.',
+                                    '**🔹 Riesgo:**',
+                                    'Que alguno de estos actores intente utilizar la operación de transporte para actividades ilícitas, como desvío de carga, manipulación de información o colaboración con redes criminales.',
+                                    '**🔹 Ejemplo:**',
+                                    'Un conductor que altera su ruta para entregar la carga en un sitio no autorizado o filtra información sobre el movimiento de producto a terceros.'
+                                ],
 
-                                        🔹 Riesgo:
-                                        Que alguno de estos actores intente utilizar la operación de transporte para actividades ilícitas, como desvío de carga, manipulación de información o colaboración con redes criminales.
-
-                                        🔹 Ejemplo:
-                                        Un conductor que altera su ruta para entregar la carga en un sitio no autorizado o filtra información sobre el movimiento de producto a terceros.`,
                                 audioText: 'Factor uno: Cliente o Contraparte. Quiénes son: Nuestro cliente directo es Cementos Argos o Concretos Argos, pero en la operación también interactuamos con conductores, contratistas, aliados logísticos, proveedores y destinatarios de la carga. Riesgo: Que alguno de estos actores intente utilizar la operación de transporte para actividades ilícitas, como desvío de carga, manipulación de información o colaboración con redes criminales. Ejemplo: Un conductor que altera su ruta para entregar la carga en un sitio no autorizado o filtra información sobre el movimiento de producto a terceros.'
                             },
                             {
@@ -288,14 +290,14 @@ function TrainingLogiTransProvider({ children }) {
                                 title: "Producto o Servicio",
                                 icon: "📦",
                                 order: 3,
-                                content: `🔹 Qué ofrecemos:
-                                            Prestamos el servicio de transporte de cemento y de materias primas utilizadas en su producción.
-
-                                          🔹 Riesgo:
-                                            Que este servicio sea usado como fachada para encubrir mercancías ilegales o justificar movimientos financieros irregulares.
-
-                                          🔹 Ejemplo:
-                                            Un despacho de cemento que se aprovecha para transportar mercancía contaminada (por ejemplo, sustancias ilícitas ocultas entre los sacos o dentro del vehículo).`,
+                                content: [
+                                    '**🔹 Qué ofrecemos:**',
+                                    'Prestamos el servicio de transporte de cemento y de materias primas utilizadas en su producción.',
+                                    '**🔹 Riesgo:**',
+                                    'Que este servicio sea usado como fachada para encubrir mercancías ilegales o justificar movimientos financieros irregulares.',
+                                    '**🔹 Ejemplo:**',
+                                    'Un despacho de cemento que se aprovecha para transportar mercancía contaminada (por ejemplo, sustancias ilícitas ocultas entre los sacos o dentro del vehículo).'
+                                ],
                                 audioText: 'Factor dos: Producto o Servicio. Qué ofrecemos: Prestamos el servicio de transporte de cemento y de materias primas utilizadas en su producción. Riesgo: Que este servicio sea usado como fachada para encubrir mercancías ilegales o justificar movimientos financieros irregulares. Ejemplo: Un despacho de cemento que se aprovecha para transportar mercancía contaminada, por ejemplo, sustancias ilícitas ocultas entre los sacos o dentro del vehículo.'
 
                             }, {
@@ -303,14 +305,15 @@ function TrainingLogiTransProvider({ children }) {
                                 title: "Canal de Distribución",
                                 icon: "🚚",
                                 order: 4,
-                                content: `🔹 Qué implica:
-                                            El canal es la movilización física de la carga por carretera, junto con toda la documentación que respalda la operación (remesas, manifiestos, facturas, guías de despacho, etc.).
+                                content: [
+                                    '**🔹 Qué implica:**',
+                                    'El canal es la movilización física de la carga por carretera, junto con toda la documentación que respalda la operación (remesas, manifiestos, facturas, guías de despacho, etc.).',
+                                    '**🔹 Riesgo:**',
+                                    'Que el canal de transporte sea utilizado para introducir actividades irregulares, ya sea mediante falsificación documental o alteración de la carga.',
+                                    '**🔹 Ejemplo:**',
+                                    'Un tercero intenta incluir mercancía no autorizada junto al cemento o presenta documentos de transporte adulterados para cubrir desvíos o entregas falsas.'
 
-                                          🔹 Riesgo:
-                                            Que el canal de transporte sea utilizado para introducir actividades irregulares, ya sea mediante falsificación documental o alteración de la carga.
-
-                                          🔹 Ejemplo:
-                                            Un tercero intenta incluir mercancía no autorizada junto al cemento o presenta documentos de transporte adulterados para cubrir desvíos o entregas falsas.`,
+                                ],
                                 audioText: 'Factor tres: Canal de Distribución. Qué implica: El canal es la movilización física de la carga por carretera, junto con toda la documentación que respalda la operación, como remesas, manifiestos, facturas, guías de despacho, etcétera. Riesgo: Que el canal de transporte sea utilizado para introducir actividades irregulares, ya sea mediante falsificación documental o alteración de la carga. Ejemplo: Un tercero intenta incluir mercancía no autorizada junto al cemento o presenta documentos de transporte adulterados para cubrir desvíos o entregas falsas.'
 
                             },
@@ -319,14 +322,14 @@ function TrainingLogiTransProvider({ children }) {
                                 title: "Jurisdicción o Zona Geográfica",
                                 icon: "🗺️",
                                 order: 5,
-                                content: `🔹 Qué abarca:
-                                            Nuestras rutas atraviesan diversas regiones del país, algunas con presencia de economías informales, grupos ilegales o puntos de control limitados.
-
-                                          🔹 Riesgo:
-                                            Que ciertas zonas se conviertan en corredores de riesgo donde se facilite el contrabando, la contaminación de mercancía o el lavado de activos mediante operaciones simuladas.
-
-                                          🔹 Ejemplo:
-                                            Durante un trayecto, una persona intenta aprovechar una parada o zona de baja supervisión para introducir carga ilícita al vehículo.`,
+                                content: [
+                                    '**🔹 Qué abarca:**',
+                                    ' Nuestras rutas atraviesan diversas regiones del país, algunas con presencia de economías informales, grupos ilegales o puntos de control limitados.',
+                                    '**🔹 Riesgo:**',
+                                    'Que ciertas zonas se conviertan en corredores de riesgo donde se facilite el contrabando, la contaminación de mercancía o el lavado de activos mediante operaciones simuladas.',
+                                    '**🔹 Ejemplo:**',
+                                    ' Durante un trayecto, una persona intenta aprovechar una parada o zona de baja supervisión para introducir carga ilícita al vehículo.'
+                                ],
                                 audioText: 'Factor cuatro: Jurisdicción o Zona Geográfica. Qué abarca: Nuestras rutas atraviesan diversas regiones del país, algunas con presencia de economías informales, grupos ilegales o puntos de control limitados. Riesgo: Que ciertas zonas se conviertan en corredores de riesgo donde se facilite el contrabando, la contaminación de mercancía o el lavado de activos mediante operaciones simuladas. Ejemplo: Durante un trayecto, una persona intenta aprovechar una parada o zona de baja supervisión para introducir carga ilícita al vehículo.'
 
                             },
@@ -335,18 +338,16 @@ function TrainingLogiTransProvider({ children }) {
                                 title: "Conclusión",
                                 icon: "✅",
                                 order: 6,
-                                content: `🔍 En resumen:
-
-                                            Aunque trabajamos con un cliente formal y de alta reputación, el riesgo no desaparece.
-                                            Como empresa transportadora, debemos estar alertas y comprometidos con el control de cada etapa de la operación:
-
-                                            ✅ Conocer a los actores involucrados (clientes, conductores, aliados).
-                                            ✅ Verificar el servicio que prestamos y el tipo de carga movilizada.
-                                            ✅ Revisar la documentación asociada al transporte.
-                                            ✅ Evaluar las rutas y zonas donde operamos.
-
-                                            👉 La prevención del riesgo es tarea de todos.
-                                            Cada colaborador tiene un papel clave en garantizar que nuestras operaciones sean transparentes, seguras y alineadas con las políticas SARLAFT.`,
+                                content: [
+                                    '**🔍 En resumen:**',
+                                    'Aunque trabajamos con un cliente formal y de alta reputación, el riesgo no desaparece. ',
+                                    'Como empresa transportadora, debemos estar alertas y comprometidos con el control de cada etapa de la operación:',
+                                    '✅ Conocer a los actores involucrados (clientes, conductores, aliados).',
+                                    '✅ Verificar el servicio que prestamos y el tipo de carga movilizada.',
+                                    '✅ Revisar la documentación asociada al transporte.',
+                                    '✅ Evaluar las rutas y zonas donde operamos.',
+                                    '👉 La prevención del riesgo es tarea de todos. Cada colaborador tiene un papel clave en garantizar que nuestras operaciones sean transparentes, seguras y alineadas con las políticas SARLAFT.',
+                                ],
                                 audioText: 'Conclusión. En resumen: Aunque trabajamos con un cliente formal y de alta reputación, el riesgo no desaparece. Como empresa transportadora, debemos estar alertas y comprometidos con el control de cada etapa de la operación: Conocer a los actores involucrados, como clientes, conductores y aliados. Verificar el servicio que prestamos y el tipo de carga movilizada. Revisar la documentación asociada al transporte. Evaluar las rutas y zonas donde operamos. La prevención del riesgo es tarea de todos. Cada colaborador tiene un papel clave en garantizar que nuestras operaciones sean transparentes, seguras y alineadas con las políticas SARLAFT.'
                             }
                         ],
@@ -494,11 +495,11 @@ function TrainingLogiTransProvider({ children }) {
                                 title: "Introducción",
                                 icon: "🧠",
                                 order: 1,
-                                content: `El SARLAFT no es solo una política o un documento: es una cultura organizacional que requiere la participación activa de todos los empleados.
-
-                                          Cada colaborador, sin importar su rol o cargo, forma parte de la primera línea de defensa contra los riesgos de Lavado de Activos y Financiación del Terrorismo.
-
-                                          Esto significa que no necesitamos ser investigadores, sino personas atentas, responsables y comprometidas con reportar lo que no encaje con las operaciones normales.`,
+                                content: [
+                                    'El SARLAFT no es solo una política o un documento: es una cultura organizacional que requiere la participación activa de todos los empleados.',
+                                    'Cada colaborador, sin importar su rol o cargo, forma parte de la primera línea de defensa contra los riesgos de Lavado de Activos y Financiación del Terrorismo.',
+                                    'Esto significa que no necesitamos ser investigadores, sino personas atentas, responsables y comprometidas con reportar lo que no encaje con las operaciones normales.'
+                                ],
                                 audioText: `El SARLAFT no es solo una política o un documento: es una cultura organizacional que requiere la participación activa de todos los empleados. Cada colaborador, sin importar su rol o cargo, forma parte de la primera línea de defensa contra los riesgos de lavado de activos y financiación del terrorismo. Esto significa que no necesitamos ser investigadores, sino personas atentas, responsables y comprometidas con reportar lo que no encaje con las operaciones normales.`
                             },
                             {
@@ -506,12 +507,12 @@ function TrainingLogiTransProvider({ children }) {
                                 title: "No somos detectives",
                                 icon: "🕵️‍♂️",
                                 order: 2,
-                                content: `El SARLAFT no busca que los empleados actúen como investigadores o autoridades judiciales.
-
-                                          Nuestro deber es detectar comportamientos o situaciones inusuales en el desarrollo de nuestras labores y reportarlas oportunamente.
-
-                                         🔹 Ejemplo:
-                                           Si un cliente o proveedor entrega documentos confusos, da respuestas evasivas o cambia constantemente la información, no debemos confrontarlo, sino informar al responsable SARLAFT.`,
+                                content: [
+                                    'El SARLAFT no busca que los empleados actúen como investigadores o autoridades judiciales.',
+                                    'Nuestro deber es detectar comportamientos o situaciones inusuales en el desarrollo de nuestras labores y reportarlas oportunamente.',
+                                    '**🔹 Ejemplo:**',
+                                    'Si un cliente o proveedor entrega documentos confusos, da respuestas evasivas o cambia constantemente la información, no debemos confrontarlo, sino informar al responsable SARLAFT.'
+                                ],
                                 audioText: `No somos detectives. El SARLAFT no busca que los empleados actúen como investigadores o autoridades judiciales. Nuestro deber es detectar comportamientos o situaciones inusuales y reportarlas oportunamente. Por ejemplo, si un cliente o proveedor entrega documentos confusos, da respuestas evasivas o cambia constantemente la información, debemos informar al responsable SARLAFT.`
                             },
                             {
@@ -519,15 +520,16 @@ function TrainingLogiTransProvider({ children }) {
                                 title: "Reportar lo que no encaje",
                                 icon: "📑",
                                 order: 3,
-                                content: `Todos los empleados debemos estar atentos a identificar y reportar operaciones inusuales o sospechosas. 
-
-                                        Algunos ejemplos de señales de alerta:
-                                            🔹 Documentos alterados o con información incompleta.
-                                            🔹 Personas que se niegan a suministrar datos básicos.
-                                            🔹 Operaciones o solicitudes que no coinciden con la actividad normal del cliente.
-                                            🔹 Pagos o transferencias con montos inusuales o desde cuentas desconocidas.
-
-                                        🚨 Si algo no encaja, se reporta. No se ignora.`,
+                                content: [
+                                    'Todos los empleados debemos estar atentos a identificar y reportar operaciones inusuales o sospechosas.',
+                                    'Algunos ejemplos de señales de alerta:',
+                                    ' 🔹 Documentos alterados o con información incompleta',
+                                    ' 🔹 Documentos alterados o con información incompleta.',
+                                    ' 🔹 Personas que se niegan a suministrar datos básicos',
+                                    ' 🔹 Operaciones o solicitudes que no coinciden con la actividad normal del cliente',
+                                    ' 🔹 Pagos o transferencias con montos inusuales o desde cuentas desconocidas.',
+                                    '🚨 Si algo no encaja, se reporta. No se ignora.'
+                                ],
                                 audioText: `Todos los empleados debemos estar atentos a identificar y reportar operaciones inusuales o sospechosas. Por ejemplo, documentos alterados, personas que se niegan a entregar información, operaciones que no coinciden con la actividad del cliente, o pagos con montos inusuales. Si algo no encaja, se reporta. No se ignora.`
 
                             }, {
@@ -535,15 +537,17 @@ function TrainingLogiTransProvider({ children }) {
                                 title: "Todos los cargos cuentan",
                                 icon: "👷‍♀️",
                                 order: 4,
-                                content: `El SARLAFT aplica para todos los niveles y áreas de la organización. 
+                                content: [
+                                    'El SARLAFT aplica para todos los niveles y áreas de la organización.',
+                                    'Cada cargo tiene una función que puede ayudar a detectar y prevenir riesgos:',
+                                    '  🔹 Conductores: verifican documentos, rutas y cargues',
+                                    '  🔹 Auxiliares de despacho: confirman cantidades, destinatarios y sellos',
+                                    '  🔹 Personal administrativo o de caja: valida datos, pagos y registros',
+                                    '  🔹 Supervisores y jefes: garantizan la aplicación de los controles.',
+                                    'Todos sumamos en la protección de la empresa.'
 
-                                            Cada cargo tiene una función que puede ayudar a detectar y prevenir riesgos:
-                                            🔹 Conductores: verifican documentos, rutas y cargues.
-                                            🔹 Auxiliares de despacho: confirman cantidades, destinatarios y sellos.
-                                            🔹 Personal administrativo o de caja: valida datos, pagos y registros.
-                                            🔹 Supervisores y jefes: garantizan la aplicación de los controles.
 
-                                            Todos sumamos en la protección de la empresa.`,
+                                ],
                                 audioText: `El SARLAFT aplica para todos los niveles y áreas de la organización. Cada cargo cumple un papel clave: los conductores verifican documentos y rutas; los auxiliares de despacho revisan cantidades y sellos; el personal administrativo valida pagos y registros; y los supervisores garantizan que se cumplan los controles. Todos sumamos en la protección de la empresa.`
                             },
                             {
@@ -551,14 +555,15 @@ function TrainingLogiTransProvider({ children }) {
                                 title: "Responsabilidad compartida",
                                 icon: "🤝",
                                 order: 5,
-                                content: `La gestión del riesgo es una responsabilidad compartida entre la empresa y sus colaboradores.
+                                content: [
+                                    'La gestión del riesgo es una responsabilidad compartida entre la empresa y sus colaboradores.',
+                                    'Cuando cada persona cumple con su deber de alertar sobre posibles irregularidades:',
+                                    '  🔹 Se protege la reputación de la compañía',
+                                    '  🔹Se evita la participación involuntaria en delitos financieros',
+                                    '  🔹 Se refuerza la transparencia de las operaciones.',
+                                    '🛡️ Si todos cumplimos, protegemos a la empresa y fortalecemos la cultura del cumplimiento.',
+                                ],
 
-                                            Cuando cada persona cumple con su deber de alertar sobre posibles irregularidades:
-                                            🔹 Se protege la reputación de la compañía.
-                                            🔹Se evita la participación involuntaria en delitos financieros.
-                                            🔹 Se refuerza la transparencia de las operaciones.
-
-                                        🛡️ Si todos cumplimos, protegemos a la empresa y fortalecemos la cultura del cumplimiento.`,
                                 audioText: `La gestión del riesgo es una responsabilidad compartida entre la empresa y sus colaboradores. Cuando cada persona cumple con su deber de alertar sobre posibles irregularidades, se protege la reputación de la compañía, se evitan delitos financieros y se refuerza la transparencia. Si todos cumplimos, protegemos a la empresa y fortalecemos la cultura del cumplimiento.`
                             },
                             {
@@ -566,14 +571,16 @@ function TrainingLogiTransProvider({ children }) {
                                 title: "Conclusión",
                                 icon: "✅",
                                 order: 6,
-                                content: `🔍 En resumen:
-
-                                            🔹 Todos los empleados somos parte activa del SARLAFT.
-                                            🔹 No necesitamos investigar, solo observar y reportar lo inusual.
-                                            🔹 Cada rol tiene una responsabilidad concreta para prevenir riesgos.
-                                            🔹 La comunicación y el trabajo en equipo son clave para mantener la integridad y la transparencia de la empresa.
-
-                                            👉 Recuerda: tu atención y compromiso son la mejor defensa contra los riesgos de Lavado de Activos y Financiación del Terrorismo.`,
+                                content: [
+                                    '**🔍 En resumen**',
+                                    '🔹 Todos los empleados somos parte activa del SARLAFT',
+                                    '🔹 No necesitamos investigar, solo observar y reportar lo inusual',
+                                    '🔹 Cada rol tiene una responsabilidad concreta para prevenir riesgos',
+                                    '🔹 La comunicación y el trabajo en equipo son clave para mantener la integridad y la transparencia de la empresa.',
+                                    '👉 Recuerda: tu atención y compromiso son la mejor defensa contra los riesgos de Lavado de Activos y Financiación del Terrorismo.',
+                                   
+                                ],
+                                
                                 audioText: `En resumen: todos los empleados somos parte activa del SARLAFT. No necesitamos investigar, solo observar y reportar lo inusual. Cada rol tiene una responsabilidad concreta para prevenir riesgos. La comunicación y el trabajo en equipo son clave para mantener la integridad de la empresa. Recuerda: tu atención y compromiso son la mejor defensa contra los riesgos de lavado de activos y financiación del terrorismo.`
                             }
                         ],
@@ -703,7 +710,7 @@ function TrainingLogiTransProvider({ children }) {
                                             { "opcion": "Servicio de Auditoría y Registro Legal de Actividades Financieras y Tributarias.", "rsp": false }
                                         ]
                                     },
-                                    
+
                                     {
                                         "id": 2,
                                         "name": "¿Qué significa SARLAFT y cuál es su objetivo principal?",
