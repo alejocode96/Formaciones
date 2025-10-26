@@ -431,6 +431,7 @@ function DragDropOrder({ currentModule, onContentIsEnded, courseId, moduleId }) 
     const estimatedDuration = (text.length / charsPerSecond) * 1000;
 
     utterance.onstart = () => {
+       let startTime = Date.now();
       setIsPlayingAudio(true);
       setIsPaused(false);
       setAudioProgress(0);

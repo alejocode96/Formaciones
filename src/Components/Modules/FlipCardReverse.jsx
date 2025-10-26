@@ -850,7 +850,27 @@ function FlipCardReverse({ currentModule, onContentIsEnded, courseId, moduleId }
      * 
      * @param {Number} cardId - ID de la tarjeta clickeada
      */
-    const handleCardClick = async (cardId) => {  // 🔥 Agregar async
+    /**
+ * 🎮 Maneja el clic del usuario en una tarjeta
+ * 
+ * Validaciones (no hace nada si):
+ * 1. La intro aún está reproduciéndose
+ * 2. La tarjeta no está desbloqueada
+ * 3. Hay otro audio reproduciéndose
+ * 
+ * Comportamiento:
+ * - Si la tarjeta ya está volteada → La vuelve al frente y detiene audio
+ * - Si no está volteada → La voltea y reproduce su audio
+ * 
+ * Al terminar el audio:
+ * 1. Guarda el progreso en localStorage
+ * 2. Actualiza el estado de tarjetas completadas
+ * 3. Desbloquea la siguiente tarjeta
+ * 4. Si es la última, ejecuta callback onContentIsEnded
+ * 
+ * @param {Number} cardId - ID de la tarjeta clickeada
+ */
+    const handleCardClick = async (cardId) => {
         // Validación 1: Intro debe haber terminado o fallado
         if (!introPlayed && !audioFailed) return;
 
@@ -859,7 +879,7 @@ function FlipCardReverse({ currentModule, onContentIsEnded, courseId, moduleId }
 
         // Si ya está volteada, regresarla al frente Y DETENER AUDIO
         if (flippedCards.includes(cardId)) {
-            await stopAudio(); // 🔥 NUEVO: Detener audio antes de cerrar
+            await stopAudio(); // 🔥 Detener audio antes de cerrar
             setFlippedCards(flippedCards.filter(id => id !== cardId));
             setActiveCard(null);
             return;
@@ -867,20 +887,52 @@ function FlipCardReverse({ currentModule, onContentIsEnded, courseId, moduleId }
 
         // Validación 3: No debe haber otro audio reproduciéndose
         if (isPlayingAudio) {
-            console.log('⚠️ Ya hay audio reproduciéndose'); // 🔥 Mejor mensaje
+            console.log('⚠️ Ya hay audio reproduciéndose');
             return;
         }
 
-        // ... resto del código de reproducción ...
+        // 🔥 VOLTEAR LA TARJETA
+        setActiveCard(cardId);
+        setFlippedCards([...flippedCards, cardId]);
 
-        speak(fullText, () => {
-            // callbacks...
-        },
+        // 🔥 CONSTRUIR TEXTO COMPLETO PARA REPRODUCIR
+        const card = cards.find(a => a.id === cardId);
+        const fullText = `${card.title}.     ${card.content} ${card.example}`;
+
+        // 🔥 REPRODUCIR AUDIO DE LA TARJETA
+        speak(
+            fullText,
+            // ✅ onEnd: Callback cuando el audio termina naturalmente
+            () => {
+                // 1. Guardar progreso en localStorage
+                updateFlipCardReverseProgress(cardId);
+
+                // 2. Actualizar estado local de tarjetas completadas
+                setCompletedCards(prev => [...new Set([...prev, cardId])]);
+
+                const nextCardId = cardId + 1;
+                const isLastCard = cardId === cards.length;
+
+                // 3. Desbloquear siguiente tarjeta si existe
+                if (nextCardId <= cards.length) {
+                    setUnlockedCards([...unlockedCards, nextCardId]);
+                }
+
+                // 4. Si es la última tarjeta, ejecutar callback de finalización
+                if (isLastCard) {
+                    console.log('🏁 Última card completada!');
+                    onContentIsEnded(); // Notifica al componente padre que terminó el módulo
+                }
+
+                // 5. Limpiar tarjeta activa
+                setActiveCard(null);
+            },
+            // ❌ onError: Callback de error definitivo
             () => {
                 console.log('❌ Audio falló definitivamente después de reintentos');
                 setActiveCard(null);
             },
-            false // 🔥 NUEVO: 4to parámetro, no es intro
+            false // No es intro
         );
     };
 
