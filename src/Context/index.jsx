@@ -62,7 +62,7 @@ function TrainingLogiTransProvider({ children }) {
                                                 texto: 'Segmentación de riesgos según tipo de cliente (por ejemplo, empresas de transporte internacional), ubicación geográfica (zonas de alto riesgo), y tipo de operación (transporte de productos sensibles).'
                                             }
                                         ],
-                                        audio: '¿Qué se hace?, En esta etapa se realiza el análisis de actividades vulnerables, es decir, se identifican aquellos procesos dentro de la empresa que pueden estar expuestos a riesgos. Algunos ejemplos son la recepción de pagos en efectivo, el transporte de mercancías sin la documentación adecuada, o las relaciones con clientes considerados de alto riesgo. También se lleva a cabo la clasificación de los factores de riesgo, que consiste en segmentar o agrupar los riesgos según diferentes criterios, como el tipo de cliente —por ejemplo, empresas de transporte internacional—, la ubicación geográfica, las zonas de alto riesgo, o el tipo de operación, como el transporte de productos sensibles."'
+                                        audio: '¿Qué se hace?. En esta etapa se realiza el análisis de actividades vulnerables, es decir, se identifican aquellos procesos dentro de la empresa que pueden estar expuestos a riesgos. Algunos ejemplos son la recepción de pagos en efectivo, el transporte de mercancías sin la documentación adecuada, o las relaciones con clientes considerados de alto riesgo. También se lleva a cabo la clasificación de los factores de riesgo, que consiste en segmentar o agrupar los riesgos según diferentes criterios, como el tipo de cliente por ejemplo, empresas de transporte internacional, la ubicación geográfica, las zonas de alto riesgo, o el tipo de operación, como el transporte de productos sensibles."'
                                     },
                                     {
                                         id: 'como', titulo: '¿Cómo se hace?', icono: <Wrench size={20} />,
@@ -76,7 +76,7 @@ function TrainingLogiTransProvider({ children }) {
                                                 texto: 'Matrices de riesgo, listas de verificación, y software de gestión de riesgos.'
                                             }
                                         ],
-                                        audio: '¿Cómo se hace?, Para identificar los riesgos, se aplica una metodología estructurada que incluye el uso de cuestionarios de riesgo, entrevistas con el personal clave y la revisión de documentos y registros operativos. Además, se emplean diversas herramientas de apoyo, como matrices de riesgo, listas de verificación y software especializado en gestión de riesgos, que facilitan el análisis y el seguimiento de la información recopilada.'
+                                        audio: '¿Cómo se hace?. Para identificar los riesgos, se aplica una metodología estructurada que incluye el uso de cuestionarios de riesgo, entrevistas con el personal clave y la revisión de documentos y registros operativos. Además, se emplean diversas herramientas de apoyo, como matrices de riesgo, listas de verificación y software especializado en gestión de riesgos, que facilitan el análisis y el seguimiento de la información recopilada.'
                                     },
                                     {
                                         id: 'ejemplo', titulo: 'Ejemplo Práctico', icono: <Lightbulb size={20} />,
@@ -85,14 +85,14 @@ function TrainingLogiTransProvider({ children }) {
                                                 texto: 'Una empresa de transporte terrestre que realiza envíos nacionales identifica que ciertos clientes en zonas de conflicto presentan un mayor riesgo de ser utilizados para actividades ilícitas. Se segmentan estos clientes como de alto riesgo y se implementan medidas de debida diligencia reforzada.'
                                             }
                                         ],
-                                        audio: 'Veamos un ejemplo práctico: Imaginemos una empresa de transporte terrestre que realiza envíos nacionales. Durante su análisis, identifica que algunos de sus clientes se encuentran en zonas de conflicto, lo que aumenta el riesgo de que sus operaciones puedan ser utilizadas para actividades ilícitas. Por esta razón, estos clientes se clasifican como de alto riesgo, y la empresa decide aplicar medidas de debida diligencia reforzada, asegurando un control más estricto sobre sus operaciones.'
+                                        audio: 'Veamos un ejemplo práctico. Imaginemos una empresa de transporte terrestre que realiza envíos nacionales. Durante su análisis, identifica que algunos de sus clientes se encuentran en zonas de conflicto, lo que aumenta el riesgo de que sus operaciones puedan ser utilizadas para actividades ilícitas. Por esta razón, estos clientes se clasifican como de alto riesgo, y la empresa decide aplicar medidas de debida diligencia reforzada, asegurando un control más estricto sobre sus operaciones.'
                                     }
                                 ]
                             },
                             {
                                 id: 2, numero: "Etapa 2", titulo: "Medición o Evaluación", icono: "📊", color: "from-green-500 to-green-600", colorSolido: "bg-green-500",
                                 objetivo: "Determinar la probabilidad de ocurrencia y el impacto potencial de los riesgos identificados, con el fin de establecer prioridades y enfocar los esfuerzos en aquellos que puedan generar mayores consecuencias en las operaciones del sector transporte.",
-                                audioObjetivo: "Medición o evaluación   En esta etapa se determina qué tan probable es que ocurra cada riesgo y cuál sería su impacto en las operaciones del sector transporte. Este análisis permite establecer prioridades y enfocar los esfuerzos en los riesgos que puedan generar mayores consecuencias para la organización.",
+                                audioObjetivo: "Medición o evaluación.   En esta etapa se determina qué tan probable es que ocurra cada riesgo y cuál sería su impacto en las operaciones del sector transporte. Este análisis permite establecer prioridades y enfocar los esfuerzos en los riesgos que puedan generar mayores consecuencias para la organización.",
                                 secciones: [
                                     {
                                         id: 'quehace', titulo: '¿Qué se hace?', icono: <BookOpen size={20} />,
@@ -106,7 +106,7 @@ function TrainingLogiTransProvider({ children }) {
                                                 texto: 'Evaluación de riesgos al ingresar a nuevos mercados o al ofrecer nuevos servicios de transporte.'
                                             }
                                         ],
-                                        audio: '¿Qué se hace?, En esta etapa se realiza la evaluación de riesgos, asignando una puntuación a cada factor identificado, de acuerdo con su probabilidad de ocurrencia y su impacto en las operaciones. Con esta información, se calcula el riesgo inherente y el riesgo residual, lo que permite entender con mayor precisión el nivel real de exposición de la empresa. Además, se efectúa una revisión de las nuevas operaciones, evaluando los riesgos antes de ingresar a nuevos mercados o al ofrecer nuevos servicios de transporte, para garantizar que las decisiones se tomen con base en un análisis preventivo y responsable.'
+                                        audio: '¿Qué se hace?. En esta etapa se realiza la evaluación de riesgos, asignando una puntuación a cada factor identificado, de acuerdo con su probabilidad de ocurrencia y su impacto en las operaciones. Con esta información, se calcula el riesgo inherente y el riesgo residual, lo que permite entender con mayor precisión el nivel real de exposición de la empresa. Además, se efectúa una revisión de las nuevas operaciones, evaluando los riesgos antes de ingresar a nuevos mercados o al ofrecer nuevos servicios de transporte, para garantizar que las decisiones se tomen con base en un análisis preventivo y responsable.'
                                     },
                                     {
                                         id: 'como', titulo: '¿Cómo se hace?', icono: <Wrench size={20} />,
@@ -129,14 +129,14 @@ function TrainingLogiTransProvider({ children }) {
                                                 texto: 'Al evaluar una nueva ruta de transporte que atraviesa regiones con presencia de grupos armados ilegales, la empresa asigna un alto riesgo a esta operación y decide implementar medidas adicionales de seguridad y monitoreo.'
                                             }
                                         ],
-                                        audio: 'Veamos un ejemplo práctico: Imaginemos que una empresa de transporte evalúa una nueva ruta que atraviesa regiones donde existe presencia de grupos armados ilegales. Durante el análisis, se determina que esta operación representa un alto nivel de riesgo para la seguridad del personal y de la carga. Por esta razón, la empresa decide implementar medidas adicionales de seguridad y monitoreo, con el fin de proteger sus operaciones y reducir la posibilidad de incidentes.'
+                                        audio: 'Veamos un ejemplo práctico. Imaginemos que una empresa de transporte evalúa una nueva ruta que atraviesa regiones donde existe presencia de grupos armados ilegales. Durante el análisis, se determina que esta operación representa un alto nivel de riesgo para la seguridad del personal y de la carga. Por esta razón, la empresa decide implementar medidas adicionales de seguridad y monitoreo, con el fin de proteger sus operaciones y reducir la posibilidad de incidentes.'
                                     }
                                 ]
                             },
                             {
                                 id: 3, numero: "Etapa 3", titulo: "Control del Riesgo", icono: "🛡️", color: "from-orange-500 to-orange-600", colorSolido: "bg-orange-500",
                                 objetivo: "Implementar medidas razonables y proporcionales que permitan mitigar los riesgos inherentes identificados en las operaciones del sector transporte, con el fin de reducir su probabilidad e impacto y garantizar el desarrollo seguro y controlado de las actividades empresariales.",
-                                audioObjetivo: "Control del riesgo: En esta etapa se implementan medidas razonables y proporcionales para mitigar los riesgos inherentes que han sido identificados en las operaciones del sector transporte. Estas acciones buscan reducir la probabilidad de ocurrencia y minimizar el impacto de los riesgos, garantizando que las actividades de la empresa se desarrollen de manera segura, controlada y conforme a la normativa vigente.",
+                                audioObjetivo: "Control del riesgo. En esta etapa se implementan medidas razonables y proporcionales para mitigar los riesgos inherentes que han sido identificados en las operaciones del sector transporte. Estas acciones buscan reducir la probabilidad de ocurrencia y minimizar el impacto de los riesgos, garantizando que las actividades de la empresa se desarrollen de manera segura, controlada y conforme a la normativa vigente.",
                                 secciones: [
                                     {
                                         id: 'quehace', titulo: '¿Qué se hace?', icono: <BookOpen size={20} />,
@@ -150,7 +150,7 @@ function TrainingLogiTransProvider({ children }) {
                                                 texto: 'Capacitación del personal en la identificación de señales de alerta. Realización de auditorías internas periódicas.'
                                             }
                                         ],
-                                        audio: '¿Qué se hace?, En esta etapa se lleva a cabo el diseño de controles, que consiste en establecer procedimientos claros para la validación de clientes y proveedores, y en la implementación de sistemas de monitoreo que permitan detectar operaciones o transacciones inusuales. Además, se realiza la aplicación de los controles, lo que incluye la capacitación del personal para reconocer señales de alerta, y la ejecución de auditorías internas periódicas, con el fin de verificar la eficacia de los controles y fortalecer la gestión del riesgo en la organización.'
+                                        audio: '¿Qué se hace?. En esta etapa se lleva a cabo el diseño de controles, que consiste en establecer procedimientos claros para la validación de clientes y proveedores, y en la implementación de sistemas de monitoreo que permitan detectar operaciones o transacciones inusuales. Además, se realiza la aplicación de los controles, lo que incluye la capacitación del personal para reconocer señales de alerta, y la ejecución de auditorías internas periódicas, con el fin de verificar la eficacia de los controles y fortalecer la gestión del riesgo en la organización.'
                                     },
                                     {
                                         id: 'como', titulo: '¿Cómo se hace?', icono: <Wrench size={20} />,
@@ -164,7 +164,7 @@ function TrainingLogiTransProvider({ children }) {
                                                 texto: 'Sistemas de gestión de cumplimiento y plataformas de monitoreo de transacciones.'
                                             }
                                         ],
-                                        audio: '¿Cómo se hace?, La metodología de control se basa en el desarrollo de políticas internas de cumplimiento, que orientan el comportamiento y las decisiones dentro de la organización. Además, se integran controles específicos en los sistemas operativos, para garantizar que cada proceso funcione de acuerdo con las normas establecidas. Para apoyar estas acciones, se utilizan sistemas de gestión de cumplimiento y plataformas de monitoreo de transacciones, que permiten detectar irregularidades y responder de manera oportuna ante posibles riesgos.'
+                                        audio: '¿Cómo se hace?. La metodología de control se basa en el desarrollo de políticas internas de cumplimiento, que orientan el comportamiento y las decisiones dentro de la organización. Además, se integran controles específicos en los sistemas operativos, para garantizar que cada proceso funcione de acuerdo con las normas establecidas. Para apoyar estas acciones, se utilizan sistemas de gestión de cumplimiento y plataformas de monitoreo de transacciones, que permiten detectar irregularidades y responder de manera oportuna ante posibles riesgos.'
                                     },
                                     {
                                         id: 'ejemplo', titulo: 'Ejemplo Práctico', icono: <Lightbulb size={20} />,
@@ -173,14 +173,14 @@ function TrainingLogiTransProvider({ children }) {
                                                 texto: 'Una empresa de transporte terrestre implementa un sistema de verificación de antecedentes para sus clientes y proveedores, con el objetivo de asegurar la legitimidad de las relaciones comerciales. Además, establece procedimientos de revisión de documentos de carga y rutas de envío, con el fin de detectar operaciones sospechosas y prevenir el uso indebido de sus servicios en actividades ilícitas.'
                                             }
                                         ],
-                                        audio: 'Veamos un ejemplo práctico: Imaginemos una empresa de transporte terrestre que busca fortalecer sus controles internos. Para ello, implementa un sistema de verificación de antecedentes de clientes y proveedores, con el propósito de garantizar que todas las relaciones comerciales sean legítimas. Además, la empresa establece procedimientos de revisión de documentos de carga y de rutas de envío, lo que permite identificar posibles operaciones sospechosas y prevenir que sus servicios sean utilizados para actividades ilícitas.'
+                                        audio: 'Veamos un ejemplo práctico. Imaginemos una empresa de transporte terrestre que busca fortalecer sus controles internos. Para ello, implementa un sistema de verificación de antecedentes de clientes y proveedores, con el propósito de garantizar que todas las relaciones comerciales sean legítimas. Además, la empresa establece procedimientos de revisión de documentos de carga y de rutas de envío, lo que permite identificar posibles operaciones sospechosas y prevenir que sus servicios sean utilizados para actividades ilícitas.'
                                     }
                                 ]
                             },
                             {
                                 id: 4, numero: "Etapa 4", titulo: "Monitoreo del Riesgo", icono: "👁️", color: "from-purple-500 to-purple-600", colorSolido: "bg-purple-500",
                                 objetivo: "Monitorear y evaluar de manera continua la efectividad de las medidas de control implementadas, garantizando la detección temprana de operaciones inusuales o sospechosas y la adopción oportuna de acciones correctivas que fortalezcan la gestión del riesgo en el sector transporte.",
-                                audioObjetivo: "Monitoreo del riesgo: En esta etapa se realiza una vigilancia constante de las medidas de control implementadas, con el fin de evaluar su efectividad y detectar a tiempo operaciones inusuales o sospechosas. Este seguimiento permite ajustar los controles cuando sea necesario, mejorar los procesos y fortalecer la gestión del riesgo dentro de las operaciones del transporte.",
+                                audioObjetivo: "Monitoreo del riesgo. En esta etapa se realiza una vigilancia constante de las medidas de control implementadas, con el fin de evaluar su efectividad y detectar a tiempo operaciones inusuales o sospechosas. Este seguimiento permite ajustar los controles cuando sea necesario, mejorar los procesos y fortalecer la gestión del riesgo dentro de las operaciones del transporte.",
                                 secciones: [
                                     {
                                         id: 'quehace', titulo: '¿Qué se hace?', icono: <BookOpen size={20} />,
@@ -194,7 +194,7 @@ function TrainingLogiTransProvider({ children }) {
                                                 texto: 'Auditorías internas y externas. Retroalimentación y mejora continua del sistema.'
                                             }
                                         ],
-                                        audio: '¿Qué se hace? En esta etapa se realiza un seguimiento continuo de las operaciones, mediante la revisión periódica de transacciones y el análisis de las alertas que generan los sistemas de monitoreo. Este proceso permite identificar de manera temprana cualquier irregularidad o posible señal de riesgo. Además, se lleva a cabo una evaluación de la eficacia de los controles, a través de auditorías internas y externas, y se promueve la retroalimentación y la mejora continua del sistema, asegurando que las medidas de prevención se mantengan actualizadas y efectivas.'
+                                        audio: '¿Qué se hace?. En esta etapa se realiza un seguimiento continuo de las operaciones, mediante la revisión periódica de transacciones y el análisis de las alertas que generan los sistemas de monitoreo. Este proceso permite identificar de manera temprana cualquier irregularidad o posible señal de riesgo. Además, se lleva a cabo una evaluación de la eficacia de los controles, a través de auditorías internas y externas, y se promueve la retroalimentación y la mejora continua del sistema, asegurando que las medidas de prevención se mantengan actualizadas y efectivas.'
                                     },
                                     {
                                         id: 'como', titulo: '¿Cómo se hace?', icono: <Wrench size={20} />,
@@ -208,7 +208,7 @@ function TrainingLogiTransProvider({ children }) {
                                                 texto: 'Software de monitoreo de cumplimiento y herramientas de análisis de datos.'
                                             }
                                         ],
-                                        audio: '¿Cómo se hace?, La metodología de monitoreo se basa en el establecimiento de indicadores clave de desempeño, o KPI, que permiten medir la efectividad de los controles implementados. Además, se realizan auditorías programadas y no programadas, con el fin de evaluar continuamente los procesos y detectar posibles irregularidades a tiempo. Para apoyar estas actividades, se utilizan software de monitoreo de cumplimiento y herramientas de análisis de datos, que facilitan la revisión y el seguimiento de la información de manera más precisa y eficiente.'
+                                        audio: '¿Cómo se hace?. La metodología de monitoreo se basa en el establecimiento de indicadores clave de desempeño, o KPI, que permiten medir la efectividad de los controles implementados. Además, se realizan auditorías programadas y no programadas, con el fin de evaluar continuamente los procesos y detectar posibles irregularidades a tiempo. Para apoyar estas actividades, se utilizan software de monitoreo de cumplimiento y herramientas de análisis de datos, que facilitan la revisión y el seguimiento de la información de manera más precisa y eficiente.'
                                     },
                                     {
                                         id: 'ejemplo', titulo: 'Ejemplo Práctico', icono: <Lightbulb size={20} />,
@@ -217,7 +217,7 @@ function TrainingLogiTransProvider({ children }) {
                                                 texto: 'Una empresa de transporte terrestre recibe una alerta por una transacción inusual relacionada con un cliente que opera en una zona de alto riesgo. Ante esta situación, se activa una investigación interna, que confirma la existencia de una operación sospechosa. Finalmente, la situación es reportada a la Unidad de Información y Análisis Financiero (UIAF), cumpliendo con las obligaciones legales y reforzando los controles internos de la empresa.'
                                             }
                                         ],
-                                        audio: 'Veamos un ejemplo práctico: Imaginemos una empresa de transporte terrestre que detecta una transacción inusual vinculada a un cliente que opera en una zona de alto riesgo. En respuesta, se activa una investigación interna, que permite confirmar que se trata de una operación sospechosa. Posteriormente, la empresa reporta la situación a la Unidad de Información y Análisis Financiero, o UIAF, asegurando el cumplimiento de la normativa y reforzando sus controles internos.'
+                                        audio: 'Veamos un ejemplo práctico. Imaginemos una empresa de transporte terrestre que detecta una transacción inusual vinculada a un cliente que opera en una zona de alto riesgo. En respuesta, se activa una investigación interna, que permite confirmar que se trata de una operación sospechosa. Posteriormente, la empresa reporta la situación a la Unidad de Información y Análisis Financiero, o UIAF, asegurando el cumplimiento de la normativa y reforzando sus controles internos.'
                                     }
                                 ]
                             }
@@ -342,9 +342,9 @@ function TrainingLogiTransProvider({ children }) {
                                     '**🔍 En resumen:**',
                                     'Aunque trabajamos con un cliente formal y de alta reputación, el riesgo no desaparece. ',
                                     'Como empresa transportadora, debemos estar alertas y comprometidos con el control de cada etapa de la operación:',
-                                    '✅ Conocer a los actores involucrados (clientes, conductores, aliados).',
-                                    '✅ Verificar el servicio que prestamos y el tipo de carga movilizada.',
-                                    '✅ Revisar la documentación asociada al transporte.',
+                                    '✅ Conocer a los actores involucrados (clientes, conductores, aliados)',
+                                    '✅ Verificar el servicio que prestamos y el tipo de carga movilizada',
+                                    '✅ Revisar la documentación asociada al transporte',
                                     '✅ Evaluar las rutas y zonas donde operamos.',
                                     '👉 La prevención del riesgo es tarea de todos. Cada colaborador tiene un papel clave en garantizar que nuestras operaciones sean transparentes, seguras y alineadas con las políticas SARLAFT.',
                                 ],
@@ -487,7 +487,7 @@ function TrainingLogiTransProvider({ children }) {
                     {
                         id: 8, lessons: "Fundamentos", name: "El Rol de los Empleados", completed: false, type: "dragDropOrder",
                         objetivo: 'Comprender que cada colaborador desempeña un papel esencial en la prevención del Lavado de Activos y la Financiación del Terrorismo, y que son sus acciones diarias, su atención al detalle y su comunicación oportuna las que fortalecen el SARLAFT como sistema de defensa empresarial.',
-                        audioObjetivo: 'Comprender que cada colaborador desempeña un papel esencial en la prevención del Lavado de Activos y la Financiación del Terrorismo. Son las acciones diarias, la atención al detalle y la comunicación oportuna las que fortalecen el SARLAFT como sistema de defensa empresarial. En esta actividad, podrás descubrir cómo cada comportamiento y decisión contribuyen a proteger a la organización frente a los riesgos del LAFT.'
+                        audioObjetivo: 'Comprender que cada colaborador desempeña un papel esencial en la prevención del Lavado de Activos y la Financiación del Terrorismo. Son las acciones diarias, la atención al detalle y la comunicación oportuna las que fortalecen el SARLAFT como sistema de defensa empresarial. En esta actividad, podrás descubrir cómo cada comportamiento y decisión contribuyen a proteger a la organización frente a los riesgos del SARLAFT.'
                         ,
                         cards: [
                             {
@@ -524,7 +524,7 @@ function TrainingLogiTransProvider({ children }) {
                                     'Todos los empleados debemos estar atentos a identificar y reportar operaciones inusuales o sospechosas.',
                                     'Algunos ejemplos de señales de alerta:',
                                     ' 🔹 Documentos alterados o con información incompleta',
-                                    ' 🔹 Documentos alterados o con información incompleta.',
+                                    ' 🔹 Documentos alterados o con información incompleta',
                                     ' 🔹 Personas que se niegan a suministrar datos básicos',
                                     ' 🔹 Operaciones o solicitudes que no coinciden con la actividad normal del cliente',
                                     ' 🔹 Pagos o transferencias con montos inusuales o desde cuentas desconocidas.',

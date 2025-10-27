@@ -512,80 +512,148 @@ function DragDropOrder({ currentModule, onContentIsEnded, courseId, moduleId }) 
   useEffect(() => {
     const handleVisibilityChange = () => {
       const synth = synthRef.current;
+
       if (document.hidden) {
-        if (synth.speaking && !synth.paused) {
+        // Solo pausar si realmente está reproduciendo
+        if (synth.speaking && !synth.paused && audioStateRef.current.isPlaying) {
+          console.log('👁️ Página oculta: pausando audio...');
           synth.pause();
           setIsPaused(true);
           audioStateRef.current.wasPaused = true;
-          if (progressIntervalRef.current) clearInterval(progressIntervalRef.current);
+          pausedByVisibilityRef.current = true;
+
+          // 🔥 Limpiar intervalo
+          if (progressIntervalRef.current) {
+            clearInterval(progressIntervalRef.current);
+            progressIntervalRef.current = null;
+          }
         }
       } else {
-        if (audioStateRef.current.wasPaused && audioStateRef.current.isPlaying) {
+        // Solo reanudar si fue pausado por visibilidad
+        if (pausedByVisibilityRef.current &&
+          audioStateRef.current.isPlaying &&
+          currentUtteranceRef.current &&
+          !currentUtteranceRef.current.wasCancelled &&
+          !isNavigatingRef.current) { // 🔥 No reanudar si estamos navegando
+
+          console.log('👁️ Página visible: reanudando audio...');
+
           setTimeout(() => {
             try {
               synth.resume();
               setIsPaused(false);
               audioStateRef.current.wasPaused = false;
-              if (currentItem) {
-                const estimatedDuration = (currentItem.audioText.length / 15) * 1000;
-                let startTime = Date.now() - (audioProgress / 100 * estimatedDuration);
+              pausedByVisibilityRef.current = false;
+
+              // 🔥 Recrear intervalo SOLO si no existe
+              const currentText = pausedTextRef.current.text;
+              if (currentText && audioProgress < 98 && !progressIntervalRef.current) {
+                const baseRate = 0.9;
+                const cps = 21 * baseRate;
+                const correctionFactor = 1.08;
+                const estimatedDuration = ((currentText.length / cps) * 1000 * correctionFactor) + 2000;
+
+                const startTime = Date.now() - (audioProgress / 100 * estimatedDuration);
+
                 progressIntervalRef.current = setInterval(() => {
                   const elapsed = Date.now() - startTime;
-                  const progress = Math.min((elapsed / estimatedDuration) * 100, 100);
+                  const progress = Math.min((elapsed / estimatedDuration) * 100, 98);
                   setAudioProgress(progress);
                 }, 100);
+
+                console.log('✅ Intervalo recreado en visibilitychange');
               }
-            } catch (error) { }
+
+            } catch (error) {
+              console.error('❌ Error al reanudar:', error);
+              pausedByVisibilityRef.current = false;
+            }
           }, 100);
+        } else {
+          pausedByVisibilityRef.current = false;
         }
       }
     };
+
     document.addEventListener('visibilitychange', handleVisibilityChange);
-    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
-  }, [currentItem, audioProgress]);
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [audioProgress]); // 🔥 Solo audioProgress como dependencia
 
   useEffect(() => {
     const handleBlur = () => {
       const synth = synthRef.current;
-      if (synth.speaking && !synth.paused) {
+
+      if (synth.speaking && !synth.paused && audioStateRef.current.isPlaying) {
+        console.log('🔇 Ventana perdió el foco: pausando...');
         synth.pause();
         setIsPaused(true);
         audioStateRef.current.wasPaused = true;
         pausedByVisibilityRef.current = true;
-        if (progressIntervalRef.current) clearInterval(progressIntervalRef.current);
+
+        if (progressIntervalRef.current) {
+          clearInterval(progressIntervalRef.current);
+          progressIntervalRef.current = null;
+        }
       }
     };
 
     const handleFocus = () => {
       const synth = synthRef.current;
-      if (pausedByVisibilityRef.current && audioStateRef.current.isPlaying) {
+
+      if (pausedByVisibilityRef.current &&
+        audioStateRef.current.isPlaying &&
+        currentUtteranceRef.current &&
+        !currentUtteranceRef.current.wasCancelled &&
+        !isNavigatingRef.current) { // 🔥 No reanudar si estamos navegando
+
+        console.log('🔊 Ventana recuperó el foco: reanudando...');
+
         setTimeout(() => {
           try {
             synth.resume();
             setIsPaused(false);
             audioStateRef.current.wasPaused = false;
             pausedByVisibilityRef.current = false;
-            if (currentItem) {
-              const estimatedDuration = (currentItem.audioText.length / 15) * 1000;
-              let startTime = Date.now() - (audioProgress / 100 * estimatedDuration);
+
+            const currentText = pausedTextRef.current.text;
+            if (currentText && audioProgress < 98 && !progressIntervalRef.current) {
+              const baseRate = 0.9;
+              const cps = 21 * baseRate;
+              const correctionFactor = 1.08;
+              const estimatedDuration = ((currentText.length / cps) * 1000 * correctionFactor) + 2000;
+
+              const startTime = Date.now() - (audioProgress / 100 * estimatedDuration);
+
               progressIntervalRef.current = setInterval(() => {
                 const elapsed = Date.now() - startTime;
-                const progress = Math.min((elapsed / estimatedDuration) * 100, 100);
+                const progress = Math.min((elapsed / estimatedDuration) * 100, 98);
                 setAudioProgress(progress);
               }, 100);
+
+              console.log('✅ Intervalo recreado en focus');
             }
-          } catch (error) { }
+
+          } catch (error) {
+            console.error('❌ Error al reanudar:', error);
+            pausedByVisibilityRef.current = false;
+          }
         }, 100);
+      } else {
+        pausedByVisibilityRef.current = false;
       }
     };
 
     window.addEventListener('blur', handleBlur);
     window.addEventListener('focus', handleFocus);
+
     return () => {
       window.removeEventListener('blur', handleBlur);
       window.removeEventListener('focus', handleFocus);
     };
-  }, [currentItem, audioProgress]);
+  }, [audioProgress]); // 🔥 Solo audioProgress
 
   useEffect(() => {
     const handleBeforeUnload = () => {
@@ -874,6 +942,7 @@ function DragDropOrder({ currentModule, onContentIsEnded, courseId, moduleId }) 
       audioStateRef.current.isPlaying = false;
       audioStateRef.current.wasPaused = false;
       currentUtteranceRef.current = null;
+      pausedTextRef.current.text = '';
     }, 100);
   };
 
@@ -949,8 +1018,8 @@ function DragDropOrder({ currentModule, onContentIsEnded, courseId, moduleId }) 
     if (!content) return '';
 
     // Si content es un array, unir todo en una sola cadena
-    const text = Array.isArray(content) ? content.join(' ') : content;
-
+    let text = Array.isArray(content) ? content.join(' ') : content;
+    text = text.replace(/\*\*/g, "");
     // Limpiar saltos de línea y espacios duplicados
     const cleaned = text.replace(/\n/g, ' ').replace(/\s+/g, ' ').trim();
 

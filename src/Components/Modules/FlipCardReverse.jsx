@@ -1108,7 +1108,7 @@ function FlipCardReverse({ currentModule, onContentIsEnded, courseId, moduleId }
                         return (
                             <div
                                 key={card.id}
-                                className={`h-100 md:h-96 perspective-1000 ${isLast ? "col-span-1 lg:col-span-2" : ""}`}
+                                className={`min-h-100 md:h-96 perspective-1000 ${isLast ? "col-span-1 lg:col-span-2" : ""}`}
                             >
                                 {/* Contenedor con efecto 3D flip */}
                                 <div
