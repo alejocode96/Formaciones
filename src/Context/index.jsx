@@ -37,8 +37,6 @@ function TrainingLogiTransProvider({ children }) {
                     },
                     { id: 3, lessons: "Fundamentos", name: "¿Qué es SARLAFT?", completed: false, type: "Video", path: queesSARLAFT, resumen: ["**¿Qué es SARLAFT?**", "es un sistema para prevenir y gestionar el riesgo de lavado de activos y financiación del terrorismo. Funciona como un filtro de seguridad: analiza clientes, operaciones y recursos para asegurar que todo sea legal y transparente. Va más allá de solo revisar listas sospechosas; es un mecanismo de prevención que protege a la empresa, sus empleados y su reputación.",], duration: "00:49", },
 
-
-
                     {
                         id: 4, lessons: "Fundamentos", name: "Etapas del SARLAFT", completed: false, type: "FlipCard",
                         objetivo: "El SARLAFT funciona como un ciclo de protección que nunca se detiene. Sus etapas son:",
@@ -470,7 +468,7 @@ function TrainingLogiTransProvider({ children }) {
                             "En conjunto, las señales de alerta constituyen una herramienta clave para la gestión integral del riesgo, reforzando el compromiso institucional con la transparencia, la legalidad y la responsabilidad empresarial.",
 
                         ],
-                        duration: "02:30",
+                        duration: "03:00",
                     },
                     {
                         id: 7, lessons: "Fundamentos", name: "Casos Reales en Colombia", completed: false, type: "Video", duration: "00:43", path: casosSARLAFT,
@@ -487,8 +485,7 @@ function TrainingLogiTransProvider({ children }) {
                     {
                         id: 8, lessons: "Fundamentos", name: "El Rol de los Empleados", completed: false, type: "dragDropOrder",
                         objetivo: 'Comprender que cada colaborador desempeña un papel esencial en la prevención del Lavado de Activos y la Financiación del Terrorismo, y que son sus acciones diarias, su atención al detalle y su comunicación oportuna las que fortalecen el SARLAFT como sistema de defensa empresarial.',
-                        audioObjetivo: 'Comprender que cada colaborador desempeña un papel esencial en la prevención del Lavado de Activos y la Financiación del Terrorismo. Son las acciones diarias, la atención al detalle y la comunicación oportuna las que fortalecen el SARLAFT como sistema de defensa empresarial. En esta actividad, podrás descubrir cómo cada comportamiento y decisión contribuyen a proteger a la organización frente a los riesgos del SARLAFT.'
-                        ,
+                        audioObjetivo: 'Comprender que cada colaborador desempeña un papel esencial en la prevención del Lavado de Activos y la Financiación del Terrorismo. Son las acciones diarias, la atención al detalle y la comunicación oportuna las que fortalecen el SARLAFT como sistema de defensa empresarial. En esta actividad, podrás descubrir cómo cada comportamiento y decisión contribuyen a proteger a la organización frente a los riesgos del SARLAFT.' ,
                         cards: [
                             {
                                 id: "intro",
@@ -523,7 +520,6 @@ function TrainingLogiTransProvider({ children }) {
                                 content: [
                                     'Todos los empleados debemos estar atentos a identificar y reportar operaciones inusuales o sospechosas.',
                                     'Algunos ejemplos de señales de alerta:',
-                                    ' 🔹 Documentos alterados o con información incompleta',
                                     ' 🔹 Documentos alterados o con información incompleta',
                                     ' 🔹 Personas que se niegan a suministrar datos básicos',
                                     ' 🔹 Operaciones o solicitudes que no coinciden con la actividad normal del cliente',
@@ -584,7 +580,7 @@ function TrainingLogiTransProvider({ children }) {
                                 audioText: `En resumen: todos los empleados somos parte activa del SARLAFT. No necesitamos investigar, solo observar y reportar lo inusual. Cada rol tiene una responsabilidad concreta para prevenir riesgos. La comunicación y el trabajo en equipo son clave para mantener la integridad de la empresa. Recuerda: tu atención y compromiso son la mejor defensa contra los riesgos de lavado de activos y financiación del terrorismo.`
                             }
                         ],
-                        duration: "01:26",
+                        duration: "05:00",
                         resumen: [
                             "**El Rol de los Empleados**",
                             "El SARLAFT no es solo un sistema, es una cultura organizacional que depende del compromiso de cada empleado.",
@@ -677,12 +673,12 @@ function TrainingLogiTransProvider({ children }) {
                             "Cumplir con el SARLAFT no es una carga, es una responsabilidad compartida que garantiza la sostenibilidad de la empresa, la protección de los empleos y la confianza de clientes y autoridades.",
                             "Aplicarlo correctamente es asegurar el futuro de la organización y el bienestar de todos sus colaboradores."
                         ],
-                        duration: "01:35",
+                        duration: "03:30",
                     },
 
 
                     {
-                        id: 10, lessons: "Fundamentos", name: "Canales internos de reporte", completed: false, type: "Video", duration: "01:26", path: finalSARLAFT,
+                        id: 10, lessons: "Fundamentos", name: "Canales internos de reporte", completed: false, type: "Video", duration: "01:24", path: finalSARLAFT,
                         resumen: [
                             "**llegamos al final**",
                             "El curso sobre el Sistema de Administración del Riesgo de Lavado de Activos y Financiación del Terrorismo (SARLAFT) concluye destacando la importancia de comprender sus componentes, su impacto en la organización y el rol esencial que cumple cada colaborador en la prevención y detección de operaciones inusuales o sospechosas.",
@@ -694,7 +690,8 @@ function TrainingLogiTransProvider({ children }) {
 
 
                     {
-                        id: 11, lessons: "Evaluación", name: "Evaluacion Final", completed: false, type: "Quiz",
+                        id: 11, lessons: "Evaluación", name: "Evaluacion Final", completed: false, type: "QuizFinal", attemptsLimit: 'unlimited',aprovacion: 0.85,
+                        subtitle:'  Esta evaluación comprende todos los conceptos y temas vistos durante el curso. Se evaluará tu comprensión sobre SARLAFT, sus etapas, factores de riesgo, señales de alerta, consecuencias y tu rol como empleado.',
                         questions: [
                             {
                                 "multipleOption": false,

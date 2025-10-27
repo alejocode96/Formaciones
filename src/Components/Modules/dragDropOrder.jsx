@@ -430,8 +430,12 @@ function DragDropOrder({ currentModule, onContentIsEnded, courseId, moduleId }) 
     const charsPerSecond = 14 * baseRate; // velocidad ajustada
     const estimatedDuration = (text.length / charsPerSecond) * 1000;
 
+    const totalChars = text.length;
+    let charsSpoken = 0;
+    let lastBoundaryTime = startTime;
+
     utterance.onstart = () => {
-      let startTime = Date.now();
+      startTime = Date.now();
       setIsPlayingAudio(true);
       setIsPaused(false);
       setAudioProgress(0);
@@ -442,15 +446,37 @@ function DragDropOrder({ currentModule, onContentIsEnded, courseId, moduleId }) 
       startTime = Date.now();
       progressIntervalRef.current = setInterval(() => {
         const elapsed = Date.now() - startTime;
-        const progress = Math.min((elapsed / estimatedDuration) * 100, 100);
-        setAudioProgress(progress);
+
+        // Progreso por boundaries (más confiable)
+        const boundaryProgress = (charsSpoken / totalChars) * 100;
+
+        // Progreso por tiempo (fallback)
+        const avgSpeed = 19 * 0.9; // chars/seg * rate
+        const estimatedChars = (elapsed / 1000) * avgSpeed;
+        const timeProgress = (estimatedChars / totalChars) * 100;
+
+        // Usar boundaries si disponible, sino tiempo
+        let progress = charsSpoken > 0 ? boundaryProgress : timeProgress;
+
+        // 🔥 CRÍTICO: Nunca pasar del 97% hasta onend
+        if (progress > 97) {
+          // Ralentizar progreso cerca del final
+          const overage = progress - 97;
+          progress = 97 + (overage * 0.3); // Avanza 30% más lento
+        }
+
+        setAudioProgress(Math.min(progress, 97));
       }, 100);
       setShowAudioPopup(false);
     };
 
     utterance.onend = () => {
       if (progressIntervalRef.current) clearInterval(progressIntervalRef.current);
-      setAudioProgress(100);
+
+      setAudioProgress(97);
+      setTimeout(() => setAudioProgress(99), 50);
+      setTimeout(() => setAudioProgress(100), 150);
+      
       setIsPlayingAudio(false);
       setIsPaused(false);
       currentUtteranceRef.current = null;

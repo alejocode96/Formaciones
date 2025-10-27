@@ -291,6 +291,7 @@ function FlipCard({ currentModule, onContentIsEnded, courseId, moduleId }) {
         continuarSpeak();
 
         function continuarSpeak() {
+            
             // 🔥 Verificar de nuevo que no estamos navegando
             if (isNavigatingRef.current) {
                 console.warn('⛔ Navegación detectada durante continuarSpeak');
@@ -328,11 +329,15 @@ function FlipCard({ currentModule, onContentIsEnded, courseId, moduleId }) {
                 totalEstimated += time;
             });
 
+            const totalChars = text.length;
+            let charsSpoken = 0;
             let startTime = Date.now();
-            let currentSentence = 0;
+            let lastBoundaryTime = startTime;
 
             utterance.onstart = () => {
                 startTime = Date.now();
+                charsSpoken = 0;
+
                 if (isNavigatingRef.current) {
                     console.warn('⛔ Navegación detectada en onstart, cancelando...');
                     synth.cancel();
@@ -348,7 +353,7 @@ function FlipCard({ currentModule, onContentIsEnded, courseId, moduleId }) {
                 setIsPlayingAudio(true);
                 setIsPaused(false);
                 setAudioProgress(0);
-                startTime = Date.now();
+
 
                 audioStateRef.current.isPlaying = true;
                 audioStateRef.current.wasPaused = false;
@@ -358,11 +363,27 @@ function FlipCard({ currentModule, onContentIsEnded, courseId, moduleId }) {
                 // 🔥 CREAR intervalo SOLO si no existe
                 if (!progressIntervalRef.current) {
                     progressIntervalRef.current = setInterval(() => {
-                        if (!startTime) return;
-
                         const elapsed = Date.now() - startTime;
-                        const progress = Math.min((elapsed / totalEstimated) * 100, 98);
-                        setAudioProgress(progress);
+
+                        // Progreso por boundaries (más confiable)
+                        const boundaryProgress = (charsSpoken / totalChars) * 100;
+
+                        // Progreso por tiempo (fallback)
+                        const avgSpeed = 19 * 0.9; // chars/seg * rate
+                        const estimatedChars = (elapsed / 1000) * avgSpeed;
+                        const timeProgress = (estimatedChars / totalChars) * 100;
+
+                        // Usar boundaries si disponible, sino tiempo
+                        let progress = charsSpoken > 0 ? boundaryProgress : timeProgress;
+
+                        // 🔥 CRÍTICO: Nunca pasar del 97% hasta onend
+                        if (progress > 97) {
+                            // Ralentizar progreso cerca del final
+                            const overage = progress - 97;
+                            progress = 97 + (overage * 0.3); // Avanza 30% más lento
+                        }
+
+                        setAudioProgress(Math.min(progress, 97));
                     }, 100);
 
                     console.log('▶️ Audio iniciado con nuevo intervalo');
@@ -404,9 +425,13 @@ function FlipCard({ currentModule, onContentIsEnded, courseId, moduleId }) {
                     console.log('✅ Intervalo limpiado en onend');
                 }
 
+                setAudioProgress(97);
+                setTimeout(() => setAudioProgress(99), 50);
+                setTimeout(() => setAudioProgress(100), 150);
+
                 setIsPlayingAudio(false);
                 setIsPaused(false);
-                setAudioProgress(100);
+
                 currentUtteranceRef.current = null;
                 audioStateRef.current.isPlaying = false;
                 audioStateRef.current.wasPaused = false;
@@ -1299,7 +1324,7 @@ function FlipCard({ currentModule, onContentIsEnded, courseId, moduleId }) {
 
                 return (
                     <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 z-[9999]">
-                        <div className="bg-gradient-to-br bg-zinc-900 rounded-xl max-w-4xl w-full max-h-[90vh] overflow-hidden border border-zinc-700 shadow-2xl">
+                        <div className="bg-gradient-to-br bg-zinc-900 rounded-xl max-w-4xl w-full max-h-[94vh] overflow-hidden border border-zinc-700 shadow-2xl">
                             {/* Header del modal */}
                             <div className={`bg-gradient-to-r from-[#071D49] to-[#1a4fff]  p-4 flex items-center justify-between`}>
                                 <div className="flex items-center gap-3">
@@ -1324,7 +1349,7 @@ function FlipCard({ currentModule, onContentIsEnded, courseId, moduleId }) {
                             </div>
 
                             {/* Contenido del modal */}
-                            <div className="p-2 md:p-4 space-y-2 overflow-y-auto max-h-[calc(90vh-280px)]">
+                            <div className="p-2 md:p-4 space-y-2 overflow-y-auto max-h-[calc(94vh-280px)]">
                                 {seccionActiva === 'objetivo' && (
                                     <div className="space-y-2 animate-fadeIn">
                                         <div className="flex items-center gap-2 text-zinc-200 mb-1">

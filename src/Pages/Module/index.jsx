@@ -12,6 +12,7 @@ import FlipCard from '../../Components/Modules/FlipCard';
 import FlipCardReverse from '../../Components/Modules/FlipCardReverse';
 import DragDropOrder from '../../Components/Modules/dragDropOrder';
 import DragDrop from '../../Components/Modules/dragDrop';
+import QuizFinal from '../../Components/Modules/quizFinal';
 function ModulePage() {
 
 
@@ -151,6 +152,16 @@ function ModulePage() {
 
                         {currentModule.type === 'dragDrop' && (
                             <DragDrop
+                                key={currentModuleId}
+                                currentModule={currentModule}
+                                onContentIsEnded={handleContentFinished}
+                                courseId={courseId}
+                                moduleId={currentModuleId}
+                            />
+                        )}
+
+                        {currentModule.type === 'QuizFinal' && (
+                            <QuizFinal
                                 key={currentModuleId}
                                 currentModule={currentModule}
                                 onContentIsEnded={handleContentFinished}
