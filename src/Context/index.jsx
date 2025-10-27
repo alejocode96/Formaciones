@@ -9,6 +9,7 @@ import introSARLAFT from '../assets/introduccionSARLAFT.mp4';
 import queesSARLAFT from '../assets/queesSARLAFT.mp4';
 import finalSARLAFT from '../assets/final.mp4';
 import casosSARLAFT from '../assets/casos_colombia.mp4';
+import firmaSarlaft from '../assets/firma_vanesa.png';
 
 function TrainingLogiTransProvider({ children }) {
 
@@ -18,14 +19,14 @@ function TrainingLogiTransProvider({ children }) {
             id: 1,
             title: "CAPACITACIÓN ANUAL SARLAFT 2025",
             subtitle: "Prevención y control en empresas de transporte",
-            direcionamiento: "sarlaft",
+            direcionamiento: "sarlaft", firma:firmaSarlaft,
             content: {
                 description: [
                     "Este curso tiene como propósito fortalecer los conocimientos y la cultura de prevención de los colaboradores de la empresa de transporte frente al **Sistema de Autocontrol y Gestión del Riesgo de Lavado de Activos y Financiación del Terrorismo (SARLAFT).**",
                     "A lo largo de la formación, los participantes adquirirán **herramientas prácticas** para identificar, reportar y controlar operaciones sospechosas, contribuyendo a la **protección de la organización, sus empleados y la sociedad** frente a riesgos **legales, financieros y reputacionales.**"
                 ],
                 modules: [
-                    { id: 1, lessons: "Fundamentos", name: "Introducción al SARLAFT", completed: false, type: "Video", path: introSARLAFT, resumen: ["**¿Por qué no debemos ignorarlo?** ", "Por que somos una pieza clave para proteger la organización y el sistema financiero  no es solo cumplir la norma es  asumir compromiso con seguridad, transparencia y sostenibilidad."], duration: "00:24", },
+                    { id: 1, lessons: "Fundamentos", name: "Introducción al SARLAFT", completed: false, type: "Video", path: introSARLAFT, resumen: ["**¿Por qué no debemos ignorarlo?** ", "Por que somos una pieza clave para proteger la organización y el sistema financiero  no es solo cumplir la norma es  asumir compromiso con seguridad, transparencia y sostenibilidad."], duration: "00:00:24", },
                     {
                         id: 2, lessons: "Fundamentos", name: "¿Crees que una empresa de transporte puede ser usada para actividades ilegales?",
                         respuestas: [
@@ -33,9 +34,9 @@ function TrainingLogiTransProvider({ children }) {
                             { opcion: "No, porque la finalidad de una empresa de transporte es solo logística y no puede desviarse de ese fin.", rsp: false },
                             { opcion: "Sí, porque los vehículos pueden emplearse para movilizar mercancía ilícita de manera encubierta.", rsp: true },
                             { opcion: "No, ya que las regulaciones y controles hacen imposible que sean usadas con otros propósitos.", rsp: false }
-                        ], completed: false, type: "Pregunta", duration: "00:30",
+                        ], completed: false, type: "Pregunta", duration: "00:00:30",
                     },
-                    { id: 3, lessons: "Fundamentos", name: "¿Qué es SARLAFT?", completed: false, type: "Video", path: queesSARLAFT, resumen: ["**¿Qué es SARLAFT?**", "es un sistema para prevenir y gestionar el riesgo de lavado de activos y financiación del terrorismo. Funciona como un filtro de seguridad: analiza clientes, operaciones y recursos para asegurar que todo sea legal y transparente. Va más allá de solo revisar listas sospechosas; es un mecanismo de prevención que protege a la empresa, sus empleados y su reputación.",], duration: "00:49", },
+                    { id: 3, lessons: "Fundamentos", name: "¿Qué es SARLAFT?", completed: false, type: "Video", path: queesSARLAFT, resumen: ["**¿Qué es SARLAFT?**", "es un sistema para prevenir y gestionar el riesgo de lavado de activos y financiación del terrorismo. Funciona como un filtro de seguridad: analiza clientes, operaciones y recursos para asegurar que todo sea legal y transparente. Va más allá de solo revisar listas sospechosas; es un mecanismo de prevención que protege a la empresa, sus empleados y su reputación.",], duration: "00:00:49", },
 
                     {
                         id: 4, lessons: "Fundamentos", name: "Etapas del SARLAFT", completed: false, type: "FlipCard",
@@ -219,7 +220,7 @@ function TrainingLogiTransProvider({ children }) {
                                     }
                                 ]
                             }
-                        ], duration: "10:00",
+                        ], duration: "00:10:00",
                         resumen: [
                             "**Etapas del SARLAFT**",
                             "El Sistema de Administración del Riesgo de Lavado de Activos, Financiación del Terrorismo y Proliferación de Armas de Destrucción Masiva (SARLAFT) se fundamenta en un ciclo continuo de gestión compuesto por cuatro etapas interrelacionadas: Identificación, Medición, Control y Monitoreo del Riesgo. Este ciclo busca prevenir y mitigar los riesgos asociados a actividades ilícitas dentro del sector transporte, garantizando la integridad y legalidad de las operaciones.",
@@ -349,7 +350,7 @@ function TrainingLogiTransProvider({ children }) {
                                 audioText: 'Conclusión. En resumen: Aunque trabajamos con un cliente formal y de alta reputación, el riesgo no desaparece. Como empresa transportadora, debemos estar alertas y comprometidos con el control de cada etapa de la operación: Conocer a los actores involucrados, como clientes, conductores y aliados. Verificar el servicio que prestamos y el tipo de carga movilizada. Revisar la documentación asociada al transporte. Evaluar las rutas y zonas donde operamos. La prevención del riesgo es tarea de todos. Cada colaborador tiene un papel clave en garantizar que nuestras operaciones sean transparentes, seguras y alineadas con las políticas SARLAFT.'
                             }
                         ],
-                        duration: "06:00",
+                        duration: "00:06:00",
                         resumen: [
                             "El Sistema de Administración del Riesgo de Lavado de Activos y Financiación del Terrorismo (SARLAFT) busca que las empresas identifiquen, prevengan y controlen los riesgos que puedan afectar sus operaciones frente al uso indebido de recursos o actividades ilegales.",
                             "Aunque Cementos Argos es un cliente formal y de gran reputación, nuestras operaciones logísticas pueden verse expuestas a amenazas si terceros intentan aprovecharlas con fines ilícitos.",
@@ -468,10 +469,10 @@ function TrainingLogiTransProvider({ children }) {
                             "En conjunto, las señales de alerta constituyen una herramienta clave para la gestión integral del riesgo, reforzando el compromiso institucional con la transparencia, la legalidad y la responsabilidad empresarial.",
 
                         ],
-                        duration: "03:00",
+                        duration: "00:03:00",
                     },
                     {
-                        id: 7, lessons: "Fundamentos", name: "Casos Reales en Colombia", completed: false, type: "Video", duration: "00:43", path: casosSARLAFT,
+                        id: 7, lessons: "Fundamentos", name: "Casos Reales en Colombia", completed: false, type: "Video", duration: "00:00:43", path: casosSARLAFT,
                         resumen: [
                             "**Casos Reales en Colombia**",
                             "En Colombia, múltiples casos recientes han evidenciado la relevancia del Sistema de Administración del Riesgo de Lavado de Activos y Financiación del Terrorismo (SARLAFT) como herramienta clave para prevenir delitos financieros.",
@@ -580,7 +581,7 @@ function TrainingLogiTransProvider({ children }) {
                                 audioText: `En resumen: todos los empleados somos parte activa del SARLAFT. No necesitamos investigar, solo observar y reportar lo inusual. Cada rol tiene una responsabilidad concreta para prevenir riesgos. La comunicación y el trabajo en equipo son clave para mantener la integridad de la empresa. Recuerda: tu atención y compromiso son la mejor defensa contra los riesgos de lavado de activos y financiación del terrorismo.`
                             }
                         ],
-                        duration: "05:00",
+                        duration: "00:05:00",
                         resumen: [
                             "**El Rol de los Empleados**",
                             "El SARLAFT no es solo un sistema, es una cultura organizacional que depende del compromiso de cada empleado.",
@@ -673,12 +674,12 @@ function TrainingLogiTransProvider({ children }) {
                             "Cumplir con el SARLAFT no es una carga, es una responsabilidad compartida que garantiza la sostenibilidad de la empresa, la protección de los empleos y la confianza de clientes y autoridades.",
                             "Aplicarlo correctamente es asegurar el futuro de la organización y el bienestar de todos sus colaboradores."
                         ],
-                        duration: "03:30",
+                        duration: "00:03:30",
                     },
 
 
                     {
-                        id: 10, lessons: "Fundamentos", name: "Canales internos de reporte", completed: false, type: "Video", duration: "01:24", path: finalSARLAFT,
+                        id: 10, lessons: "Fundamentos", name: "Canales internos de reporte", completed: false, type: "Video", duration: "00:01:24", path: finalSARLAFT,
                         resumen: [
                             "**llegamos al final**",
                             "El curso sobre el Sistema de Administración del Riesgo de Lavado de Activos y Financiación del Terrorismo (SARLAFT) concluye destacando la importancia de comprender sus componentes, su impacto en la organización y el rol esencial que cumple cada colaborador en la prevención y detección de operaciones inusuales o sospechosas.",
@@ -694,7 +695,7 @@ function TrainingLogiTransProvider({ children }) {
                         subtitle:'  Esta evaluación comprende todos los conceptos y temas vistos durante el curso. Se evaluará tu comprensión sobre SARLAFT, sus etapas, factores de riesgo, señales de alerta, consecuencias y tu rol como empleado.',
                         questions: [
                             {
-                                "multipleOption": false,
+                                "multipleOption": true,
                                 "etiqueta": "¿Qué es SARLAFT?",
                                 "preguntas": [
                                     {
@@ -729,7 +730,7 @@ function TrainingLogiTransProvider({ children }) {
                                         ]
                                     },
                                     {
-                                        "id": 1,
+                                        "id": 4,
                                         "name": "¿Cuál de las siguientes afirmaciones describe mejor al SARLAFT?",
                                         "respuestas": [
                                             { "opcion": "Es un sistema de control que identifica, previene y gestiona riesgos relacionados con el lavado de activos y la financiación del terrorismo.", "rsp": true },
@@ -745,7 +746,7 @@ function TrainingLogiTransProvider({ children }) {
                                 "etiqueta": "Etapas del SARLAFT",
                                 "preguntas": [
                                     {
-                                        "id": 1,
+                                        "id": 5,
                                         "name": "¿Cuáles son las etapas del SARLAFT?",
                                         "respuestas": [
                                             { "opcion": "Identificación, Medición, Control y Monitoreo", "correcta": true },
@@ -754,7 +755,7 @@ function TrainingLogiTransProvider({ children }) {
                                         ]
                                     },
                                     {
-                                        "id": 2,
+                                        "id": 6,
                                         "name": "¿Qué se realiza en la etapa de Identificación del riesgo?",
                                         "respuestas": [
                                             { "opcion": "Reconocer y documentar factores que puedan representar peligro de lavado de activos o financiación del terrorismo", "correcta": true },
@@ -763,7 +764,7 @@ function TrainingLogiTransProvider({ children }) {
                                         ]
                                     },
                                     {
-                                        "id": 3,
+                                        "id": 7,
                                         "name": "¿Cuál es el propósito principal de la etapa de Medición o Evaluación del riesgo?",
                                         "respuestas": [
                                             { "opcion": "Determinar la probabilidad e impacto de los riesgos identificados para priorizar su atención", "correcta": true },
@@ -772,7 +773,7 @@ function TrainingLogiTransProvider({ children }) {
                                         ]
                                     },
                                     {
-                                        "id": 4,
+                                        "id": 8,
                                         "name": "¿Qué se busca lograr en la etapa de Control del riesgo?",
                                         "respuestas": [
                                             { "opcion": "Reducir la probabilidad e impacto de los riesgos mediante la aplicación de controles y políticas internas", "correcta": true },
@@ -781,7 +782,7 @@ function TrainingLogiTransProvider({ children }) {
                                         ]
                                     },
                                     {
-                                        "id": 5,
+                                        "id": 9,
                                         "name": "¿Cuál es el objetivo de la etapa de Monitoreo del riesgo en el SARLAFT?",
                                         "respuestas": [
                                             { "opcion": "Evaluar continuamente la efectividad de los controles y detectar operaciones inusuales o sospechosas", "correcta": true },
@@ -797,7 +798,7 @@ function TrainingLogiTransProvider({ children }) {
                                 "etiqueta": "Factores de Riesgo en el Transporte de Carga",
                                 "preguntas": [
                                     {
-                                        "id": 1,
+                                        "id": 10,
                                         "name": "¿Cuáles son los cuatro factores de riesgo del SARLAFT?",
                                         "respuestas": [
                                             { "opcion": "Cliente o contraparte, Producto o servicio, Canal de distribución y Jurisdicción o zona geográfica", "correcta": true },
@@ -806,7 +807,7 @@ function TrainingLogiTransProvider({ children }) {
                                         ]
                                     },
                                     {
-                                        "id": 2,
+                                        "id": 11,
                                         "name": "¿Qué representa el factor de riesgo 'Cliente o Contraparte' en el transporte de carga?",
                                         "respuestas": [
                                             { "opcion": "Los actores con los que la empresa se relaciona y que podrían usar la operación para fines ilícitos", "correcta": true },
@@ -815,7 +816,7 @@ function TrainingLogiTransProvider({ children }) {
                                         ]
                                     },
                                     {
-                                        "id": 3,
+                                        "id": 12,
                                         "name": "¿Qué riesgo está asociado al factor 'Producto o Servicio' dentro del SARLAFT?",
                                         "respuestas": [
                                             { "opcion": "Que el servicio de transporte sea usado como fachada para mover mercancías ilegales o justificar operaciones sospechosas", "correcta": true },
@@ -824,7 +825,7 @@ function TrainingLogiTransProvider({ children }) {
                                         ]
                                     },
                                     {
-                                        "id": 4,
+                                        "id": 13,
                                         "name": "¿Qué implica el factor 'Canal de Distribución' en el SARLAFT?",
                                         "respuestas": [
                                             { "opcion": "La movilización física de la carga y la documentación que respalda la operación, donde pueden presentarse riesgos como falsificación o alteración", "correcta": true },
@@ -833,7 +834,7 @@ function TrainingLogiTransProvider({ children }) {
                                         ]
                                     },
                                     {
-                                        "id": 5,
+                                        "id": 14,
                                         "name": "¿Qué riesgo se asocia al factor 'Jurisdicción o Zona Geográfica'?",
                                         "respuestas": [
                                             { "opcion": "Que algunas regiones del país representen mayor exposición al contrabando, lavado de activos o contaminación de carga", "correcta": true },
@@ -849,7 +850,7 @@ function TrainingLogiTransProvider({ children }) {
                                 "etiqueta": "Señales de Alerta",
                                 "preguntas": [
                                     {
-                                        "id": 1,
+                                        "id": 15,
                                         "name": "¿Cuáles son las señales de alerta del SARLAFT?",
                                         "respuestas": [
                                             {
@@ -866,7 +867,7 @@ function TrainingLogiTransProvider({ children }) {
                                             }]
                                     },
                                     {
-                                        "id": 2,
+                                        "id": 16,
                                         "name": "¿Por qué un pago inusual o muy alto en efectivo puede considerarse una señal de alerta?",
                                         "respuestas": [
                                             { "opcion": "Porque podría indicar que se intenta ocultar el origen del dinero o evitar controles bancarios", "correcta": true },
@@ -875,7 +876,7 @@ function TrainingLogiTransProvider({ children }) {
                                         ]
                                     },
                                     {
-                                        "id": 3,
+                                        "id": 17,
                                         "name": "¿Qué riesgo representa que haya cambios frecuentes en remitentes o destinatarios?",
                                         "respuestas": [
                                             { "opcion": "Podría tratarse de una forma de ocultar la identidad real del beneficiario o del origen de los fondos", "correcta": true },
@@ -884,7 +885,7 @@ function TrainingLogiTransProvider({ children }) {
                                         ]
                                     },
                                     {
-                                        "id": 4,
+                                        "id": 18,
                                         "name": "¿Por qué los documentos incompletos o falsos son una señal de alerta?",
                                         "respuestas": [
                                             { "opcion": "Porque pueden ocultar información clave o usarse para simular operaciones legales que en realidad son ilícitas", "correcta": true },
@@ -893,7 +894,7 @@ function TrainingLogiTransProvider({ children }) {
                                         ]
                                     },
                                     {
-                                        "id": 5,
+                                        "id": 19,
                                         "name": "¿Qué indica cuando un cliente no quiere suministrar información básica?",
                                         "respuestas": [
                                             { "opcion": "Que podría estar ocultando su identidad o la verdadera naturaleza de su actividad económica", "correcta": true },
@@ -902,7 +903,7 @@ function TrainingLogiTransProvider({ children }) {
                                         ]
                                     },
                                     {
-                                        "id": 6,
+                                        "id": 20,
                                         "name": "¿Por qué se considera señal de alerta una operación que no coincide con el perfil del cliente?",
                                         "respuestas": [
                                             { "opcion": "Porque puede reflejar movimientos financieros inusuales o sospechosos que no corresponden con su comportamiento habitual", "correcta": true },
@@ -918,7 +919,7 @@ function TrainingLogiTransProvider({ children }) {
                                 "etiqueta": "Casos Reales en Colombia",
                                 "preguntas": [
                                     {
-                                        "id": 1,
+                                        "id": 21,
                                         "name": "¿Qué tipo de práctica ilícita se ha detectado en Colombia relacionada con el transporte de carga?",
                                         "respuestas": [
                                             { "opcion": "El envío de dinero o mercancía ilegal oculta en encomiendas declaradas como ropa usada", "correcta": true },
@@ -927,7 +928,7 @@ function TrainingLogiTransProvider({ children }) {
                                         ]
                                     },
                                     {
-                                        "id": 2,
+                                        "id": 22,
                                         "name": "¿Cómo se han utilizado algunas constructoras e inmobiliarias para lavar dinero en Colombia?",
                                         "respuestas": [
                                             { "opcion": "Mediante la sobrevaloración de inmuebles y pagos en efectivo injustificados", "correcta": true },
@@ -936,7 +937,7 @@ function TrainingLogiTransProvider({ children }) {
                                         ]
                                     },
                                     {
-                                        "id": 3,
+                                        "id": 23,
                                         "name": "¿Qué demuestra que empresas de distintos sectores pueden ser usadas para actividades ilícitas?",
                                         "respuestas": [
                                             { "opcion": "Que incluso cooperativas y entidades financieras han sido sancionadas por no reportar operaciones sospechosas", "correcta": true },
@@ -952,7 +953,7 @@ function TrainingLogiTransProvider({ children }) {
                                 "etiqueta": "El Rol de los Empleados",
                                 "preguntas": [
                                     {
-                                        "id": 1,
+                                        "id": 24,
                                         "name": "¿Cuáles son los roles de los empleados dentro del SARLAFT?",
                                         "respuestas": [
                                             {
@@ -970,7 +971,7 @@ function TrainingLogiTransProvider({ children }) {
                                         ]
                                     },
                                     {
-                                        "id": 2,
+                                        "id": 25,
                                         "name": "¿Qué significa que los empleados no sean detectives dentro del SARLAFT?",
                                         "respuestas": [
                                             {
@@ -988,7 +989,7 @@ function TrainingLogiTransProvider({ children }) {
                                         ]
                                     },
                                     {
-                                        "id": 3,
+                                        "id": 26,
                                         "name": "¿Qué deben hacer los empleados cuando algo no encaja o parece inusual?",
                                         "respuestas": [
                                             {
@@ -1006,7 +1007,7 @@ function TrainingLogiTransProvider({ children }) {
                                         ]
                                     },
                                     {
-                                        "id": 4,
+                                        "id": 27,
                                         "name": "¿Qué significa que todos los cargos cuentan dentro del SARLAFT?",
                                         "respuestas": [
                                             {
@@ -1024,7 +1025,7 @@ function TrainingLogiTransProvider({ children }) {
                                         ]
                                     },
                                     {
-                                        "id": 5,
+                                        "id": 28,
                                         "name": "¿Qué implica la responsabilidad compartida en el SARLAFT?",
                                         "respuestas": [
                                             {
@@ -1050,7 +1051,7 @@ function TrainingLogiTransProvider({ children }) {
                                 "etiqueta": "Consecuencias de No Aplicar el SARLAFT",
                                 "preguntas": [
                                     {
-                                        "id": 1,
+                                        "id": 29,
                                         "name": "¿Cuáles son las posibles consecuencias de no aplicar el SARLAFT?",
                                         "respuestas": [
                                             {
@@ -1068,7 +1069,7 @@ function TrainingLogiTransProvider({ children }) {
                                         ]
                                     },
                                     {
-                                        "id": 2,
+                                        "id": 30,
                                         "name": "¿Qué tipo de sanciones puede recibir una empresa por incumplir el SARLAFT?",
                                         "respuestas": [
                                             {
@@ -1086,7 +1087,7 @@ function TrainingLogiTransProvider({ children }) {
                                         ]
                                     },
                                     {
-                                        "id": 3,
+                                        "id": 31,
                                         "name": "¿Qué puede ocurrir si una empresa no tiene controles SARLAFT adecuados?",
                                         "respuestas": [
                                             {
@@ -1104,7 +1105,7 @@ function TrainingLogiTransProvider({ children }) {
                                         ]
                                     },
                                     {
-                                        "id": 4,
+                                        "id": 32,
                                         "name": "¿Qué tipo de daño puede sufrir una empresa si se asocia con actividades ilegales, incluso por omisión?",
                                         "respuestas": [
                                             {
@@ -1122,7 +1123,7 @@ function TrainingLogiTransProvider({ children }) {
                                         ]
                                     },
                                     {
-                                        "id": 5,
+                                        "id": 33,
                                         "name": "¿Qué consecuencias puede tener un empleado que ignore una señal de alerta o participe en una operación irregular?",
                                         "respuestas": [
                                             {
@@ -1140,7 +1141,7 @@ function TrainingLogiTransProvider({ children }) {
                                         ]
                                     },
                                     {
-                                        "id": 6,
+                                        "id": 34,
                                         "name": "¿Qué enseñan los casos reales sobre el incumplimiento del SARLAFT?",
                                         "respuestas": [
                                             {
@@ -1165,7 +1166,7 @@ function TrainingLogiTransProvider({ children }) {
                                 "etiqueta": "Canales internos de reporte",
                                 "preguntas": [
                                     {
-                                        "id": 1,
+                                        "id": 35,
                                         "name": "¿Cuáles son los canales internos establecidos para reportar situaciones inusuales o sospechosas dentro de la empresa?",
                                         "respuestas": [
                                             {
@@ -1183,7 +1184,7 @@ function TrainingLogiTransProvider({ children }) {
                                         ]
                                     },
                                     {
-                                        "id": 2,
+                                        "id": 36,
                                         "name": "¿Cuál es el propósito principal de reportar una operación inusual o sospechosa?",
                                         "respuestas": [
                                             {
@@ -1201,7 +1202,7 @@ function TrainingLogiTransProvider({ children }) {
                                         ]
                                     },
                                     {
-                                        "id": 3,
+                                        "id": 37,
                                         "name": "¿Por qué el cumplimiento del SARLAFT trasciende una obligación legal?",
                                         "respuestas": [
                                             {
@@ -1219,7 +1220,7 @@ function TrainingLogiTransProvider({ children }) {
                                         ]
                                     },
                                     {
-                                        "id": 4,
+                                        "id": 38,
                                         "name": "¿Qué se logra cuando todos los empleados reportan de forma activa y responsable las situaciones sospechosas?",
                                         "respuestas": [
                                             {
@@ -1241,7 +1242,7 @@ function TrainingLogiTransProvider({ children }) {
                             }
 
 
-                        ], duration: "01:26",
+                        ], duration: "00:23:00",
                     },
 
                 ]
@@ -1342,7 +1343,8 @@ function TrainingLogiTransProvider({ children }) {
             flipCardProgress: {},
             flipCardReverseProgress: {},
             dragDropProgress: {},
-            dragDropOrderProgress: {}
+            dragDropOrderProgress: {},
+            quizProgress:{}
         };
 
         const newProgress = {
