@@ -19,7 +19,7 @@ function TrainingLogiTransProvider({ children }) {
             id: 1,
             title: "CAPACITACIÓN ANUAL SARLAFT 2025",
             subtitle: "Prevención y control en empresas de transporte",
-            direcionamiento: "sarlaft", firma:firmaSarlaft,
+            direcionamiento: "sarlaft", firma: firmaSarlaft,
             content: {
                 description: [
                     "Este curso tiene como propósito fortalecer los conocimientos y la cultura de prevención de los colaboradores de la empresa de transporte frente al **Sistema de Autocontrol y Gestión del Riesgo de Lavado de Activos y Financiación del Terrorismo (SARLAFT).**",
@@ -486,7 +486,7 @@ function TrainingLogiTransProvider({ children }) {
                     {
                         id: 8, lessons: "Fundamentos", name: "El Rol de los Empleados", completed: false, type: "dragDropOrder",
                         objetivo: 'Comprender que cada colaborador desempeña un papel esencial en la prevención del Lavado de Activos y la Financiación del Terrorismo, y que son sus acciones diarias, su atención al detalle y su comunicación oportuna las que fortalecen el SARLAFT como sistema de defensa empresarial.',
-                        audioObjetivo: 'Comprender que cada colaborador desempeña un papel esencial en la prevención del Lavado de Activos y la Financiación del Terrorismo. Son las acciones diarias, la atención al detalle y la comunicación oportuna las que fortalecen el SARLAFT como sistema de defensa empresarial. En esta actividad, podrás descubrir cómo cada comportamiento y decisión contribuyen a proteger a la organización frente a los riesgos del SARLAFT.' ,
+                        audioObjetivo: 'Comprender que cada colaborador desempeña un papel esencial en la prevención del Lavado de Activos y la Financiación del Terrorismo. Son las acciones diarias, la atención al detalle y la comunicación oportuna las que fortalecen el SARLAFT como sistema de defensa empresarial. En esta actividad, podrás descubrir cómo cada comportamiento y decisión contribuyen a proteger a la organización frente a los riesgos del SARLAFT.',
                         cards: [
                             {
                                 id: "intro",
@@ -575,9 +575,9 @@ function TrainingLogiTransProvider({ children }) {
                                     '🔹 Cada rol tiene una responsabilidad concreta para prevenir riesgos',
                                     '🔹 La comunicación y el trabajo en equipo son clave para mantener la integridad y la transparencia de la empresa.',
                                     '👉 Recuerda: tu atención y compromiso son la mejor defensa contra los riesgos de Lavado de Activos y Financiación del Terrorismo.',
-                                   
+
                                 ],
-                                
+
                                 audioText: `En resumen: todos los empleados somos parte activa del SARLAFT. No necesitamos investigar, solo observar y reportar lo inusual. Cada rol tiene una responsabilidad concreta para prevenir riesgos. La comunicación y el trabajo en equipo son clave para mantener la integridad de la empresa. Recuerda: tu atención y compromiso son la mejor defensa contra los riesgos de lavado de activos y financiación del terrorismo.`
                             }
                         ],
@@ -691,8 +691,8 @@ function TrainingLogiTransProvider({ children }) {
 
 
                     {
-                        id: 11, lessons: "Evaluación", name: "Evaluacion Final", completed: false, type: "QuizFinal", attemptsLimit: 'unlimited',aprovacion: 0.85,
-                        subtitle:'  Esta evaluación comprende todos los conceptos y temas vistos durante el curso. Se evaluará tu comprensión sobre SARLAFT, sus etapas, factores de riesgo, señales de alerta, consecuencias y tu rol como empleado.',
+                        id: 11, lessons: "Evaluación", name: "Evaluacion Final", completed: false, type: "QuizFinal", attemptsLimit: 'unlimited', aprovacion: 0.85,
+                        subtitle: '  Esta evaluación comprende todos los conceptos y temas vistos durante el curso. Se evaluará tu comprensión sobre SARLAFT, sus etapas, factores de riesgo, señales de alerta, consecuencias y tu rol como empleado.',
                         questions: [
                             {
                                 "multipleOption": true,
@@ -1248,43 +1248,8 @@ function TrainingLogiTransProvider({ children }) {
                 ]
             }
         },
-        {
-            id: 2,
-            title: "SEGURIDAD VIAL 2025",
-            subtitle: "Conducción segura y responsable",
-            direcionamiento: "seguridad-vial",
-            content: {
-                description: [
-                    "Este curso está diseñado para fortalecer las competencias de nuestros conductores en materia de seguridad vial, promoviendo prácticas de **conducción responsable y defensiva.**",
-                    "Los participantes aprenderán **técnicas avanzadas de manejo, normativa vial actualizada** y estrategias para la prevención de accidentes, contribuyendo a la **reducción de riesgos** en las operaciones de transporte."
-                ],
-                modules: [
-                    { id: 1, name: "Normativa de Tránsito", completed: false },
-                    { id: 2, name: "Conducción Defensiva", completed: false },
-                    { id: 3, name: "Mantenimiento Preventivo", completed: false },
-                    { id: 4, name: "Primeros Auxilios", completed: false },
-                    { id: 5, name: "Evaluación Práctica", completed: false }
-                ]
-            }
-        },
-        {
-            id: 3,
-            title: "GESTIÓN AMBIENTAL 2025",
-            subtitle: "Sostenibilidad en el transporte",
-            direcionamiento: "gestion-ambiental",
-            content: {
-                description: [
-                    "Este programa formativo busca sensibilizar y capacitar a nuestros colaboradores en **prácticas ambientales sostenibles** aplicadas al sector del transporte.",
-                    "Los participantes desarrollarán competencias para **minimizar el impacto ambiental** de las operaciones, implementando estrategias de **eficiencia energética y gestión de residuos** en sus actividades diarias."
-                ],
-                modules: [
-                    { id: 1, name: "Fundamentos de Gestión Ambiental", completed: false, duration: "01:26", },
-                    { id: 2, name: "Eficiencia Energética en Transporte", completed: false, duration: "01:26", },
-                    { id: 3, name: "Gestión de Residuos", completed: false, duration: "01:26", },
-                    { id: 4, name: "Evaluación de Impacto", completed: false, duration: "01:26", }
-                ]
-            }
-        }
+
+
 
     ];
 
@@ -1344,7 +1309,7 @@ function TrainingLogiTransProvider({ children }) {
             flipCardReverseProgress: {},
             dragDropProgress: {},
             dragDropOrderProgress: {},
-            quizProgress:{}
+            quizProgress: {}
         };
 
         const newProgress = {

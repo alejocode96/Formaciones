@@ -125,7 +125,7 @@ function ContentSidebar({
                                                                         </span>
                                                                     )}
 
-                                                                    {isCompleted && !isCurrentLesson && (
+                                                                    {isCompleted  && (
                                                                         <span className="text-blue-400 flex items-center gap-1">
                                                                             <CheckCircle className="w-3 h-3" />
                                                                             Clase vista
