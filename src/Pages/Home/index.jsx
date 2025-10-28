@@ -104,7 +104,7 @@ function Home() {
                         <div className={`text-2xl md:text-3xl font-black mb-2 ${training.cumplimiento <= 0 ? 'text-zinc-500' : training.cumplimiento === 100 ? 'text-emerald-400' : 'text-orange-400'}`}>{training.cumplimiento}%</div>
                         {/* Progress bar */}
                         <div className='w-20 h-2 bg-zinc-700 rounded-full overflow-hidden'>
-                          <div className={`h-full rounded-full transition-all duration-1000 ${training.cumplimiento <= 0 ? 'bg-zinc-500' : training.cumplimiento === 0 ? 'bg-gradient-to-r from-emerald-400 to-emerald-500' : 'bg-gradient-to-r from-orange-400 to-orange-500'}`} style={{ width: `${training.cumplimiento}%` }}></div>
+                          <div className={`h-full rounded-full transition-all duration-1000 ${training.cumplimiento <= 0 ? 'bg-zinc-500' : training.cumplimiento === 100 ? 'bg-gradient-to-r from-emerald-400 to-emerald-500' : 'bg-gradient-to-r from-orange-400 to-orange-500'}`} style={{ width: `${training.cumplimiento}%` }}></div>
                         </div>
                       </div>
 
