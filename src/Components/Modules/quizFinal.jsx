@@ -930,7 +930,7 @@ function QuizFinal({ currentModule, onContentIsEnded, courseId, moduleId, XCircl
             console.log('✅ Certificado generado correctamente');
         } catch (error) {
             console.error('❌ Error al generar el certificado:', error);
-            alert('Hubo un error al generar el certificado. Por favor, intenta nuevamente.');
+            // alert('Hubo un error al generar el certificado. Por favor, intenta nuevamente.');
         }
     };
 
