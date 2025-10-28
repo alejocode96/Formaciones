@@ -508,124 +508,303 @@ function QuizFinal({ currentModule, onContentIsEnded, courseId, moduleId, XCircl
     const createCertificateHTML = (data) => {
         return `
     <div style="
-        width: 1122px;
-        height: 794px;
-        background-color: white;
-        position: relative;
-        font-family: Arial, sans-serif;
+    width: 1122px;
+    height: 794px;
+    background-color: white;
+    position: relative;
+    font-family: Arial, sans-serif;
+">
+    <!-- Marca de agua superior izquierda -->
+    <div style="
+        position: absolute;
+        top: 30px;
+        left: 30px;
+        opacity: 0.05;
+        pointer-events: none;
     ">
-        <!-- Marca de agua superior izquierda -->
-        <div style="
-            position: absolute;
-            top: 30px;
-            left: 30px;
-            opacity: 0.05;
-            pointer-events: none;
-        ">
-            <img 
-                src="${logo}"
-                style="width: 384px; height: 384px; object-fit: contain; filter: grayscale(100%);"
-                alt="Watermark"
-            />
-        </div>
+        <img 
+            src="${logo}"
+            style="width: 384px; height: 384px; object-fit: contain; filter: grayscale(100%);"
+            alt="Watermark"
+        />
+    </div>
 
-        <!-- Marca de agua inferior derecha -->
-        <div style="
-            position: absolute;
-            bottom: 30px;
-            right: 30px;
-            opacity: 0.05;
-            pointer-events: none;
-        ">
-            <img 
-                src="${logo}"
-                style="width: 384px; height: 384px; object-fit: contain; filter: grayscale(100%);"
-                alt="Watermark"
-            />
-        </div>
+    <!-- Marca de agua inferior derecha -->
+    <div style="
+        position: absolute;
+        bottom: 30px;
+        right: 30px;
+        opacity: 0.05;
+        pointer-events: none;
+    ">
+        <img 
+            src="${logo}"
+            style="width: 384px; height: 384px; object-fit: contain; filter: grayscale(100%);"
+            alt="Watermark"
+        />
+    </div>
 
-        <!-- Borde del certificado -->
-        <div style="
-            position: absolute;
-            inset: 15px;
-            border: 8px solid black;
-        "></div>
+    <!-- Bloque de color azul asimétrico de fondo -->
+    <div style="
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 375px;
+        height: 100%;
+        background-color: #071D49;
+        opacity: 0.03;
+    "></div>
 
-        <!-- Contenido del certificado -->
+    <!-- Contenido principal -->
+    <div style="
+        position: relative;
+        height: 100%;
+        display: flex;
+        padding: 80px;
+    ">
+        <!-- Columna izquierda (33%) -->
         <div style="
-            position: relative;
-            height: 100%;
+            width: 33.333%;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
-            padding: 45px 60px;
+            padding-right: 48px;
+            border-right: 2px solid #e5e7eb;
         ">
-            <!-- Header con logo -->
-            <div style="text-align: center; margin-top: 20px;">
-                <div style="margin-bottom: 30px; display: flex; justify-content: center; align-items: center;">
-                    <img src="${logo}" style="height:68px; width:64px;" />
-                </div>
-
-                
-                <p style="font-size: 16px; color: #666; margin-bottom: 8px;">Certifica a</p>
+            <!-- Logo y nombre empresa -->
+            <div>
+                <img 
+                    src="${logo}" 
+                    style="
+                        width: 80px;
+                        height: 96px;
+                        border-radius: 8px;
+                        margin-bottom: 16px;
+                       
+                        padding: 8px;
+                    " 
+                />
                 <h1 style="
-                    font-size: 36px;
+                    font-size: 20px;
                     font-weight: bold;
-                    color: black;
-                    margin-bottom: 0px;
-                    letter-spacing: 2px;
-                    text-transform: uppercase;
+                    color: #111827;
+                    margin: 0 0 8px 0;
                 ">
-                    ${data.studentName}
+                    LOGÍSTICA DE
                 </h1>
-                <p style="font-size: 16px; color: #666; margin-bottom: 30px;"> C.C ${data.studentDocument}</p>
-                <p style="font-size: 16px; color: #666; margin-bottom: 4px;">Por participar y aprobar el</p>
-                <p style="font-size: 20px; color: #333; margin-bottom: 8px;">CURSO DE</p>
-                <h2 style="font-size: 48px; font-weight: bold; color: black; margin-bottom: 30px;">
-                    ${data.courseName}
-                </h2>
+                <h1 style="
+                    font-size: 20px;
+                    font-weight: bold;
+                    color: #111827;
+                    margin: 0 0 16px 0;
+                ">
+                    TRANSPORTE S.A
+                </h1>
+                <div style="
+                    width: 48px;
+                    height: 4px;
+                    background-color: #C4D600;
+                "></div>
             </div>
 
-            <!-- Footer con firma y detalles -->
-            <div style="margin-bottom: 20px;">
-                <!-- Firma centrada con sello -->
-                <div style="
-                    display: flex;
-                    justify-content: center;
-                    align-items: end;
-                    gap: 40px;
-                    margin-bottom: 20px;
-                ">
-                    <!-- Firma -->
-                    <div style="text-align: center;">
-                        <div style="margin-bottom: 8px; height: 45px; display: flex; align-items: flex-end; justify-content: center;">
-                            <img 
-                                src="${data.firma}"
-                                style="width: 148px; height: 40px; object-fit: contain;"
-                            />
-                        </div>
-                        <div style="border-top: 2px solid black; padding-top: 8px;">
-                            <p style="font-size: 12px; color: #333; font-weight: 600; margin: 0;">${data.instructorName}</p>
-                            <p style="font-size: 11px; color: #666; margin: 0;">${data.instructorTitle}</p>
-                        </div>
-                    </div>
-
-                  
+            <!-- Información inferior izquierda -->
+            <div>
+                <!-- Fecha de emisión -->
+                <div style="margin-bottom: 32px;">
+                    <p style="
+                        font-size: 11px;
+                        color: #787e89;
+                        text-transform: uppercase;
+                        margin-bottom: 8px;
+                    ">
+                        Fecha de emisión
+                    </p>
+                    <p style="
+                        font-size: 14px;
+                        font-weight: bold;
+                        color: #071D49;
+                        margin: 0;
+                    ">
+                        ${data.completionDate}
+                    </p>
                 </div>
 
-                <!-- Información adicional -->
-                <div style="text-align: center; font-size: 12px; color: #666;">
-                    <p style="margin-bottom: 4px;">Certificación de aprobación online:</p>
-                    <p style="font-weight: 600; color: black; margin-bottom: 4px;">
-                        Aprobado el ${data.completionDate}
+                <!-- Firma -->
+                <div style="height: 70px; margin-bottom: 8px;">
+                    <img 
+                        src="${data.firma}"
+                        style="
+                            width: 100%;
+                            height: 100%;
+                            object-fit: contain;
+                        "
+                    />
+                </div>
+                <div style="
+                    width: 100%;
+                    height: 2px;
+                    background-color: #071D49;
+                    margin-bottom: 8px;
+                "></div>
+                <p style="
+                    font-size: 11px;
+                    font-weight: bold;
+                    color: #111827;
+                    margin: 0 0 4px 0;
+                ">
+                    ${data.instructorName}
+                </p>
+                <p style="
+                    font-size: 11px;
+                    color: #6b7280;
+                    margin: 0;
+                ">
+                    ${data.instructorTitle}
+                </p>
+            </div>
+        </div>
+
+        <!-- Columna derecha (67%) -->
+        <div style="
+            flex: 1;
+            padding-left: 48px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        ">
+            <div>
+                <!-- Certificado oficial -->
+                <div style="margin-bottom: 40px;">
+                    <p style="
+                        font-size: 11px;
+                        text-transform: uppercase;
+                        letter-spacing: 3px;
+                        color: #9ca3af;
+                        margin-bottom: 16px;
+                    ">
+                        CERTIFICADO OFICIAL
                     </p>
-                    <p style="margin-bottom: 8px;">${data.duration}</p>
-                    <p style="font-size: 11px; color: #2563eb; margin-bottom: 2px;">${data.verificationUrl}</p>
-                    <p style="font-size: 11px; color: #999; margin: 0;">${data.verificationCode}</p>
+                    <p style="
+                        font-size: 16px;
+                        color: #4b5563;
+                        margin-bottom: 16px;
+                    ">
+                        Se certifica que
+                    </p>
+                    <h2 style="
+                        font-size: 58px;
+                        font-weight: 300;
+                        color: #111827;
+                        margin: 0 0 12px 0;
+                        line-height: 1.1;
+                    ">
+                        ${data.studentName}
+                    </h2>
+                    <p style="
+                        font-size: 14px;
+                        color: #6b7280;
+                        margin: 0;
+                    ">
+                        C.C ${data.studentDocument}
+                    </p>
+                </div>
+
+                <!-- Información del curso con barra lateral -->
+                <div style="position: relative; margin-bottom: 40px;">
+                    <!-- Barra lateral verde -->
+                    <div style="
+                        position: absolute;
+                        left: -16px;
+                        top: 0;
+                        bottom: 0;
+                        width: 4px;
+                        background-color: #C4D600;
+                    "></div>
+                    
+                    <div style="padding-left: 24px;">
+                        <p style="
+                            font-size: 14px;
+                            color: #4b5563;
+                            margin-bottom: 8px;
+                        ">
+                            Ha completado satisfactoriamente el
+                        </p>
+                        <p style="
+                            font-size: 18px;
+                            color: #374151;
+                            margin-bottom: 8px;
+                            font-weight: 600;
+                        ">
+                            CURSO DE
+                        </p>
+                        <h3 style="
+                            font-size: 48px;
+                            font-weight: bold;
+                            color: #071D49;
+                            margin: 0 0 12px 0;
+                        ">
+                            ${data.courseName}
+                        </h3>
+                        <p style="
+                            font-size: 14px;
+                            color: #6b7280;
+                            margin: 0 0 16px 0;
+                        ">
+                            ${data.duration}
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Verificación con checkmark -->
+                <div style="
+                    display: flex;
+                    align-items: center;
+                    Justify-content: center;
+                    gap: 12px;
+                    padding-top: 24px;
+                    border-top: 1px solid #e5e7eb;
+                ">
+                   <div
+  style="
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background-color: #C4D600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 18px;
+    font-weight: bold;
+    line-height: 1;
+  "
+>
+  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="white" viewBox="0 0 16 16" style="padding-top:2px">
+    <path d="M13.485 1.929a.75.75 0 0 1 0 1.06L6.03 10.445l-3.515-3.51a.75.75 0 0 1 1.06-1.06l2.455 2.454 6.394-6.394a.75.75 0 0 1 1.06 0z"/>
+  </svg>
+</div>
+
+                    <div>
+                        <p style="
+                            font-size: 11px;
+                            color: #6b7280;
+                            margin: 0 0 2px 0;
+                        ">
+                            ${data.verificationUrl}
+                        </p>
+                        <p style="
+                            font-size: 10px;
+                            color: #9ca3af;
+                            margin: 0;
+                        ">
+                            ${data.verificationCode}
+                        </p>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
+</div>
 `;
     };
 
