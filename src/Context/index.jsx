@@ -22,8 +22,8 @@ function TrainingLogiTransProvider({ children }) {
             direcionamiento: "sarlaft", firma: firmaSarlaft,
             content: {
                 description: [
-                    "Este curso tiene como propósito fortalecer los conocimientos y la cultura de prevención de los colaboradores de la empresa de transporte frente al **Sistema de Autocontrol y Gestión del Riesgo de Lavado de Activos y Financiación del Terrorismo (SARLAFT).**",
-                    "A lo largo de la formación, los participantes adquirirán **herramientas prácticas** para identificar, reportar y controlar operaciones sospechosas, contribuyendo a la **protección de la organización, sus empleados y la sociedad** frente a riesgos **legales, financieros y reputacionales.**"
+                    "Este curso tiene como propósito Fortalecer los conocimientos y la cultura de los colaboradores de la empresa de transporte frente a la ** prevención de los riesgos de lavado de activo, financiación del terrorismo y de la proliferación de armas de destrucción masiva.**",
+                    "A lo largo de la formación, los participantes adquirirán herramientas para identificar, reportar y mitigar operaciones sospechosas, contribuyendo al sistema de control de estos riesgos. "
                 ],
                 modules: [
                     { id: 1, lessons: "Fundamentos", name: "Introducción al SARLAFT", completed: false, type: "Video", path: introSARLAFT, resumen: ["**¿Por qué no debemos ignorarlo?** ", "Por que somos una pieza clave para proteger la organización y el sistema financiero  no es solo cumplir la norma es  asumir compromiso con seguridad, transparencia y sostenibilidad."], duration: "00:00:24", },
@@ -169,10 +169,10 @@ function TrainingLogiTransProvider({ children }) {
                                         id: 'ejemplo', titulo: 'Ejemplo Práctico', icono: <Lightbulb size={20} />,
                                         contenido: [
                                             {
-                                                texto: 'Una empresa de transporte terrestre implementa un sistema de verificación de antecedentes para sus clientes y proveedores, con el objetivo de asegurar la legitimidad de las relaciones comerciales. Además, establece procedimientos de revisión de documentos de carga y rutas de envío, con el fin de detectar operaciones sospechosas y prevenir el uso indebido de sus servicios en actividades ilícitas.'
+                                                texto: 'Logitrans cuenta con una Política Anti-laft que donde se implementa la de  verifica los antecedentes de sus clientes y proveedores, con el obejtivo de asegurar la legitimidad de las relaciones comerciales. Y la segunda parte también. '
                                             }
                                         ],
-                                        audio: 'Veamos un ejemplo práctico. Imaginemos una empresa de transporte terrestre que busca fortalecer sus controles internos. Para ello, implementa un sistema de verificación de antecedentes de clientes y proveedores, con el propósito de garantizar que todas las relaciones comerciales sean legítimas. Además, la empresa establece procedimientos de revisión de documentos de carga y de rutas de envío, lo que permite identificar posibles operaciones sospechosas y prevenir que sus servicios sean utilizados para actividades ilícitas.'
+                                        audio: 'Veamos un ejemplo práctico. Logitrans cuenta con una Política Anti-laft que donde se implementa la de  verifica los antecedentes de sus clientes y proveedores, con el obejtivo de asegurar la legitimidad de las relaciones comerciales. Y la segunda parte también.  '
                                     }
                                 ]
                             },
@@ -262,10 +262,10 @@ function TrainingLogiTransProvider({ children }) {
                                 icon: "📋",
                                 order: 1,
                                 content: [
-                                    'El Sistema de Administración del Riesgo de Lavado de Activos y Financiación del Terrorismo (SARLAFT) nos exige identificar, prevenir y controlar los posibles riesgos que puedan afectar nuestras operaciones.',
+                                    'Sistema de Administración de Riesgos de Lavado de Activos, Financiación del Terrorismo y Financiación de la Proliferación de Armas de Destrucción Masiva. nos exige identificar, prevenir y controlar los posibles riesgos que puedan afectar nuestras operaciones.',
                                     'Aunque nuestro cliente principal es Cementos Argos, nuestras actividades logísticas también pueden ser utilizadas de manera indebida por terceros. Por eso debemos conocer los cuatro factores de riesgo del SARLAFT y cómo se manifiestan en el transporte de carga.'
                                 ],
-                                audioText: 'El Sistema de Administración del Riesgo de Lavado de Activos y Financiación del Terrorismo, conocido como SARLAFT, nos exige identificar, prevenir y controlar los posibles riesgos que puedan afectar nuestras operaciones. Aunque nuestro cliente principal es Cementos Argos, nuestras actividades logísticas también pueden ser utilizadas de manera indebida por terceros. Por eso debemos conocer los cuatro factores de riesgo del SARLAFT y cómo se manifiestan en el transporte de carga.'
+                                audioText: 'Sistema de Administración de Riesgos de Lavado de Activos, Financiación del Terrorismo y Financiación de la Proliferación de Armas de Destrucción Masiva, conocido como SARLAFT, nos exige identificar, prevenir y controlar los posibles riesgos que puedan afectar nuestras operaciones. Aunque nuestro cliente principal es Cementos Argos, nuestras actividades logísticas también pueden ser utilizadas de manera indebida por terceros. Por eso debemos conocer los cuatro factores de riesgo del SARLAFT y cómo se manifiestan en el transporte de carga.'
 
                             },
                             {
@@ -352,7 +352,7 @@ function TrainingLogiTransProvider({ children }) {
                         ],
                         duration: "00:06:00",
                         resumen: [
-                            "El Sistema de Administración del Riesgo de Lavado de Activos y Financiación del Terrorismo (SARLAFT) busca que las empresas identifiquen, prevengan y controlen los riesgos que puedan afectar sus operaciones frente al uso indebido de recursos o actividades ilegales.",
+                            "Sistema de Administración de Riesgos de Lavado de Activos, Financiación del Terrorismo y Financiación de la Proliferación de Armas de Destrucción Masiva  (SARLAFT) busca que las empresas identifiquen, prevengan y controlen los riesgos que puedan afectar sus operaciones frente al uso indebido de recursos o actividades ilegales.",
                             "Aunque Cementos Argos es un cliente formal y de gran reputación, nuestras operaciones logísticas pueden verse expuestas a amenazas si terceros intentan aprovecharlas con fines ilícitos.",
                             "Por eso, es clave conocer los cuatro factores de riesgo del SARLAFT y cómo se manifiestan específicamente en el transporte de carga.",
                             "**🔹 Cliente o Contraparte**",
@@ -475,7 +475,7 @@ function TrainingLogiTransProvider({ children }) {
                         id: 7, lessons: "Fundamentos", name: "Casos Reales en Colombia", completed: false, type: "Video", duration: "00:00:43", path: casosSARLAFT,
                         resumen: [
                             "**Casos Reales en Colombia**",
-                            "En Colombia, múltiples casos recientes han evidenciado la relevancia del Sistema de Administración del Riesgo de Lavado de Activos y Financiación del Terrorismo (SARLAFT) como herramienta clave para prevenir delitos financieros.",
+                            "En Colombia, múltiples casos recientes han evidenciado la relevancia del Sistema de Administración de Riesgos de Lavado de Activos, Financiación del Terrorismo y Financiación de la Proliferación de Armas de Destrucción Masiva  (SARLAFT) como herramienta clave para prevenir delitos financieros.",
                             "Algunos esquemas detectados incluyen el envío de dinero oculto en encomiendas declaradas como ropa usada, la creación de empresas fachada sin operaciones reales para mover recursos ilícitos y el transporte de mercancía contaminada con drogas, donde se comprometen tanto transportadores como empresas que no verifican adecuadamente a sus clientes.",
                             "Asimismo, se han identificado constructoras e inmobiliarias utilizadas para lavar dinero mediante sobrevaloración de inmuebles o pagos en efectivo injustificados. Incluso cooperativas y entidades financieras han sido sancionadas por no reportar oportunamente operaciones inusuales o sospechosas.",
                             "Estos casos reflejan que ningún sector está exento del riesgo de ser usado con fines ilícitos, y que el cumplimiento riguroso del SARLAFT es una responsabilidad compartida. Detectar señales de alerta, reportar irregularidades y actuar con transparencia no solo fortalece la integridad de las organizaciones, sino que también protege a cada persona involucrada en la cadena de valor.",
@@ -682,8 +682,8 @@ function TrainingLogiTransProvider({ children }) {
                         id: 10, lessons: "Fundamentos", name: "Canales internos de reporte", completed: false, type: "Video", duration: "00:01:24", path: finalSARLAFT,
                         resumen: [
                             "**llegamos al final**",
-                            "El curso sobre el Sistema de Administración del Riesgo de Lavado de Activos y Financiación del Terrorismo (SARLAFT) concluye destacando la importancia de comprender sus componentes, su impacto en la organización y el rol esencial que cumple cada colaborador en la prevención y detección de operaciones inusuales o sospechosas.",
-                            "Se enfatiza que el cumplimiento del SARLAFT trasciende la obligación legal: representa un compromiso ético con la transparencia, la legalidad y la reputación institucional. Ante cualquier situación que genere duda o parezca irregular, los empleados deben reportarla mediante los canales internos establecidos, como el correo institucional de cumplimiento, el Oficial de Cumplimiento o los canales confidenciales de reporte disponibles en la intranet o en el área correspondiente.",
+                            "El curso sobre el Sistema de Administración de Riesgos de Lavado de Activos, Financiación del Terrorismo y Financiación de la Proliferación de Armas de Destrucción Masiva  (SARLAFT) concluye destacando la importancia de comprender sus componentes, su impacto en la organización y el rol esencial que cumple cada colaborador en la prevención y detección de operaciones inusuales o sospechosas.",
+                            "Se destaca que el cumplimiento del SARLAFT va más allá de una obligación legal: constituye un compromiso ético con la transparencia, la legalidad y la buena reputación institucional. Ante cualquier situación que genere duda o evidencie posibles irregularidades, los colaboradores deben reportarla a través de los canales internos establecidos, como la línea de transparencia de la compañía (**lintransparencia@argos.com.co**), el correo institucional de cumplimiento (**ycely@argos.com.co**), el teléfono del Oficial de Cumplimiento (**320 216 34 23**)",
                             "El propósito del reporte no es acusar, sino alertar para que los expertos evalúen y gestionen adecuadamente el riesgo. La participación activa de cada miembro de la organización fortalece el sistema, garantiza el cumplimiento normativo y consolida una cultura organizacional basada en la integridad, la transparencia y la confianza.",
                             "En conclusión, el SARLAFT no solo protege a la empresa frente a riesgos legales y reputacionales, sino que también promueve una cultura de responsabilidad compartida en la prevención del lavado de activos y la financiación del terrorismo.",
                         ]
@@ -702,7 +702,7 @@ function TrainingLogiTransProvider({ children }) {
                                         "id": 1,
                                         "name": "¿Qué significan las siglas SARLAFT?",
                                         "respuestas": [
-                                            { "opcion": "Sistema de Administración del Riesgo de Lavado de Activos y de la Financiación del Terrorismo.", "rsp": true },
+                                            { "opcion": "Sistema de Administración de Riesgos de Lavado de Activos, Financiación del Terrorismo y Financiación de la Proliferación de Armas de Destrucción Masiva .", "rsp": true },
                                             { "opcion": "Sistema de Administración de Riesgos Laborales y Financieros en la Empresa.", "rsp": false },
                                             { "opcion": "Sistema de Análisis y Regulación de Lavado de Activos y Fraudes Tributarios.", "rsp": false },
                                             { "opcion": "Servicio de Auditoría y Registro Legal de Actividades Financieras y Tributarias.", "rsp": false }
@@ -1391,11 +1391,11 @@ function TrainingLogiTransProvider({ children }) {
         setUserProgress(newProgress);
         localStorage.setItem("userProgress", JSON.stringify(newProgress));
 
-        console.log('✅ Módulo completado - Progreso guardado:', {
-            moduleId: moduleIdNum,
-            flipCardProgress: updatedProgress.flipCardProgress,
-            completedModules: updatedCompletedModules
-        });
+        // console.log('✅ Módulo completado - Progreso guardado:', {
+        //     moduleId: moduleIdNum,
+        //     flipCardProgress: updatedProgress.flipCardProgress,
+        //     completedModules: updatedCompletedModules
+        // });
 
         return true;
     };

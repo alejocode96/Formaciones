@@ -117,7 +117,7 @@ function QuizFinal({ currentModule, onContentIsEnded, courseId, moduleId, XCircl
 
     // Generar o cargar preguntas del quiz
     useEffect(() => {
-        console.log('currentModule:', currentModule);
+        // console.log('currentModule:', currentModule);
 
         let questionGroups = null;
 
@@ -127,7 +127,7 @@ function QuizFinal({ currentModule, onContentIsEnded, courseId, moduleId, XCircl
             questionGroups = currentModule;
         }
 
-        console.log('questionGroups:', questionGroups);
+        // console.log('questionGroups:', questionGroups);
 
         if (questionGroups && questionGroups.length > 0) {
             // Verificar si ya hay progreso guardado
@@ -135,14 +135,14 @@ function QuizFinal({ currentModule, onContentIsEnded, courseId, moduleId, XCircl
 
             if (existingProgress && existingProgress.questions && existingProgress.questions.length > 0) {
                 // Cargar preguntas y respuestas existentes
-                console.log('Cargando progreso existente:', existingProgress);
+               // console.log('Cargando progreso existente:', existingProgress);
                 setQuizQuestions(existingProgress.questions);
                 setUserAnswers(existingProgress.answers || {});
                 setEstimatedTime(Math.ceil(existingProgress.questions.length * 1.5));
             } else {
                 // Generar nuevas preguntas
                 const generatedQuestions = generateQuizQuestions(questionGroups);
-                console.log('generatedQuestions:', generatedQuestions);
+                // console.log('generatedQuestions:', generatedQuestions);
                 setQuizQuestions(generatedQuestions);
                 setEstimatedTime(Math.ceil(generatedQuestions.length * 1.5));
             }
@@ -154,7 +154,7 @@ function QuizFinal({ currentModule, onContentIsEnded, courseId, moduleId, XCircl
         const selectedQuestions = [];
 
         questionGroups.forEach((group) => {
-            console.log('Processing group:', group);
+           // console.log('Processing group:', group);
 
             if (group.multipleOption === false) {
                 const randomIndex = Math.floor(Math.random() * group.preguntas.length);
@@ -839,7 +839,7 @@ function QuizFinal({ currentModule, onContentIsEnded, courseId, moduleId, XCircl
 
     const downloadCertificate = async () => {
         try {
-            console.log('🪶 Generando certificado...');
+            // console.log('🪶 Generando certificado...');
 
             const html2canvas = (await import('html2canvas')).default;
             const jsPDF = (await import('jspdf')).default;
@@ -927,7 +927,7 @@ function QuizFinal({ currentModule, onContentIsEnded, courseId, moduleId, XCircl
 
             // Limpiar el DOM temporal
             document.body.removeChild(tempDiv);
-            console.log('✅ Certificado generado correctamente');
+            // console.log('✅ Certificado generado correctamente');
         } catch (error) {
             console.error('❌ Error al generar el certificado:', error);
             // alert('Hubo un error al generar el certificado. Por favor, intenta nuevamente.');
@@ -943,7 +943,7 @@ function QuizFinal({ currentModule, onContentIsEnded, courseId, moduleId, XCircl
             console.warn('⚠️ No se encontró el curso con ese ID');
             return;
         }
-        console.log(currentCourse)
+        // console.log(currentCourse)
         // 🔹 Buscar el módulo cuyo nombre coincida
         const moduloEncontrado = currentCourse.content.modules.find(
             (m) => m.name.trim().toLowerCase() === moduloBuscado.trim().toLowerCase()

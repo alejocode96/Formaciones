@@ -66,7 +66,7 @@ function DragDrop({ currentModule, onContentIsEnded, courseId, moduleId }) {
         if (!userProgress?.dragDropProgress) return [];
         const courseProgress = userProgress.dragDropProgress[`course_${courseId}`] || {};
         const moduleProgress = courseProgress[`module_${moduleId}`] || [];
-        console.log('📖 Progreso cargado:', moduleProgress);
+        // console.log('📖 Progreso cargado:', moduleProgress);
         return moduleProgress;
       } catch (error) {
         console.error('❌ Error cargando progreso:', error);
@@ -113,14 +113,14 @@ function DragDrop({ currentModule, onContentIsEnded, courseId, moduleId }) {
 
     userProgress.lastAccessAt = new Date().toISOString();
     localStorage.setItem(key, JSON.stringify(allProgress));
-    console.log(`✅ Progreso guardado: ${itemKey}`);
+    // console.log(`✅ Progreso guardado: ${itemKey}`);
   };
 
   // 🔥 INICIALIZACIÓN CON PROGRESO GUARDADO
   useEffect(() => {
     const savedProgress = loadProgress();
     setCompletedItems(savedProgress);
-    console.log('✅ Items completados cargados:', savedProgress);
+    // console.log('✅ Items completados cargados:', savedProgress);
 
     // Separar items completados y pendientes
     const completedIds = new Set(savedProgress);
@@ -161,11 +161,11 @@ function DragDrop({ currentModule, onContentIsEnded, courseId, moduleId }) {
     setDropZones(organizedZones);
     setIsInitialized(true);
 
-    console.log('🎯 Estado inicializado con progreso:', {
-      completados: completedCards.length,
-      pendientes: pendingCards.length,
-      zonesOrganizadas: organizedZones.length
-    });
+    // console.log('🎯 Estado inicializado con progreso:', {
+    //   completados: completedCards.length,
+    //   pendientes: pendingCards.length,
+    //   zonesOrganizadas: organizedZones.length
+    // });
   }, [courseId, moduleId]);
 
   useEffect(() => {
@@ -183,7 +183,7 @@ function DragDrop({ currentModule, onContentIsEnded, courseId, moduleId }) {
       const voices = synth.getVoices();
 
       if (!voices.length) {
-        console.log('🔄 Reintentando cargar voces...');
+        // console.log('🔄 Reintentando cargar voces...');
         setTimeout(cargarVoces, 300);
         return;
       }
@@ -223,7 +223,7 @@ function DragDrop({ currentModule, onContentIsEnded, courseId, moduleId }) {
       if (mejorOpcion) {
         setMejorVoz(mejorOpcion);
         setVocesCargadas(true);
-        console.log(`✅ Voz seleccionada: ${mejorOpcion.name} [${mejorOpcion.lang}]`);
+        // console.log(`✅ Voz seleccionada: ${mejorOpcion.name} [${mejorOpcion.lang}]`);
       } else {
         console.warn('⚠️ No se encontró ninguna voz en español.');
       }
@@ -233,7 +233,7 @@ function DragDrop({ currentModule, onContentIsEnded, courseId, moduleId }) {
     synth.onvoiceschanged = cargarVoces;
 
     const handleUserInteraction = () => {
-      console.log('👆 Usuario hizo clic: forzando carga de voces...');
+      // console.log('👆 Usuario hizo clic: forzando carga de voces...');
       cargarVoces();
       document.removeEventListener('click', handleUserInteraction);
     };

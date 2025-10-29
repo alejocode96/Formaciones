@@ -73,7 +73,7 @@ function DragDropOrder({ currentModule, onContentIsEnded, courseId, moduleId }) 
         if (!userProgress?.dragDropOrderProgress) return [];
         const courseProgress = userProgress.dragDropOrderProgress[`course_${courseId}`] || {};
         const moduleProgress = courseProgress[`module_${moduleId}`] || [];
-        console.log('📖 Progreso cargado:', moduleProgress);
+        // console.log('📖 Progreso cargado:', moduleProgress);
         return moduleProgress;
       } catch (error) {
         console.error('❌ Error cargando progreso:', error);
@@ -120,7 +120,7 @@ function DragDropOrder({ currentModule, onContentIsEnded, courseId, moduleId }) 
 
     userProgress.lastAccessAt = new Date().toISOString();
     localStorage.setItem(key, JSON.stringify(allProgress));
-    console.log(`✅ Progreso guardado: ${itemKey}`);
+    // console.log(`✅ Progreso guardado: ${itemKey}`);
   };
 
   // 🔥 INICIALIZACIÓN CON PROGRESO GUARDADO
@@ -128,7 +128,7 @@ function DragDropOrder({ currentModule, onContentIsEnded, courseId, moduleId }) 
   useEffect(() => {
     const savedProgress = loadProgress();
     setCompletedItems(savedProgress);
-    console.log('✅ Items completados cargados:', savedProgress);
+    // console.log('✅ Items completados cargados:', savedProgress);
 
     // Separar items completados y pendientes
     const completedIds = new Set(savedProgress);
@@ -169,11 +169,11 @@ function DragDropOrder({ currentModule, onContentIsEnded, courseId, moduleId }) 
     setDropZones(organizedZones);
     setIsInitialized(true);
 
-    console.log('🎯 Estado inicializado con progreso:', {
-      completados: completedCards.length,
-      pendientes: pendingCards.length,
-      zonesOrganizadas: organizedZones.length
-    });
+    // console.log('🎯 Estado inicializado con progreso:', {
+    //   completados: completedCards.length,
+    //   pendientes: pendingCards.length,
+    //   zonesOrganizadas: organizedZones.length
+    // });
   }, [courseId, moduleId]);
 
   useEffect(() => {
@@ -191,7 +191,7 @@ function DragDropOrder({ currentModule, onContentIsEnded, courseId, moduleId }) 
       const voices = synth.getVoices();
 
       if (!voices.length) {
-        console.log('🔄 Reintentando cargar voces...');
+        // console.log('🔄 Reintentando cargar voces...');
         setTimeout(cargarVoces, 300);
         return;
       }
@@ -231,9 +231,9 @@ function DragDropOrder({ currentModule, onContentIsEnded, courseId, moduleId }) 
       if (mejorOpcion) {
         setMejorVoz(mejorOpcion);
         setVocesCargadas(true);
-        console.log(`✅ Voz seleccionada: ${mejorOpcion.name} [${mejorOpcion.lang}]`);
+        // console.log(`✅ Voz seleccionada: ${mejorOpcion.name} [${mejorOpcion.lang}]`);
       } else {
-        console.warn('⚠️ No se encontró ninguna voz en español.');
+        // console.warn('⚠️ No se encontró ninguna voz en español.');
       }
     };
 
@@ -241,7 +241,7 @@ function DragDropOrder({ currentModule, onContentIsEnded, courseId, moduleId }) 
     synth.onvoiceschanged = cargarVoces;
 
     const handleUserInteraction = () => {
-      console.log('👆 Usuario hizo clic: forzando carga de voces...');
+      // console.log('👆 Usuario hizo clic: forzando carga de voces...');
       cargarVoces();
       document.removeEventListener('click', handleUserInteraction);
     };
@@ -255,12 +255,12 @@ function DragDropOrder({ currentModule, onContentIsEnded, courseId, moduleId }) 
 
   // 🔥 NUEVO: Resetear flag al montar
   useEffect(() => {
-    console.log('🎯 FlipCardReverse montado - Reseteando flags');
+    // console.log('🎯 FlipCardReverse montado - Reseteando flags');
     isNavigatingRef.current = false;
     previousModuleIdRef.current = moduleId;
 
     return () => {
-      console.log('🧹 FlipCardReverse desmontado');
+      // console.log('🧹 FlipCardReverse desmontado');
     };
   }, []);
 
@@ -272,7 +272,7 @@ function DragDropOrder({ currentModule, onContentIsEnded, courseId, moduleId }) 
 
     // Si el módulo cambió, cancelar INMEDIATAMENTE
     if (previousModuleIdRef.current !== currentModuleId) {
-      console.log(`🚨 CAMBIO DE MÓDULO DETECTADO: ${previousModuleIdRef.current} → ${currentModuleId}`);
+      // console.log(`🚨 CAMBIO DE MÓDULO DETECTADO: ${previousModuleIdRef.current} → ${currentModuleId}`);
 
       // Actualizar referencia
       previousModuleIdRef.current = currentModuleId;
@@ -325,18 +325,18 @@ function DragDropOrder({ currentModule, onContentIsEnded, courseId, moduleId }) 
       currentUtteranceRef.current = null;
       introAudioRef.current = null;
 
-      console.log('✅ Audio cancelado por cambio de módulo');
+      // console.log('✅ Audio cancelado por cambio de módulo');
 
       // Permitir operaciones después de 200ms
       setTimeout(() => {
         isNavigatingRef.current = false;
-        console.log('✅ Flag de navegación reseteado (200ms)');
+        // console.log('✅ Flag de navegación reseteado (200ms)');
       }, 200);
     }
 
     // Cleanup cuando cambia la ruta completa
     return () => {
-      console.log('🧹 Cleanup por cambio de ruta:', location.pathname);
+      // console.log('🧹 Cleanup por cambio de ruta:', location.pathname);
 
       isNavigatingRef.current = true;
 
@@ -384,7 +384,7 @@ function DragDropOrder({ currentModule, onContentIsEnded, courseId, moduleId }) 
   const speak = (text, onEnd, onError) => {
     // 🔥 Bloquear si estamos navegando
     if (isNavigatingRef.current) {
-      console.warn('⛔ Navegación activa - Audio BLOQUEADO');
+      // console.warn('⛔ Navegación activa - Audio BLOQUEADO');
       if (onError) onError();
       return;
     }
@@ -495,7 +495,7 @@ function DragDropOrder({ currentModule, onContentIsEnded, courseId, moduleId }) 
 
       // 🔥 NUEVO: Si fue cancelado por navegación, NO mostrar popup ni reintentar
       if (isCanceled && isNavigatingRef.current) {
-        console.log('✅ Audio cancelado correctamente por navegación');
+        // console.log('✅ Audio cancelado correctamente por navegación');
         return;
       }
 
@@ -542,7 +542,7 @@ function DragDropOrder({ currentModule, onContentIsEnded, courseId, moduleId }) 
       if (document.hidden) {
         // Solo pausar si realmente está reproduciendo
         if (synth.speaking && !synth.paused && audioStateRef.current.isPlaying) {
-          console.log('👁️ Página oculta: pausando audio...');
+          // console.log('👁️ Página oculta: pausando audio...');
           synth.pause();
           setIsPaused(true);
           audioStateRef.current.wasPaused = true;
@@ -562,7 +562,7 @@ function DragDropOrder({ currentModule, onContentIsEnded, courseId, moduleId }) 
           !currentUtteranceRef.current.wasCancelled &&
           !isNavigatingRef.current) { // 🔥 No reanudar si estamos navegando
 
-          console.log('👁️ Página visible: reanudando audio...');
+          //console.log('👁️ Página visible: reanudando audio...');
 
           setTimeout(() => {
             try {
@@ -587,7 +587,7 @@ function DragDropOrder({ currentModule, onContentIsEnded, courseId, moduleId }) 
                   setAudioProgress(progress);
                 }, 100);
 
-                console.log('✅ Intervalo recreado en visibilitychange');
+                //console.log('✅ Intervalo recreado en visibilitychange');
               }
 
             } catch (error) {
@@ -613,7 +613,7 @@ function DragDropOrder({ currentModule, onContentIsEnded, courseId, moduleId }) 
       const synth = synthRef.current;
 
       if (synth.speaking && !synth.paused && audioStateRef.current.isPlaying) {
-        console.log('🔇 Ventana perdió el foco: pausando...');
+        //console.log('🔇 Ventana perdió el foco: pausando...');
         synth.pause();
         setIsPaused(true);
         audioStateRef.current.wasPaused = true;
@@ -635,7 +635,7 @@ function DragDropOrder({ currentModule, onContentIsEnded, courseId, moduleId }) 
         !currentUtteranceRef.current.wasCancelled &&
         !isNavigatingRef.current) { // 🔥 No reanudar si estamos navegando
 
-        console.log('🔊 Ventana recuperó el foco: reanudando...');
+        //console.log('🔊 Ventana recuperó el foco: reanudando...');
 
         setTimeout(() => {
           try {
@@ -659,7 +659,7 @@ function DragDropOrder({ currentModule, onContentIsEnded, courseId, moduleId }) 
                 setAudioProgress(progress);
               }, 100);
 
-              console.log('✅ Intervalo recreado en focus');
+              //console.log('✅ Intervalo recreado en focus');
             }
 
           } catch (error) {
@@ -700,30 +700,30 @@ function DragDropOrder({ currentModule, onContentIsEnded, courseId, moduleId }) 
 
   useEffect(() => {
     if (!isMobile && vocesCargadas && introStarted && !introPlayed) {
-      console.log('🎬 Intentando reproducir intro en desktop...');
+      //console.log('🎬 Intentando reproducir intro en desktop...');
 
       // 🔥 Verificar si la bandera está mal
       if (isNavigatingRef.current) {
-        console.warn('⚠️ Flag de navegación detectado, pero estamos en carga inicial');
-        console.log('🔧 Reseteando flag y continuando...');
+        //console.warn('⚠️ Flag de navegación detectado, pero estamos en carga inicial');
+        //console.log('🔧 Reseteando flag y continuando...');
         isNavigatingRef.current = false;
       }
 
       const timer = setTimeout(() => {
         // Verificar de nuevo (por si acaso hubo navegación real)
         if (isNavigatingRef.current) {
-          console.log('⛔ Navegación REAL detectada, NO reproducir intro');
+          //console.log('⛔ Navegación REAL detectada, NO reproducir intro');
           return;
         }
 
         // 🔥 CRÍTICO: Marcar que vamos a reproducir intro
         introAudioRef.current = { isIntro: true };
 
-        console.log('✅ Reproduciendo intro desktop...');
+        //console.log('✅ Reproduciendo intro desktop...');
         speak(
           currentModule.audioObjetivo,
           () => {
-            console.log('✅ Intro desktop terminada');
+            //console.log('✅ Intro desktop terminada');
             setIntroPlayed(true);
             introAudioRef.current = null; // 🔥 NUEVO: Limpiar referencia
           },
@@ -899,7 +899,7 @@ function DragDropOrder({ currentModule, onContentIsEnded, courseId, moduleId }) 
     setShowModal(false);
 
     if (synth && (synth.speaking || synth.pending)) {
-      console.log('🛑 Cerrando modal y deteniendo audio...');
+      //console.log('🛑 Cerrando modal y deteniendo audio...');
 
       // 1. Marca como cancelado
       if (currentUtteranceRef.current) {
@@ -1001,13 +1001,13 @@ function DragDropOrder({ currentModule, onContentIsEnded, courseId, moduleId }) 
 
   const iniciarIntroMovil = () => {
     if (isNavigatingRef.current) {
-      console.log('⚠️ Navegación en progreso, esperando...');
+      //console.log('⚠️ Navegación en progreso, esperando...');
       setTimeout(iniciarIntroMovil, 200);
       return;
     }
 
     if (!introStarted && vocesCargadas) {
-      console.log('📱 Iniciando intro en móvil...');
+      //console.log('📱 Iniciando intro en móvil...');
       setIntroStarted(true);
 
       // 🔥 NUEVO: Marcar que vamos a reproducir intro
@@ -1016,7 +1016,7 @@ function DragDropOrder({ currentModule, onContentIsEnded, courseId, moduleId }) 
       speak(
         currentModule.audioObjetivo,
         () => {
-          console.log('✅ Intro móvil terminada');
+          //console.log('✅ Intro móvil terminada');
           setIntroPlayed(true);
           introAudioRef.current = null; // 🔥 NUEVO: Limpiar referencia
         },
@@ -1031,12 +1031,12 @@ function DragDropOrder({ currentModule, onContentIsEnded, courseId, moduleId }) 
 
 
   useEffect(() => {
-    console.log('🎯 Componente dragDrop montado - Reseteando flags');
+    //console.log('🎯 Componente dragDrop montado - Reseteando flags');
     isNavigatingRef.current = false;
     previousModuleIdRef.current = moduleId;
 
     return () => {
-      console.log('🧹 Componente FlipCard desmontado');
+      //console.log('🧹 Componente FlipCard desmontado');
     };
   }, []);
 

@@ -84,7 +84,7 @@ function FlipCard({ currentModule, onContentIsEnded, courseId, moduleId }) {
                 const userProgress = allProgress[courseId];
 
                 if (!userProgress || !userProgress.flipCardProgress) {
-                    console.warn(`⚠️ No hay progreso para el curso ${courseId}`);
+                    // console.warn(`⚠️ No hay progreso para el curso ${courseId}`);
                     return { seccionesVistas: {}, completadas: [] };
                 }
 
@@ -120,7 +120,7 @@ function FlipCard({ currentModule, onContentIsEnded, courseId, moduleId }) {
                     }
                 });
 
-                console.log('📖 Progreso cargado:', { seccionesVistasObj, completadas });
+                // console.log('📖 Progreso cargado:', { seccionesVistasObj, completadas });
                 return { seccionesVistas: seccionesVistasObj, completadas };
 
             } catch (error) {
@@ -185,7 +185,7 @@ function FlipCard({ currentModule, onContentIsEnded, courseId, moduleId }) {
             const synth = synthRef.current;
 
             try {
-                console.log('🛑 Iniciando stopAudio...');
+                // console.log('🛑 Iniciando stopAudio...');
 
                 // 🔥 PASO 1: Marcar como navegando para prevenir nuevos intervalos
                 isNavigatingRef.current = true;
@@ -194,7 +194,7 @@ function FlipCard({ currentModule, onContentIsEnded, courseId, moduleId }) {
                 if (progressIntervalRef.current) {
                     clearInterval(progressIntervalRef.current);
                     progressIntervalRef.current = null;
-                    console.log('✅ Intervalo limpiado');
+                    // console.log('✅ Intervalo limpiado');
                 }
 
                 // 🔥 PASO 3: Limpiar utterance COMPLETAMENTE
@@ -207,7 +207,7 @@ function FlipCard({ currentModule, onContentIsEnded, courseId, moduleId }) {
                     currentUtteranceRef.current.onpause = null;
                     currentUtteranceRef.current.onresume = null;
                     currentUtteranceRef.current = null;
-                    console.log('✅ Utterance limpiado');
+                    // console.log('✅ Utterance limpiado');
                 }
 
                 // 🔥 PASO 4: Resetear TODOS los estados INMEDIATAMENTE
@@ -231,7 +231,7 @@ function FlipCard({ currentModule, onContentIsEnded, courseId, moduleId }) {
 
                     setTimeout(() => {
                         try { synth.cancel(); } catch (e) { }
-                        console.log('✅ Audio cancelado completamente');
+                        // console.log('✅ Audio cancelado completamente');
 
                         // 🔥 Pequeña espera antes de permitir nuevo audio
                         setTimeout(() => {
@@ -240,7 +240,7 @@ function FlipCard({ currentModule, onContentIsEnded, courseId, moduleId }) {
                         }, 100);
                     }, 300);
                 } else {
-                    console.log('✅ No había audio reproduciéndose');
+                    //console.log('✅ No había audio reproduciéndose');
                     setTimeout(() => {
                         isNavigatingRef.current = false;
                         resolve();
@@ -277,7 +277,7 @@ function FlipCard({ currentModule, onContentIsEnded, courseId, moduleId }) {
 
         // 🔥 VERIFICACIÓN EXTRA: Cancelar cualquier audio previo y esperar
         if (synth.speaking || synth.pending) {
-            console.log('🛑 Cancelando audio previo antes de speak...');
+            //console.log('🛑 Cancelando audio previo antes de speak...');
             try {
                 synth.cancel();
                 // Esperar un momento antes de continuar
@@ -291,7 +291,7 @@ function FlipCard({ currentModule, onContentIsEnded, courseId, moduleId }) {
         continuarSpeak();
 
         function continuarSpeak() {
-            
+
             // 🔥 Verificar de nuevo que no estamos navegando
             if (isNavigatingRef.current) {
                 console.warn('⛔ Navegación detectada durante continuarSpeak');
@@ -303,7 +303,7 @@ function FlipCard({ currentModule, onContentIsEnded, courseId, moduleId }) {
             if (progressIntervalRef.current) {
                 clearInterval(progressIntervalRef.current);
                 progressIntervalRef.current = null;
-                console.log('🧹 Intervalo previo limpiado');
+                //console.log('🧹 Intervalo previo limpiado');
             }
 
             // Dividir texto por frases
@@ -386,7 +386,7 @@ function FlipCard({ currentModule, onContentIsEnded, courseId, moduleId }) {
                         setAudioProgress(Math.min(progress, 97));
                     }, 100);
 
-                    console.log('▶️ Audio iniciado con nuevo intervalo');
+                    //console.log('▶️ Audio iniciado con nuevo intervalo');
                 }
 
                 setShowAudioPopup(false);
@@ -399,7 +399,7 @@ function FlipCard({ currentModule, onContentIsEnded, courseId, moduleId }) {
                     const progress = Math.min((elapsed / totalEstimated) * 100, 98);
                     setAudioProgress(progress);
                 }, 100);
-                console.log('▶️ Intervalo de progreso iniciado');
+                //console.log('▶️ Intervalo de progreso iniciado');
             }
 
             utterance.onboundary = (event) => {
@@ -416,13 +416,13 @@ function FlipCard({ currentModule, onContentIsEnded, courseId, moduleId }) {
             };
 
             utterance.onend = () => {
-                console.log('🏁 utterance.onend disparado');
+                //console.log('🏁 utterance.onend disparado');
 
                 // 🔥 Limpiar intervalo PRIMERO
                 if (progressIntervalRef.current) {
                     clearInterval(progressIntervalRef.current);
                     progressIntervalRef.current = null;
-                    console.log('✅ Intervalo limpiado en onend');
+                    //console.log('✅ Intervalo limpiado en onend');
                 }
 
                 setAudioProgress(97);
@@ -436,7 +436,7 @@ function FlipCard({ currentModule, onContentIsEnded, courseId, moduleId }) {
                 audioStateRef.current.isPlaying = false;
                 audioStateRef.current.wasPaused = false;
 
-                console.log('✅ Audio finalizado');
+                // console.log('✅ Audio finalizado');
                 setShowAudioPopup(false);
 
                 // 🔥 Solo llamar onEnd si no fue cancelado y no estamos navegando
@@ -458,7 +458,7 @@ function FlipCard({ currentModule, onContentIsEnded, courseId, moduleId }) {
 
                 // 🔥 Si fue cancelado por navegación, NO mostrar popup ni reintentar
                 if (isCanceled && isNavigatingRef.current) {
-                    console.log('✅ Audio cancelado correctamente por navegación');
+                    // console.log('✅ Audio cancelado correctamente por navegación');
                     return;
                 }
 
@@ -467,7 +467,7 @@ function FlipCard({ currentModule, onContentIsEnded, courseId, moduleId }) {
 
                 if (!isInterrupted && !isCanceled && audioRetryRef.current < maxRetries) {
                     audioRetryRef.current++;
-                    console.log(`🔄 Reintentando audio (${audioRetryRef.current}/${maxRetries})...`);
+                    // console.log(`🔄 Reintentando audio (${audioRetryRef.current}/${maxRetries})...`);
 
                     setTimeout(() => {
                         if (audioRetryRef.current <= maxRetries && !isNavigatingRef.current) {
@@ -484,7 +484,7 @@ function FlipCard({ currentModule, onContentIsEnded, courseId, moduleId }) {
             };
 
             utterance.onpause = () => {
-                console.log('⏸️ Audio pausado');
+                // console.log('⏸️ Audio pausado');
                 if (progressIntervalRef.current) {
                     clearInterval(progressIntervalRef.current);
                     progressIntervalRef.current = null;
@@ -494,7 +494,7 @@ function FlipCard({ currentModule, onContentIsEnded, courseId, moduleId }) {
             utterance.onresume = () => {
                 setIsPaused(false);
                 audioStateRef.current.wasPaused = false;
-                console.log('▶️ Audio reanudado');
+                //console.log('▶️ Audio reanudado');
             };
 
             try {
@@ -538,7 +538,7 @@ function FlipCard({ currentModule, onContentIsEnded, courseId, moduleId }) {
         const todasVistas = secciones.every(s => vistasActuales[`${cardId}-${s}`]);
 
         if (todasVistas && !etapasCompletadas.includes(cardId)) {
-            console.log(`✅ Card ${cardId} completada!`);
+            // console.log(`✅ Card ${cardId} completada!`);
             setEtapasCompletadas(prev => [...prev, cardId]);
 
             if (cardId < cards.length) {
@@ -546,10 +546,10 @@ function FlipCard({ currentModule, onContentIsEnded, courseId, moduleId }) {
             }
 
             if (cardId === cards.length) {
-                console.log("🎉 Última etapa completada, guardando definitivamente...");
+                // console.log("🎉 Última etapa completada, guardando definitivamente...");
 
                 setTimeout(() => {
-                    console.log("🚀 Llamando a onContentIsEnded");
+                    // console.log("🚀 Llamando a onContentIsEnded");
                     if (onContentIsEnded) onContentIsEnded();
                 }, 800);
             }
@@ -587,7 +587,7 @@ function FlipCard({ currentModule, onContentIsEnded, courseId, moduleId }) {
     };
 
     const irSeccionAnterior = async () => {
-        console.log('⬅️ Navegando a sección anterior...');
+        // console.log('⬅️ Navegando a sección anterior...');
 
         // 🔥 Esperar a que se detenga completamente el audio
         await stopAudio();
@@ -618,7 +618,7 @@ function FlipCard({ currentModule, onContentIsEnded, courseId, moduleId }) {
     };
 
     const irSeccionSiguiente = async () => {
-        console.log('➡️ Navegando a sección siguiente...');
+        // console.log('➡️ Navegando a sección siguiente...');
 
         // 🔥 Esperar a que se detenga completamente el audio
         await stopAudio();
@@ -643,7 +643,7 @@ function FlipCard({ currentModule, onContentIsEnded, courseId, moduleId }) {
     };
 
     const irASeccion = async (seccionId) => {
-        console.log(`🎯 Navegando a sección: ${seccionId}`);
+        // console.log(`🎯 Navegando a sección: ${seccionId}`);
 
         const key = `${etapaAbierta}-${seccionId}`;
         if (seccionId !== 'objetivo' && !seccionesVistas[key]) return;
@@ -671,7 +671,7 @@ function FlipCard({ currentModule, onContentIsEnded, courseId, moduleId }) {
     };
 
     const resetAudioState = () => {
-        console.log('🧹 Ejecutando resetAudioState...');
+        // console.log('🧹 Ejecutando resetAudioState...');
         const synth = synthRef.current;
 
         // 🔥 Limpiar intervalo
@@ -713,7 +713,7 @@ function FlipCard({ currentModule, onContentIsEnded, courseId, moduleId }) {
         setIsPaused(false);
         setAudioCompletado(false);
 
-        console.log('✅ Estado de audio reseteado completamente');
+        // console.log('✅ Estado de audio reseteado completamente');
     };
 
 
@@ -725,7 +725,7 @@ function FlipCard({ currentModule, onContentIsEnded, courseId, moduleId }) {
 
     const iniciarIntroMovil = () => {
         if (!introStarted && vocesCargadas) {
-            console.log('📱 Iniciando intro en móvil...');
+            // console.log('📱 Iniciando intro en móvil...');
 
             // 🔥 Asegurar que el flag esté limpio
             if (isNavigatingRef.current) {
@@ -748,12 +748,12 @@ function FlipCard({ currentModule, onContentIsEnded, courseId, moduleId }) {
     // =========================================================================
 
     useEffect(() => {
-        console.log('🎯 Componente FlipCard montado - Reseteando flags');
+        // console.log('🎯 Componente FlipCard montado - Reseteando flags');
         isNavigatingRef.current = false;
         previousModuleIdRef.current = moduleId;
 
         return () => {
-            console.log('🧹 Componente FlipCard desmontado');
+            // console.log('🧹 Componente FlipCard desmontado');
         };
     }, []);
 
@@ -764,7 +764,7 @@ function FlipCard({ currentModule, onContentIsEnded, courseId, moduleId }) {
             const voices = synth.getVoices();
 
             if (!voices.length) {
-                console.log('🔄 Reintentando cargar voces...');
+                // console.log('🔄 Reintentando cargar voces...');
                 setTimeout(cargarVoces, 300);
                 return;
             }
@@ -804,9 +804,9 @@ function FlipCard({ currentModule, onContentIsEnded, courseId, moduleId }) {
             if (mejorOpcion) {
                 setMejorVoz(mejorOpcion);
                 setVocesCargadas(true);
-                console.log(`✅ Voz seleccionada: ${mejorOpcion.name} [${mejorOpcion.lang}]`);
+                // console.log(`✅ Voz seleccionada: ${mejorOpcion.name} [${mejorOpcion.lang}]`);
             } else {
-                console.warn('⚠️ No se encontró ninguna voz en español.');
+                // console.warn('⚠️ No se encontró ninguna voz en español.');
             }
         };
 
@@ -814,7 +814,7 @@ function FlipCard({ currentModule, onContentIsEnded, courseId, moduleId }) {
         synth.onvoiceschanged = cargarVoces;
 
         const handleUserInteraction = () => {
-            console.log('👆 Usuario hizo clic: forzando carga de voces...');
+            // console.log('👆 Usuario hizo clic: forzando carga de voces...');
             cargarVoces();
             document.removeEventListener('click', handleUserInteraction);
         };
@@ -849,12 +849,12 @@ function FlipCard({ currentModule, onContentIsEnded, courseId, moduleId }) {
 
     useEffect(() => {
         if (!isMobile && vocesCargadas && introStarted && !introPlayed) {
-            console.log('🎬 Intentando reproducir intro en desktop...');
+            // console.log('🎬 Intentando reproducir intro en desktop...');
 
             // 🔥 Verificar si la bandera está mal
             if (isNavigatingRef.current) {
-                console.warn('⚠️ Flag de navegación detectado, pero estamos en carga inicial');
-                console.log('🔧 Reseteando flag y continuando...');
+                // console.warn('⚠️ Flag de navegación detectado, pero estamos en carga inicial');
+                // console.log('🔧 Reseteando flag y continuando...');
                 isNavigatingRef.current = false;
             }
 
@@ -862,13 +862,13 @@ function FlipCard({ currentModule, onContentIsEnded, courseId, moduleId }) {
             const timer = setTimeout(() => {
                 // Verificar de nuevo (por si acaso hubo navegación real)
                 if (isNavigatingRef.current) {
-                    console.log('⛔ Navegación REAL detectada, NO reproducir intro');
+                    // console.log('⛔ Navegación REAL detectada, NO reproducir intro');
                     return;
                 }
 
-                console.log('✅ Reproduciendo intro...');
+                // console.log('✅ Reproduciendo intro...');
                 speak(currentModule.audioObjetivo, () => {
-                    console.log('✅ Intro terminada');
+                    // console.log('✅ Intro terminada');
                     setIntroPlayed(true);
                 }, () => {
                     console.error('❌ Error en intro');
@@ -898,7 +898,7 @@ function FlipCard({ currentModule, onContentIsEnded, courseId, moduleId }) {
             if (document.hidden) {
                 // Solo pausar si realmente está reproduciendo
                 if (synth.speaking && !synth.paused && audioStateRef.current.isPlaying) {
-                    console.log('👁️ Página oculta: pausando audio...');
+                    // console.log('👁️ Página oculta: pausando audio...');
                     synth.pause();
                     setIsPaused(true);
                     audioStateRef.current.wasPaused = true;
@@ -918,7 +918,7 @@ function FlipCard({ currentModule, onContentIsEnded, courseId, moduleId }) {
                     !currentUtteranceRef.current.wasCancelled &&
                     !isNavigatingRef.current) { // 🔥 No reanudar si estamos navegando
 
-                    console.log('👁️ Página visible: reanudando audio...');
+                    // console.log('👁️ Página visible: reanudando audio...');
 
                     setTimeout(() => {
                         try {
@@ -943,7 +943,7 @@ function FlipCard({ currentModule, onContentIsEnded, courseId, moduleId }) {
                                     setAudioProgress(progress);
                                 }, 100);
 
-                                console.log('✅ Intervalo recreado en visibilitychange');
+                                // console.log('✅ Intervalo recreado en visibilitychange');
                             }
 
                         } catch (error) {
@@ -969,7 +969,7 @@ function FlipCard({ currentModule, onContentIsEnded, courseId, moduleId }) {
             const synth = synthRef.current;
 
             if (synth.speaking && !synth.paused && audioStateRef.current.isPlaying) {
-                console.log('🔇 Ventana perdió el foco: pausando...');
+                // console.log('🔇 Ventana perdió el foco: pausando...');
                 synth.pause();
                 setIsPaused(true);
                 audioStateRef.current.wasPaused = true;
@@ -991,7 +991,7 @@ function FlipCard({ currentModule, onContentIsEnded, courseId, moduleId }) {
                 !currentUtteranceRef.current.wasCancelled &&
                 !isNavigatingRef.current) { // 🔥 No reanudar si estamos navegando
 
-                console.log('🔊 Ventana recuperó el foco: reanudando...');
+                // console.log('🔊 Ventana recuperó el foco: reanudando...');
 
                 setTimeout(() => {
                     try {
@@ -1015,7 +1015,7 @@ function FlipCard({ currentModule, onContentIsEnded, courseId, moduleId }) {
                                 setAudioProgress(progress);
                             }, 100);
 
-                            console.log('✅ Intervalo recreado en focus');
+                            // console.log('✅ Intervalo recreado en focus');
                         }
 
                     } catch (error) {
@@ -1041,7 +1041,7 @@ function FlipCard({ currentModule, onContentIsEnded, courseId, moduleId }) {
         const handleBeforeUnload = () => {
             const synth = synthRef.current;
             if (synth.speaking) {
-                console.log('🛑 Cerrando página: cancelando audio...');
+                // console.log('🛑 Cerrando página: cancelando audio...');
                 if (currentUtteranceRef.current)
                     currentUtteranceRef.current.wasCancelled = true;
                 synth.cancel();
@@ -1053,7 +1053,7 @@ function FlipCard({ currentModule, onContentIsEnded, courseId, moduleId }) {
         return () => {
             const synth = synthRef.current;
             if (synth.speaking) {
-                console.log('🧹 Componente desmontado: cancelando audio...');
+                // console.log('🧹 Componente desmontado: cancelando audio...');
                 synth.cancel();
             }
             if (progressIntervalRef.current) {
@@ -1071,7 +1071,7 @@ function FlipCard({ currentModule, onContentIsEnded, courseId, moduleId }) {
 
         // Si el módulo cambió, cancelar INMEDIATAMENTE
         if (previousModuleIdRef.current !== currentModuleId) {
-            console.log(`🚨 CAMBIO DE MÓDULO DETECTADO: ${previousModuleIdRef.current} → ${currentModuleId}`);
+            // console.log(`🚨 CAMBIO DE MÓDULO DETECTADO: ${previousModuleIdRef.current} → ${currentModuleId}`);
 
             // Actualizar referencia
             previousModuleIdRef.current = currentModuleId;
@@ -1124,18 +1124,18 @@ function FlipCard({ currentModule, onContentIsEnded, courseId, moduleId }) {
             currentUtteranceRef.current = null;
             introAudioRef.current = null;
 
-            console.log('✅ Audio cancelado por cambio de módulo');
+            // console.log('✅ Audio cancelado por cambio de módulo');
 
             // Permitir operaciones después de 200ms
             setTimeout(() => {
                 isNavigatingRef.current = false;
-                console.log('✅ Flag de navegación reseteado (200ms)');
+                // console.log('✅ Flag de navegación reseteado (200ms)');
             }, 200);
         }
 
         // Cleanup cuando cambia la ruta completa
         return () => {
-            console.log('🧹 Cleanup por cambio de ruta:', location.pathname);
+            // console.log('🧹 Cleanup por cambio de ruta:', location.pathname);
 
             isNavigatingRef.current = true;
 
@@ -1444,15 +1444,43 @@ function FlipCard({ currentModule, onContentIsEnded, courseId, moduleId }) {
                                             </div>
                                         )}
 
+
+
                                         {audioCompletado && (
-                                            <div className="flex items-center gap-2 text-blue-400 bg-blue-400/10 rounded-lg p-2">
-                                                <div className="w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center flex-shrink-0">
-                                                    <CheckCircle className="w-4 h-4 text-white" />
-                                                </div>
-                                                <div className="flex-1">
-                                                    <p className="font-bold text-xs">¡Audio completado!</p>
-                                                    <p className="text-xs text-blue-300">Puedes avanzar a la siguiente sección</p>
-                                                </div>
+                                            <div className="flex flex-col gap-2">
+                                                {seccionActiva === 'ejemplo' ? (
+                                                    <div>
+                                                        <div className="flex items-center gap-2 text-blue-400 bg-blue-400/10 rounded-lg p-2 mb-4">
+                                                            <div className="w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center flex-shrink-0">
+                                                                <CheckCircle className="w-4 h-4 text-white" />
+                                                            </div>
+                                                            <div className="flex-1">
+                                                                <p className="font-bold text-xs">¡Audio completado!</p>
+                                                                <p className="text-xs text-blue-300">Puedes avanzar a la siguiente sección</p>
+                                                            </div>
+                                                        </div>
+
+                                                        <div className="flex items-center gap-2 text-blue-400 bg-blue-400/10 rounded-lg p-2">
+                                                            <div className="">
+                                                                <p className="font-bold text-xs">¡Excelente trabajo!</p>
+                                                                <p className="text-xs text-blue-300"> Finaliza esta etapa haciendo clic en la “X” para seguir avanzando en el curso.</p>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+
+
+
+                                                ) : (
+                                                    <div className="flex items-center gap-2 text-blue-400 bg-blue-400/10 rounded-lg p-2">
+                                                        <div className="w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center flex-shrink-0">
+                                                            <CheckCircle className="w-4 h-4 text-white" />
+                                                        </div>
+                                                        <div className="flex-1">
+                                                            <p className="font-bold text-xs">¡Audio completado!</p>
+                                                            <p className="text-xs text-blue-300">Puedes avanzar a la siguiente sección</p>
+                                                        </div>
+                                                    </div>
+                                                )}
                                             </div>
                                         )}
 
